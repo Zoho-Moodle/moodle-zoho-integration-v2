@@ -1,0 +1,477 @@
+{
+  "info": {
+    "_postman_id": "moodle-zoho-integration",
+    "name": "Moodle-Zoho Integration API",
+    "description": "Test collection for Phase 2 & 3 (Programs, Classes, Enrollments)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Debug - Zoho Format Analysis",
+      "item": [
+        {
+          "name": "Receive Debug Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"test_001\",\n      \"name\": \"Test Product\",\n      \"Product_Name\": \"Test\",\n      \"price\": \"100\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/webhook/zoho",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "webhook", "zoho"]
+            },
+            "description": "Send debug webhook with any data"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Collected Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data"]
+            },
+            "description": "Get all collected debug data"
+          },
+          "response": []
+        },
+        {
+          "name": "View Products Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data", "products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "View Classes Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data/classes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data", "classes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "View Enrollments Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data", "enrollments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "View Students Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data/students",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data", "students"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Latest Products (Last Record)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data/products/latest?count=1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data", "products", "latest"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Analyze Format",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/format-analysis",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "format-analysis"]
+            },
+            "description": "Analyze the format of received data"
+          },
+          "response": []
+        },
+        {
+          "name": "Clear All Data",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data"]
+            },
+            "description": "Clear all collected debug data"
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Products Data",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/debug/data/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "debug", "data", "products"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+      "item": [
+        {
+          "name": "Create Program",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-ID",
+                "value": "tenant_001",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"prog_001\",\n      \"Product_Name\": \"Python Advanced\",\n      \"Price\": \"299.99\",\n      \"status\": \"Active\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/programs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "programs"]
+            },
+            "description": "Create a new program"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Program",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"prog_001\",\n      \"Product_Name\": \"Python Advanced - Updated\",\n      \"Price\": \"349.99\",\n      \"status\": \"Active\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/programs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "programs"]
+            },
+            "description": "Update existing program"
+          },
+          "response": []
+        },
+        {
+          "name": "Batch Programs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"prog_batch_001\",\n      \"Product_Name\": \"Java Programming\",\n      \"Price\": \"199.99\",\n      \"status\": \"Active\"\n    },\n    {\n      \"id\": \"prog_batch_002\",\n      \"Product_Name\": \"Web Development\",\n      \"Price\": \"249.99\",\n      \"status\": \"Active\"\n    },\n    {\n      \"id\": \"prog_batch_003\",\n      \"Product_Name\": \"Mobile Development\",\n      \"Price\": \"279.99\",\n      \"status\": \"Active\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/programs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "programs"]
+            },
+            "description": "Sync multiple programs at once"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Classes",
+      "item": [
+        {
+          "name": "Create Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"class_001\",\n      \"BTEC_Class_Name\": \"Python 101\",\n      \"Short_Name\": \"PY101\",\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-01-15\",\n      \"End_Date\": \"2024-06-15\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/classes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "classes"]
+            },
+            "description": "Create a new class"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"class_001\",\n      \"BTEC_Class_Name\": \"Python 101 - Advanced\",\n      \"Short_Name\": \"PY101A\",\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-01-15\",\n      \"End_Date\": \"2024-07-15\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/classes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "classes"]
+            },
+            "description": "Update existing class"
+          },
+          "response": []
+        },
+        {
+          "name": "Batch Classes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"class_batch_001\",\n      \"BTEC_Class_Name\": \"Java Basics\",\n      \"Short_Name\": \"JAVA101\",\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-02-01\",\n      \"End_Date\": \"2024-07-01\"\n    },\n    {\n      \"id\": \"class_batch_002\",\n      \"BTEC_Class_Name\": \"JavaScript ES6\",\n      \"Short_Name\": \"JS201\",\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-02-15\",\n      \"End_Date\": \"2024-07-15\"\n    },\n    {\n      \"id\": \"class_batch_003\",\n      \"BTEC_Class_Name\": \"React Fundamentals\",\n      \"Short_Name\": \"REACT301\",\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-03-01\",\n      \"End_Date\": \"2024-08-01\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/classes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "classes"]
+            },
+            "description": "Sync multiple classes at once"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Enrollments",
+      "item": [
+        {
+          "name": "Create Enrollment (with dependencies)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"enr_001\",\n      \"Student\": {\n        \"id\": \"student_test_001\"\n      },\n      \"BTEC_Class\": {\n        \"id\": \"class_batch_001\"\n      },\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-02-01\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "enrollments"]
+            },
+            "description": "Create enrollment (requires student and class already synced)"
+          },
+          "response": []
+        },
+        {
+          "name": "Enrollment - Dependency Missing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"enr_missing_001\",\n      \"Student\": {\n        \"id\": \"nonexistent_student\"\n      },\n      \"BTEC_Class\": {\n        \"id\": \"class_batch_001\"\n      },\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-02-01\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "enrollments"]
+            },
+            "description": "Enrollment skipped - student doesn't exist"
+          },
+          "response": []
+        },
+        {
+          "name": "Batch Enrollments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"enr_batch_001\",\n      \"Student\": {\n        \"id\": \"student_test_001\"\n      },\n      \"BTEC_Class\": {\n        \"id\": \"class_batch_001\"\n      },\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-02-01\"\n    },\n    {\n      \"id\": \"enr_batch_002\",\n      \"Student\": {\n        \"id\": \"student_test_001\"\n      },\n      \"BTEC_Class\": {\n        \"id\": \"class_batch_002\"\n      },\n      \"status\": \"Active\",\n      \"Start_Date\": \"2024-02-15\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/enrollments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "enrollments"]
+            },
+            "description": "Sync multiple enrollments at once"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Students (Phase 1)",
+      "item": [
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\n    {\n      \"id\": \"student_test_001\",\n      \"email\": \"student@example.com\",\n      \"name\": \"Test Student\",\n      \"status\": \"Active\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/sync/students",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "sync", "students"]
+            },
+            "description": "Create a student (Phase 1 endpoint)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
