@@ -1,0 +1,58 @@
+{
+  "name": "Moodle Integration Manager",
+  "version": "1.0.0",
+  "description": "Manage Moodle-Zoho integration: configure modules, field mappings, and monitor sync runs",
+  "author": "Moodle-Zoho Integration Team",
+  "type": "sigma",
+  "hosting": "zoho",
+  "entryPoint": "widget.html",
+  "requiredPermissions": [
+    "ZohoCRM.functions.execute",
+    "ZohoCRM.users.READ"
+  ],
+  "configuration": {
+    "tenantId": {
+      "type": "string",
+      "default": "default",
+      "description": "Tenant identifier for multi-tenancy support"
+    },
+    "delugeFunction": {
+      "type": "string",
+      "default": "moodle_integration_api_proxy",
+      "description": "Name of Zoho Deluge function for API proxy"
+    }
+  },
+  "dimensions": {
+    "width": "1200px",
+    "height": "800px",
+    "minWidth": "800px",
+    "minHeight": "600px"
+  },
+  "supportedModules": [
+    "Home",
+    "Leads",
+    "Contacts",
+    "Accounts",
+    "Deals"
+  ],
+  "files": [
+    "widget.html",
+    "app.js",
+    "styles.css"
+  ],
+  "dependencies": {
+    "zohoSDK": "^2.0.0"
+  },
+  "security": {
+    "authentication": "hmac-sha256",
+    "proxy": "deluge-function",
+    "secretsStorage": "zoho-crm-function"
+  },
+  "features": [
+    "Settings Management",
+    "Module Configuration",
+    "Field Mappings",
+    "Sync Run Monitoring",
+    "Retry Failed Items"
+  ]
+}
