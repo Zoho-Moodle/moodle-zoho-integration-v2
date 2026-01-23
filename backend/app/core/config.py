@@ -4,7 +4,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # Database Configuration
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./test.db"
 
     # App Configuration
     APP_NAME: str = "Moodle Zoho Integration"

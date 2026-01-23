@@ -19,8 +19,32 @@ Integration service for syncing data from Zoho to Moodle Learning Management Sys
   - `POST /v1/sync/enrollments`
 - Status: Production ready
 
-### Phase 4: 📋 Planned
-- Registrations, Payments, Units, Grades
+### Phase 4: ✅ BTEC Modules (COMPLETE)
+- **Registrations**: Student program registrations
+- **Payments**: Payment records linked to registrations
+- **Units**: Course units/modules
+- **Grades**: Student grades per unit
+- Endpoints:
+  - `POST /v1/sync/registrations`
+  - `POST /v1/sync/payments`
+  - `POST /v1/sync/units`
+  - `POST /v1/sync/grades`
+- Status: ✅ Tested (17/17 integration tests passing)
+
+### Extension API: ✅ Configuration Control Plane (NEW)
+- **Purpose**: Zoho Sigma widget backend for managing sync configuration
+- **Authentication**: HMAC-SHA256 signature verification
+- **Endpoints**: 13 endpoints under `/v1/extension`
+  - Tenant management
+  - Integration settings (Moodle/Zoho connections)
+  - Module configuration (enable/disable, scheduling)
+  - Field mappings (Zoho → Canonical)
+  - Sync execution (manual trigger, history, retry)
+  - Metadata (canonical schema, Moodle adapter constraints)
+- **Database**: 6 new tables for configuration storage
+- **Security**: Per-tenant API keys, nonce validation, timestamp checks
+- **Documentation**: See [EXTENSION_API_CHANGELOG.md](EXTENSION_API_CHANGELOG.md)
+- Status: ✅ MVP complete (ready for Sigma widget integration)
 
 ---
 

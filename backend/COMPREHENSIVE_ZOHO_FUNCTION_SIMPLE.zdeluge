@@ -1,0 +1,177 @@
+// ============================================================================
+// 🎯 نسخة مختصرة وجاهزة للاستخدام - نسخ والصق مباشرة في Zoho
+// ============================================================================
+
+// 👉 استبدل هذه الثلاثة فقط قبل التشغيل:
+string API_TOKEN = "Zoho CRM API Token هنا";
+string WEBHOOK_URL = "https://your-ngrok-url.ngrok-free.dev/v1/debug/webhook/zoho";
+string ORG_ID = "org ID هنا"; // اختياري
+
+// ============================================================================
+
+map<string, object> processField(object val, string type) {
+    if (val == null) return {"value": null, "type": type};
+    
+    string type_lower = type.toLowerCase();
+    
+    // نصوص
+    if (type_lower.contains("text") || type_lower.contains("string")) {
+        return {"value": val.toString(), "type": "text"};
+    }
+    
+    // أرقام
+    if (type_lower.contains("number") || type_lower.contains("currency") || type_lower.contains("decimal")) {
+        return {"value": val.toString().toNumber(), "type": "number", "is_currency": type_lower.contains("currency")};
+    }
+    
+    // تاريخ فقط
+    if (type_lower.contains("date") && !type_lower.contains("datetime")) {
+        return {"value": val.toString(), "type": "date"};
+    }
+    
+    // تاريخ ووقت
+    if (type_lower.contains("datetime") || type_lower.contains("timestamp")) {
+        return {"value": val.toString(), "type": "datetime"};
+    }
+    
+    // قائمة اختيار
+    if (type_lower.contains("picklist") || type_lower.contains("multiselect")) {
+        list items = list();
+        if (val.getDataType() != "list") {
+            items.add(val.toString());
+        } else {
+            for each v in val { items.add(v.toString()); }
+        }
+        return {"value": items, "type": "picklist", "count": items.size()};
+    }
+    
+    // ربط بسيط
+    if (type_lower.contains("lookup") && !type_lower.contains("multi")) {
+        if (val.getDataType() == "map") {
+            return {"value": val, "type": "lookup"};
+        }
+        return {"value": {"id": val.toString()}, "type": "lookup"};
+    }
+    
+    // ربط متعدد
+    if (type_lower.contains("lookup") && type_lower.contains("multi")) {
+        list lookups = list();
+        if (val.getDataType() == "list") {
+            for each item in val {
+                if (item.getDataType() == "map") {
+                    lookups.add(item);
+                } else {
+                    lookups.add({"id": item.toString()});
+                }
+            }
+        }
+        return {"value": lookups, "type": "multi_lookup", "count": lookups.size()};
+    }
+    
+    // منطقي
+    if (type_lower.contains("boolean") || type_lower.contains("checkbox")) {
+        return {"value": val.getDataType() == "boolean" ? val : val.toString().equalsIgnoreCase("true"), "type": "boolean"};
+    }
+    
+    // بريد
+    if (type_lower.contains("email")) {
+        return {"value": val.toString(), "type": "email"};
+    }
+    
+    // هاتف
+    if (type_lower.contains("phone")) {
+        return {"value": val.toString(), "type": "phone"};
+    }
+    
+    // ملفات
+    if (type_lower.contains("file") || type_lower.contains("attachment")) {
+        return {"value": val.getDataType() == "list" ? val : list(val), "type": "attachment"};
+    }
+    
+    return {"value": val, "type": "other", "data_type": val.getDataType()};
+}
+
+map<string, object> fetchModule(string module_name) {
+    info "🔍 جاري جلب: " + module_name;
+    
+    map result = {"module": module_name, "records": list(), "error": null, "status": "processing"};
+    
+    try {
+        map headers = {"Authorization": "Bearer " + API_TOKEN, "Content-Type": "application/json"};
+        
+        // جلب metadata
+        string meta_url = "https://www.zohoapis.com/crm/v2/" + module_name + "/metadata";
+        map metadata = invokeurl[url: meta_url, type: "GET", headers: headers];
+        list fields = metadata.get("fields");
+        
+        // جلب السجلات
+        string data_url = "https://www.zohoapis.com/crm/v2/" + module_name + "?fields=*&page=1&per_page=100";
+        map data_resp = invokeurl[url: data_url, type: "GET", headers: headers];
+        list records = data_resp.get("data");
+        
+        info "📊 " + module_name + ": " + records.size() + " سجلات، " + fields.size() + " حقول";
+        
+        list processed = list();
+        for each record in records {
+            map rec = {"id": record.get("id"), "fields": map()};
+            map rec_fields = rec.get("fields");
+            
+            for each field in fields {
+                string fname = field.get("api_name");
+                string ftype = field.get("data_type");
+                object fval = record.get(fname);
+                
+                rec_fields.put(fname, {
+                    "label": field.get("label"),
+                    "type": ftype,
+                    "processed": processField(fval, ftype)
+                });
+            }
+            
+            processed.add(rec);
+        }
+        
+        result.put("records", processed);
+        result.put("status", "success");
+        result.put("count", processed.size());
+        
+    } catch (exception e) {
+        info "❌ خطأ في " + module_name + ": " + e.getMessage();
+        result.put("error", e.getMessage());
+        result.put("status", "error");
+    }
+    
+    return result;
+}
+
+// ============================================================================
+// التنفيذ الرئيسي
+// ============================================================================
+
+list modules_to_fetch = {"BTEC_Students", "Products", "BTEC_Classes", "BTEC_Enrollments"};
+list all_data = list();
+
+info "🚀 بدء جلب البيانات الشاملة من جميع الموديولات";
+
+for each mod in modules_to_fetch {
+    all_data.add(fetchModule(mod));
+    delay(500);
+}
+
+// إرسال الكل
+map payload = {
+    "source": "zoho_comprehensive_extractor",
+    "module": "all",
+    "timestamp": now,
+    "total_modules": all_data.size(),
+    "data": all_data
+};
+
+map headers = {"Content-Type": "application/json"};
+
+info "📤 إرسال البيانات...";
+map webhook_result = invokeurl[url: WEBHOOK_URL, type: "POST", headers: headers, body: payload];
+
+info "✅ تم الإرسال بنجاح!";
+info "الرد: " + webhook_result.toString();
+

@@ -1,0 +1,117 @@
+// ============================================================================
+// 🎯 نسخة نهائية محدثة - تشتغل مع الـ ngrok tunnel الجديد
+// ============================================================================
+
+// 👉 استبدل هذا بـ API Token الفعلي من Zoho
+apiToken = "1000.YOUR_TOKEN_HERE";
+
+// 👉 استبدل هذا بـ ngrok URL الصحيح (شغال على port 8001 الآن)
+webhookUrl = "https://noncorrespondingly-tractile-ava.ngrok-free.dev/v1/debug/webhook/zoho";
+
+// ============================================================================
+
+string standalone.sendAllZohoModulesDebug()
+{
+    modules = list();
+    modules.add("Contacts");
+    modules.add("Products");
+    modules.add("BTEC_Classes");
+    modules.add("BTEC_Enrollments");
+    modules.add("BTEC_Registrations");
+    modules.add("BTEC_Payments");
+    modules.add("BTEC_Units");
+    modules.add("BTEC_Grades");
+
+    // صفحات ثابتة
+    pages = list();
+    pages.add(1); pages.add(2); pages.add(3); pages.add(4); pages.add(5);
+    pages.add(6); pages.add(7); pages.add(8); pages.add(9); pages.add(10);
+    pages.add(11); pages.add(12); pages.add(13); pages.add(14); pages.add(15);
+    pages.add(16); pages.add(17); pages.add(18); pages.add(19); pages.add(20);
+
+    summary = map();
+    sentModules = list();
+    errorsList = list();
+    summary.put("sent_modules", sentModules);
+    summary.put("errors", errorsList);
+
+    for each moduleName in modules
+    {
+        try
+        {
+            allRecords = list();
+
+            for each page in pages
+            {
+                url = "https://www.zohoapis.com/crm/v2/" + moduleName + "?page=" + page + "&per_page=200";
+
+                // ✅ الطريقة الصحيحة مع Bearer Token
+                response = invokeurl
+                [
+                    url     : url
+                    type    : GET
+                    headers : {"Authorization": "Bearer " + apiToken}
+                ];
+
+                data = response.get("data");
+
+                if (data == null || data.isEmpty())
+                {
+                    break;
+                }
+
+                for each rec in data
+                {
+                    allRecords.add(rec);
+                }
+            }
+
+            info "✅ " + moduleName + ": " + allRecords.size() + " سجلات";
+
+            payload = map();
+            payload.put("source", "zoho_discovery");
+            payload.put("module", moduleName);
+            payload.put("records", allRecords);
+            payload.put("records_count", allRecords.size());
+            payload.put("sent_at", zoho.currenttime.toString());
+
+            webhookResponse = invokeurl
+            [
+                url     : webhookUrl
+                type    : POST
+                headers : {"Content-Type":"application/json"}
+                body    : payload
+            ];
+
+            sentItem = map();
+            sentItem.put("module", moduleName);
+            sentItem.put("records", allRecords.size());
+            sentItem.put("status", "sent");
+            sentModules.add(sentItem);
+
+            info "📤 تم إرسال " + moduleName + " إلى: " + webhookUrl;
+        }
+        catch (e)
+        {
+            info "❌ خطأ في " + moduleName + ": " + e.toString();
+            errItem = map();
+            errItem.put("module", moduleName);
+            errItem.put("error", e.toString());
+            errorsList.add(errItem);
+        }
+    }
+
+    info "🎉 انتهت العملية!";
+    info "📊 النتيجة: " + summary.toString();
+
+    return summary.toString();
+}
+
+// ============================================================================
+// ملاحظات:
+// 1. استبدل apiToken بـ token صحيح من Zoho
+// 2. ngrok الآن على port 8001 (ليس 8000)
+// 3. الـ Webhook URL صحيح للـ debug endpoints المحسّنة
+// 4. ستجد جميع البيانات في: http://localhost:8001/v1/debug/stats
+// ============================================================================
+

@@ -225,15 +225,28 @@ def _detect_type(data: Any) -> str:
     if not isinstance(data, dict):
         return "other"
     
-    # شيك على الـ keys
+    # شيك على الـ keys والـ source
     keys = data.keys()
     body_data = data.get("data", [])
+    source = data.get("source", "").lower()
+    module = data.get("module", "").lower()
     
+    # تحقق من الـ source والـ module أولاً
+    if "student" in source or "contact" in source or "btec_student" in module:
+        return "students"
+    if "product" in source:
+        return "products"
+    if "class" in source or "btec_class" in module:
+        return "classes"
+    if "enroll" in source:
+        return "enrollments"
+    
+    # إذا ما فيش source، حاول من خلال الـ fields
     if body_data and isinstance(body_data, list) and body_data:
         first_record = body_data[0]
         
         # Products
-        if "Product_Name" in first_record or "price" in first_record:
+        if "Product_Name" in first_record or "price" in first_record.keys():
             return "products"
         
         # Classes
@@ -244,8 +257,14 @@ def _detect_type(data: Any) -> str:
         if "Student" in first_record or "BTEC_Class" in first_record:
             return "enrollments"
         
-        # Students
-        if "email" in first_record or "contact" in first_record.get("Contact", {}):
-            return "students"
+        # Students - شيك على multiple field names
+        student_fields = [
+            "email", "Email", "Academic_Email", "contact", "Contact",
+            "Name", "First_Name", "Last_Name", "Phone_Number", "Phone"
+        ]
+        if any(field in first_record for field in student_fields):
+            # تأكد أنه مش enrollment
+            if "Student" not in first_record and "BTEC_Class" not in first_record:
+                return "students"
     
     return "other"
