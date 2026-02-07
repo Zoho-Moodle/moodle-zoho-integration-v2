@@ -1,0 +1,29 @@
+# VS Code Extensions للـ Project
+
+## Python Development (أساسية)
+- ms-python.python  # Python extension
+- ms-python.vscode-pylance  # Fast type checking
+- ms-python.black-formatter  # Code formatting
+- charliermarsh.ruff  # Fast linting
+
+## Database
+- mtxr.sqltools  # SQL client
+- mtxr.sqltools-driver-pg  # PostgreSQL driver
+
+## API Development
+- humao.rest-client  # Test APIs in VS Code
+- 42Crunch.vscode-openapi  # OpenAPI/Swagger support
+
+## Git
+- eamodio.gitlens  # Better Git integration
+
+## General Productivity
+- esbenp.prettier-vscode  # Format JSON/MD files
+- usernamehw.errorlens  # Show errors inline
+- gruntfuggly.todo-tree  # Track TODOs
+- aaron-bond.better-comments  # Colored comments
+
+## Optional (Nice to Have)
+- ms-azuretools.vscode-docker  # Docker support
+- redhat.vscode-yaml  # YAML support
+- tamasfe.even-better-toml  # TOML support

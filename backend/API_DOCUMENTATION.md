@@ -21,6 +21,8 @@ https://noncorrespondingly-tractile-ava.ngrok-free.dev
 
 ## Endpoints
 
+### Phase 1: Student Sync
+
 ### 1. Health Check
 
 **Request:**
@@ -98,6 +100,115 @@ Content-Type: application/json
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+
+---
+
+## Phase 12: Moodle Integration ⭐ NEW
+
+### Batch Ingestion Endpoints
+
+#### 1. Import Moodle Users
+```http
+POST /v1/moodle/users
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "users": [
+    {
+      "userid": 456,
+      "username": "ali.ahmad",
+      "email": "ali@example.com",
+      "firstname": "Ali",
+      "lastname": "Ahmad",
+      "role": "student"
+    }
+  ]
+}
+```
+
+#### 2. Import Moodle Enrollments
+```http
+POST /v1/moodle/enrollments
+```
+
+#### 3. Import Moodle Grades
+```http
+POST /v1/moodle/grades
+```
+
+**BTEC Grade Conversion:**
+- 70-100 → Distinction
+- 60-69 → Merit
+- 40-59 → Pass
+- 0-39 → Refer
+
+### Real-time Webhook Endpoints
+
+#### 4. User Created Event
+```http
+POST /v1/events/moodle/user_created
+```
+
+#### 5. User Updated Event
+```http
+POST /v1/events/moodle/user_updated
+```
+
+#### 6. Enrollment Created Event
+```http
+POST /v1/events/moodle/enrollment_created
+```
+
+#### 7. Grade Updated Event
+```http
+POST /v1/events/moodle/grade_updated
+```
+
+**Payload (Phase 1 - BTEC Compliance):**
+- `grade_id` (int)
+- `userid` (int)
+- `user_username` (string)
+- `user_email` (string)
+- `user_fullname` (string)
+- `itemid` (int)
+- `iteminstance` (int, assignment id when item_module = assign)
+- `item_name` (string)
+- `item_type` (string)
+- `item_module` (string) — e.g., `assign`
+- `courseid` (int)
+- `course_name` (string)
+- `course_shortname` (string)
+- `finalgrade_numeric` (float, 0–100 normalized)
+- `raw_grade` (float, original Moodle grade value)
+- `btec_grade` (string: Pass / Merit / Distinction / Refer) — computed in plugin using legacy logic
+- `grademax` (float)
+- `grademin` (float)
+- `timecreated` (int)
+- `timemodified` (int)
+- `grader_userid` (int)
+- `grader_fullname` (string)
+- `grader_role` (string: `teacher`, `iv`, `other`) — legacy role detection (IV > Teacher)
+- `learning_outcomes` (array of objects):
+  - `code` (string, e.g., P1, M2, D3)
+  - `level` (string, P/M/D)
+  - `description` (string)
+  - `achieved` (bool)
+
+---
+
+## Field Mapping Reference
+
+For complete field mapping documentation, see:
+- **[BACKEND_SYNC_MAPPING.md](BACKEND_SYNC_MAPPING.md)** - 420+ Zoho fields, sync workflows
+- **[MOODLE_PLUGIN_ARCHITECTURE_AR.md](MOODLE_PLUGIN_ARCHITECTURE_AR.md)** - Moodle plugin architecture
+
+### Key Fields (Moodle ↔ Backend ↔ Zoho)
+
+| Moodle Field | Backend Field | Zoho Field | Purpose |
+|--------------|---------------|------------|---------|
 | id | string | ✅ | Unique Zoho identifier |
 | Name | string | ✅ | Student full name |
 | Academic_Email | string | ✅ | Student email |
@@ -341,3 +452,9 @@ For issues or questions:
 1. Check logs: `app.log`
 2. Verify database connection: `psql -U admin -d moodle_zoho`
 3. Check `.env` configuration
+
+
+
+
+
+

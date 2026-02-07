@@ -15,7 +15,7 @@ class Student(Base):
     source = Column(String, default="zoho", nullable=True)
 
     # Student identifiers
-    zoho_id = Column(String, unique=True, index=True, nullable=False)
+    zoho_id = Column(String, unique=True, index=True, nullable=True)  # Nullable: Moodle users don't have Zoho ID initially
     moodle_user_id = Column(String, nullable=True)
     userid = Column(String, nullable=True)  # Make nullable - Zoho doesn't provide this
     username = Column(String, unique=True, index=True, nullable=True)

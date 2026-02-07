@@ -60,6 +60,8 @@ Integration service for syncing data from Zoho to Moodle Learning Management Sys
 | [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Pre-deployment verification |
 | [FILE_INVENTORY.md](FILE_INVENTORY.md) | Complete file listing |
 | [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | Phase 1 API reference |
+| [BACKEND_SYNC_MAPPING.md](BACKEND_SYNC_MAPPING.md) | **Zoho API fields & sync workflows** ⭐ |
+| [MOODLE_PLUGIN_ARCHITECTURE_AR.md](MOODLE_PLUGIN_ARCHITECTURE_AR.md) | Moodle plugin architecture (Arabic) |
 
 ---
 

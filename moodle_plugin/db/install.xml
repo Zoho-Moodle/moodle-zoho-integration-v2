@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/moodle_zoho_sync/db" VERSION="20260201" COMMENT="Moodle-Zoho Integration Plugin Database Schema">
+  <TABLES>
+    
+    <!-- Event Log Table: Stores all webhook events -->
+    <TABLE NAME="local_mzi_event_log" COMMENT="Logs all webhook events sent to Backend API">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="event_id" TYPE="char" LENGTH="36" NOTNULL="true" COMMENT="UUID for idempotency"/>
+        <FIELD NAME="event_type" TYPE="char" LENGTH="50" NOTNULL="true" COMMENT="user_created, enrollment_created, grade_updated, etc."/>
+        <FIELD NAME="event_data" TYPE="text" NOTNULL="false" COMMENT="JSON payload sent to backend"/>
+        <FIELD NAME="moodle_event_id" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Related Moodle event ID"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" COMMENT="pending, sent, failed, retrying"/>
+        <FIELD NAME="retry_count" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" COMMENT="Number of retry attempts"/>
+        <FIELD NAME="next_retry_at" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Unix timestamp for next retry attempt (exponential backoff)"/>
+        <FIELD NAME="last_error" TYPE="text" NOTNULL="false" COMMENT="Last error message if failed"/>
+        <FIELD NAME="http_status" TYPE="int" LENGTH="3" NOTNULL="false" COMMENT="HTTP response code"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+        <FIELD NAME="timeprocessed" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Unix timestamp when successfully sent"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="event_id_unique" TYPE="unique" FIELDS="event_id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="event_type_idx" UNIQUE="false" FIELDS="event_type"/>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="timecreated_idx" UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="moodle_event_idx" UNIQUE="false" FIELDS="moodle_event_id"/>
+        <INDEX NAME="next_retry_at_idx" UNIQUE="false" FIELDS="next_retry_at"/>
+      </INDEXES>
+    </TABLE>
+    
+    <!-- Sync History Table: Tracks manual sync operations -->
+    <TABLE NAME="local_mzi_sync_history" COMMENT="History of manual sync operations">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="sync_type" TYPE="char" LENGTH="50" NOTNULL="true" COMMENT="users, enrollments, grades, all"/>
+        <FIELD NAME="sync_action" TYPE="char" LENGTH="50" NOTNULL="true" COMMENT="full_sync, partial_sync, test_connection"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" COMMENT="running, completed, failed"/>
+        <FIELD NAME="records_processed" TYPE="int" LENGTH="10" DEFAULT="0" COMMENT="Number of records synced"/>
+        <FIELD NAME="records_failed" TYPE="int" LENGTH="10" DEFAULT="0" COMMENT="Number of failed records"/>
+        <FIELD NAME="timestarted" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Unix timestamp"/>
+        <FIELD NAME="error_message" TYPE="text" NOTNULL="false" COMMENT="Error details if failed"/>
+        <FIELD NAME="triggered_by" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="User ID who triggered"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="triggered_by_fk" TYPE="foreign" FIELDS="triggered_by" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="sync_type_idx" UNIQUE="false" FIELDS="sync_type"/>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="timestarted_idx" UNIQUE="false" FIELDS="timestarted"/>
+      </INDEXES>
+    </TABLE>
+    
+    <!-- Config Table: Encrypted configuration storage -->
+    <TABLE NAME="local_mzi_config" COMMENT="Encrypted configuration key-value store">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="config_key" TYPE="char" LENGTH="100" NOTNULL="true" COMMENT="Configuration key"/>
+        <FIELD NAME="config_value" TYPE="text" NOTNULL="false" COMMENT="Configuration value (may be encrypted)"/>
+        <FIELD NAME="is_encrypted" TYPE="int" LENGTH="1" DEFAULT="0" COMMENT="1 if value is encrypted"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+        <FIELD NAME="updated_by" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="User ID who updated"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="config_key_unique" TYPE="unique" FIELDS="config_key"/>
+        <KEY NAME="updated_by_fk" TYPE="foreign" FIELDS="updated_by" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="config_key_idx" UNIQUE="false" FIELDS="config_key"/>
+      </INDEXES>
+    </TABLE>
+    
+  </TABLES>
+</XMLDB>

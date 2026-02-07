@@ -21,11 +21,11 @@ class Grade(Base):
     source = Column(String, default="zoho", nullable=True)
 
     # Identifiers
-    zoho_id = Column(String, nullable=False, index=True)
+    zoho_id = Column(String, nullable=True, index=True)  # Nullable: Moodle grades don't have Zoho ID initially
 
     # Foreign keys
-    student_zoho_id = Column(String, ForeignKey("students.zoho_id"), nullable=False, index=True)
-    unit_zoho_id = Column(String, ForeignKey("units.zoho_id"), nullable=False, index=True)
+    student_zoho_id = Column(String, ForeignKey("students.zoho_id"), nullable=True, index=True)  # Nullable: populated when synced
+    unit_zoho_id = Column(String, ForeignKey("units.zoho_id"), nullable=True, index=True)  # Nullable: populated when synced
 
     # Grade details
     grade_value = Column(String, nullable=False)  # A, B, C, D, F, etc.

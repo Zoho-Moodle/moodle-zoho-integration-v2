@@ -15,13 +15,13 @@ class Enrollment(Base):
     source = Column(String, default="zoho", nullable=True)
 
     # Enrollment identifiers
-    zoho_id = Column(String, nullable=False, index=True)  # Enrollment record ID (Name auto)
+    zoho_id = Column(String, nullable=True, index=True)  # Nullable: Moodle enrollments don't have Zoho ID initially
     enrollment_name = Column(String, nullable=True)  # Enrollment Name field (auto number)
     
     # Foreign key references (stored as zoho_id strings)
-    student_zoho_id = Column(String, nullable=False, index=True)
+    student_zoho_id = Column(String, nullable=True, index=True)  # Nullable: populated when student is synced
     student_name = Column(String, nullable=True)
-    class_zoho_id = Column(String, nullable=False, index=True)
+    class_zoho_id = Column(String, nullable=True, index=True)  # Nullable: populated when class is synced
     class_name = Column(String, nullable=True)
     program_zoho_id = Column(String, nullable=True, index=True)
 

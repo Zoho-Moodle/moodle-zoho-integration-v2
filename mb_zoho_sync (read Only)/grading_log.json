@@ -1,0 +1,4362 @@
+[
+    {
+        "timestamp": "2025-04-30 03:03:27",
+        "student_name": "fewf fcsdvf",
+        "course_name": "2425T3 IT U16 Computing Research Project",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Zoho Test",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-04-30 03:05:56",
+        "student_name": "fewf fcsdvf",
+        "course_name": "2425T3 IT U16 Computing Research Project",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Zoho Test",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-04-30 03:14:29",
+        "student_name": "fewf fcsdvf",
+        "course_name": "2425T3 IT U16 Computing Research Project",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Zoho Test",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-04-30 03:17:06",
+        "student_name": "fewf fcsdvf",
+        "course_name": "2425T3 IT U16 Computing Research Project",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Zoho Test",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-04-30 11:03:05",
+        "student_name": "fewf fcsdvf",
+        "course_name": "2425T3 BUS U3 Management of Human Resources",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "ABC Admin",
+        "grader_role": "",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-04-30 12:39:40",
+        "student_name": "Omar Tariq",
+        "course_name": "2425T3 BUS U3 Management of Human Resources",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "ABC Admin",
+        "grader_role": "",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-04-30 13:23:40",
+        "student_name": "Omar Tariq",
+        "course_name": "2425T3 BUS U3 Management of Human Resources",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "ABC Admin",
+        "grader_role": "",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-05-02 02:28:06",
+        "student_name": "Omar Tariq",
+        "course_name": "2425T3 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Zoho Test",
+        "grader_role": "iv",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-05-10 02:36:52",
+        "student_name": "fewf fcsdvf",
+        "course_name": "2425T3 IT U16 Computing Research Project",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "ABC Admin",
+        "grader_role": "",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-06 19:22:18",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-06 19:23:40",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-06 19:24:28",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-07 11:17:30",
+        "student_name": "ABC Admin",
+        "course_name": "2425T4 IT U19 Network Security Design 2",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "ABC Admin",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-07 12:54:37",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design 2",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "ABC Admin",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-07 13:19:17",
+        "student_name": "ABC Admin",
+        "course_name": "2425T4 IT U19 Network Security Design 2",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "ABC Admin",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-08 00:38:59",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design 2",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "ABC Admin",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-08 14:08:32",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-08 14:12:16",
+        "student_name": "Sudent Affairs",
+        "course_name": "2425T4 IT U19 Network Security Design 2",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-10-22 10:27:01",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:27:39",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:29:32",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:30:35",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:32:35",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:33:54",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:35:58",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:37:37",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-10-22 10:38:10",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-03 13:22:19",
+        "student_name": "AHMED CHEKRI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-03 13:22:47",
+        "student_name": "AHMED CHEKRI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-04 03:16:21",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:20:23",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:21:21",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:23:33",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:26:50",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:28:14",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:31:33",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:34:33",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-04 03:37:40",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-14 16:08:55",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-14 16:28:00",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-14 16:34:56",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-14 16:39:46",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-14 16:53:31",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-14 17:15:14",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-14 17:16:37",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-11-15 19:00:35",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-15 19:01:13",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-15 19:01:28",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-15 19:01:41",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-15 19:01:52",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-15 19:02:07",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-11-15 19:02:20",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U28 Sustainable Energy",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-05 16:35:11",
+        "student_name": "MATAB ELTAYEB ALNIMA ELKHIDER",
+        "course_name": "2526T1 DL401 Contract Law",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:14:08",
+        "student_name": "ABDULMOHSEN IBR S MAGBUB",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:16:30",
+        "student_name": "ABDULMOHSEN IBR S MAGBUB",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-06 11:22:51",
+        "student_name": "ALAA NEZAR MAHMOUD ELMALLAH",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:26:48",
+        "student_name": "DALAL ALMASHARKA",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:29:50",
+        "student_name": "GOUD SALEH A ALDURAIBI",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:30:40",
+        "student_name": "HAIDY MOHAMED SAYED HASSANIEN",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:31:55",
+        "student_name": "MOHAMED AMINE MESRATI",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:32:24",
+        "student_name": "RAWAD KHALIL",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:33:18",
+        "student_name": "SEHAM ALI MUSLEH ALKHUBANI",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 11:43:25",
+        "student_name": "WALID ALCHEIKH HOUD",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 16:47:02",
+        "student_name": "MOHAMMAD ASHRAF MOH'D EL JAFARI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 16:58:33",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:00:13",
+        "student_name": "SARAH ALMUSALI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:01:55",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-06 17:02:02",
+        "student_name": "SARAH ALMUSALI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-06 17:08:32",
+        "student_name": "HASAN ALKHATIB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:12:32",
+        "student_name": "ASMAA MOHAMMAD NATHER AL NASER AL NASER",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:16:54",
+        "student_name": "MUSTAFA SAAD ARIF",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:20:20",
+        "student_name": "FAHAD ALAA MAHDY AL-KHATEEB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:22:28",
+        "student_name": "MOHAMMAD WAQAS",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:22:50",
+        "student_name": "SEDRA NAJIB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-06 17:25:22",
+        "student_name": "ZAID SADEQ ZAID MAHDI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 01:58:59",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 01:59:07",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 01:59:16",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 01:59:23",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 01:59:30",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 02:01:51",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 02:05:12",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 11:42:37",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 11:43:12",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 11:47:01",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 11:48:40",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 15:38:53",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 15:40:02",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 15:40:50",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 15:41:16",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 15:51:45",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 15:54:44",
+        "student_name": "SALEH MAHMOUD SABER AWAD ELGANINY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 15:57:49",
+        "student_name": "YASMIN ITANI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 15:58:58",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Yousra ALHALABI",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 16:00:33",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 16:03:52",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U2 Principles and Applications of Chemistry I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 16:12:30",
+        "student_name": "IHSSANE ELALAOUI ESSOSSI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:13:54",
+        "student_name": "HAFES MUSA",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:14:28",
+        "student_name": "HAYTEM AIT-IDIR",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:14:54",
+        "student_name": "ABRAR MOHAMED ABDELSALAM ABDELGADIR",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:23:26",
+        "student_name": "AYA KASSAB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:26:45",
+        "student_name": "RIM KASSAB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:28:09",
+        "student_name": "MOHAMED KHALID MOHAMED ALI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:38:49",
+        "student_name": "MAYS AZMI KHALIL ALNAMROUTY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:39:10",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:40:24",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:40:39",
+        "student_name": "M.NOUR BANAH",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-07 16:41:15",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-07 16:47:10",
+        "student_name": "FARES ZAYANI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Omar Ghanam",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-21 21:19:39",
+        "student_name": "JOUDI ELMASRI",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-21 21:20:23",
+        "student_name": "SARMAD MAYTHAM TURKI",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-22 16:05:52",
+        "student_name": "ALAA NEZAR MAHMOUD ELMALLAH",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-22 16:10:15",
+        "student_name": "JOUDI ELMASRI",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-22 16:10:47",
+        "student_name": "DALAL ALMASHARKA",
+        "course_name": "2425T4 BUS U10 Recording financial transactions",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-25 14:45:12",
+        "student_name": "SABA A. H. ABUHAMAD",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-25 15:41:57",
+        "student_name": "JENAN NASRALLAH DAGHSTANI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 16:16:43",
+        "student_name": "AHMED CHEKRI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 16:16:57",
+        "student_name": "SABA A. H. ABUHAMAD",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 16:35:15",
+        "student_name": "MOHAMMED ALAA TALIB",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 16:36:30",
+        "student_name": "JENAN NASRALLAH DAGHSTANI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 16:46:01",
+        "student_name": "GHAYDAA ALNASSER",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 16:48:53",
+        "student_name": "GHOFRAN HASAN ALNASER",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 16:51:09",
+        "student_name": "ABDELMAJEED AL JOHMANI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 16:55:14",
+        "student_name": "AREF HALWANI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 17:30:54",
+        "student_name": "HASAN ALKHATIB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 17:31:07",
+        "student_name": "ASMAA MOHAMMAD NATHER AL NASER AL NASER",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:37:04",
+        "student_name": "FAHAD ALAA MAHDY AL-KHATEEB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:37:24",
+        "student_name": "MOHAMMAD WAQAS",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:38:31",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 18:41:10",
+        "student_name": "ZAID SADEQ ZAID MAHDI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:44:37",
+        "student_name": "KHADIJA ALHASAN",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 18:44:55",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2025-12-28 18:45:04",
+        "student_name": "SALEH MAHMOUD SABER AWAD ELGANINY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:45:13",
+        "student_name": "AHMED CHEKRI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:45:35",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:46:39",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:47:50",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2425T4 L3 U23 Materials Science",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:53:39",
+        "student_name": "IHSSANE ELALAOUI ESSOSSI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 18:59:00",
+        "student_name": "AYA KASSAB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 19:00:50",
+        "student_name": "AYA KASSAB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 19:09:06",
+        "student_name": "RIM KASSAB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 19:12:36",
+        "student_name": "MAYS AZMI KHALIL ALNAMROUTY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 19:14:14",
+        "student_name": "M.NOUR BANAH",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-28 19:48:09",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:09:54",
+        "student_name": "MUSTAFA SAAD ARIF",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:10:07",
+        "student_name": "FARES ZAYANI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:10:22",
+        "student_name": "MOHAMMAD ASHRAF MOH'D EL JAFARI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:10:48",
+        "student_name": "SARAH ALMUSALI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:17:08",
+        "student_name": "SEDRA NAJIB",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:17:46",
+        "student_name": "YASMIN ITANI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 15:19:16",
+        "student_name": "HAFES MUSA",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 18:16:19",
+        "student_name": "HAYTEM AIT-IDIR",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 18:16:33",
+        "student_name": "ABRAR MOHAMED ABDELSALAM ABDELGADIR",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 18:21:59",
+        "student_name": "MOHAMED KHALID MOHAMED ALI",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 18:22:46",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 18:24:04",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2025-12-29 19:01:18",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2425T4 IT U13 Website Design & Development",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-01 17:50:13",
+        "student_name": "MOHAMMAD ISHAKA JIBRIN MATO",
+        "course_name": "2425T2 L3 U17 Electrical Circuits and their Applications",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:05:23",
+        "student_name": "MUHAMAD RASEM SATTOUF",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:11:27",
+        "student_name": "M.NOUR BANAH",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:19:20",
+        "student_name": "ABDALLAH ASHRAF MOUSA ALNATSHEH",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:28:23",
+        "student_name": "FARES ZAYANI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:39:40",
+        "student_name": "TAKOUA MOUSSA",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:47:25",
+        "student_name": "MOHAMMED MOHAMMED ASSI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:47:30",
+        "student_name": "MOHAMMED MOHAMMED ASSI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:51:18",
+        "student_name": "MOHAMMAD ASHRAF MOH'D EL JAFARI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 07:59:09",
+        "student_name": "ESMA KHALIFA",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 08:10:43",
+        "student_name": "MOHAMED YILDIZ",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:16:17",
+        "student_name": "MUSTAFA YUSUFOĞLU",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:19:55",
+        "student_name": "MOHAMMAD MOWAFK ALSALEH",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:24:28",
+        "student_name": "YOUSEF MOHAMMED ALI SALEH AL-THAGBANI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:27:57",
+        "student_name": "AHMAD KARKAR",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:33:32",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:39:07",
+        "student_name": "ASMAA MOHAMMAD NATHER AL NASER AL NASER",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:42:17",
+        "student_name": "MUSTAFA SAAD ARIF",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:47:58",
+        "student_name": "FAHAD ALAA MAHDY AL-KHATEEB",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 11:51:58",
+        "student_name": "KHALID E. O. ABUGHALY",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 12:05:23",
+        "student_name": "ISMAIL AL OMAR",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 14:58:10",
+        "student_name": "FARES ZAYANI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 16:31:59",
+        "student_name": "MOHAMMAD ASHRAF MOH'D EL JAFARI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 16:35:16",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 16:43:56",
+        "student_name": "HASAN ALKHATIB",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 16:52:31",
+        "student_name": "FAHAD ALAA MAHDY AL-KHATEEB",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 17:02:50",
+        "student_name": "MAYA MOGHRABI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 17:09:30",
+        "student_name": "AYA KASSAB",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 17:25:37",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 17:27:10",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 18:54:11",
+        "student_name": "ALKUBATI NOOR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 19:00:00",
+        "student_name": "SARA ALDERI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 19:04:43",
+        "student_name": "KHALID E. O. ABUGHALY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 19:10:47",
+        "student_name": "ISMAIL AL OMAR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 19:20:52",
+        "student_name": "ABDELRHMAN RAGAB MAHROUS ABDRABOU AMER",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 19:28:41",
+        "student_name": "MOHAMED AZO",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:17:03",
+        "student_name": "MOTAZ RAED ABDEL FATTAH AL HUR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:26:12",
+        "student_name": "ALI SOKKAR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:27:47",
+        "student_name": "ALI SOKKAR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-09 20:34:00",
+        "student_name": "SAMEER ALI AHMED AHMED",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:39:38",
+        "student_name": "ELHAM KABBANI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:43:30",
+        "student_name": "SAMI FATEH AHMED ALI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:46:54",
+        "student_name": "FARES FATEH AHMED ALI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:51:43",
+        "student_name": "AMR MOHAMED RAGHEB ALI ABDALLA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:53:53",
+        "student_name": "MAHMOUD BEN YAHYA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 20:58:29",
+        "student_name": "HAMZA ALNEMR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 21:03:12",
+        "student_name": "ALI ALLAF",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 21:05:44",
+        "student_name": "ABDULRAHMAN HAYDAROGLU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-09 21:09:35",
+        "student_name": "SARA ALDERI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Muhammed Obaid",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:06:14",
+        "student_name": "SARA ALDERI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 13:08:02",
+        "student_name": "SARA ALDERI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:10:58",
+        "student_name": "SANAD SAMER SALEM AL-SHAWABKEH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 13:13:12",
+        "student_name": "SANAD SAMER SALEM AL-SHAWABKEH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:28:13",
+        "student_name": "AYA LINA BOUKEROU",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 13:34:44",
+        "student_name": "AYA LINA BOUKEROU",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:35:02",
+        "student_name": "MUHAMAD RASEM SATTOUF",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:35:16",
+        "student_name": "M.NOUR BANAH",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:41:56",
+        "student_name": "ABDALLAH ASHRAF MOUSA ALNATSHEH",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:43:38",
+        "student_name": "FARES ZAYANI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:44:02",
+        "student_name": "TAKOUA MOUSSA",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 13:45:00",
+        "student_name": "MOHAMMED MOHAMMED ASSI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 14:01:26",
+        "student_name": "MOHAMMAD ASHRAF MOH'D EL JAFARI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 14:01:52",
+        "student_name": "ESMA KHALIFA",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 14:02:33",
+        "student_name": "MOHAMED YILDIZ",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 14:02:48",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 14:20:14",
+        "student_name": "MOHAMED AZO",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 14:27:01",
+        "student_name": "MOTAZ RAED ABDEL FATTAH AL HUR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 14:33:44",
+        "student_name": "ALI SOKKAR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 14:38:52",
+        "student_name": "SAMEER ALI AHMED AHMED",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 14:41:13",
+        "student_name": "MOHAMMAD WADDAH KHALIL ALSHAWISH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 14:56:31",
+        "student_name": "ELHAM KABBANI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:08:12",
+        "student_name": "SAMI FATEH AHMED ALI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:23:28",
+        "student_name": "FARES FATEH AHMED ALI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:27:52",
+        "student_name": "AMR MOHAMED RAGHEB ALI ABDALLA",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:29:05",
+        "student_name": "MAHMOUD BEN YAHYA",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:30:42",
+        "student_name": "MASSAOUDOU YACOUBA MAMADOU",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:31:25",
+        "student_name": "MOHAMED ABDELBASIT IBRAHIM BASHIR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:33:07",
+        "student_name": "HAMZA ALNEMR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:37:25",
+        "student_name": "ALI ALLAF",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:38:19",
+        "student_name": "ABDULRAHMAN HAYDAROGLU",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:38:58",
+        "student_name": "RAHMA HAYDAROGLU",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:39:28",
+        "student_name": "AMMAR ALI KHUDHAIR AL-TAMEEMI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 15:50:41",
+        "student_name": "MUSTAFA YUSUFOĞLU",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 15:51:36",
+        "student_name": "MOHAMMAD MOWAFK ALSALEH",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 16:04:17",
+        "student_name": "AZER MAHMOUD",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:08:16",
+        "student_name": "MOHAMED YILDIZ",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:15:14",
+        "student_name": "HASAN ALKHATIB",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:17:22",
+        "student_name": "MOHAMMAD WAQAS",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:22:11",
+        "student_name": "ZAID SADEQ ZAID MAHDI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:23:19",
+        "student_name": "MOHAMAD AL HARAH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:29:32",
+        "student_name": "YASMIN ITANI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:32:06",
+        "student_name": "IBRAHIM SAMI MOHAMED ELMAZALY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:37:16",
+        "student_name": "IHSSANE ELALAOUI ESSOSSI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:39:47",
+        "student_name": "HAYTEM AIT-IDIR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:47:15",
+        "student_name": "MAYA MOGHRABI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:47:56",
+        "student_name": "ABDUL AZIZ ELKURAAN",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:52:52",
+        "student_name": "AYA KASSAB",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:53:26",
+        "student_name": "RIM KASSAB",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 16:59:14",
+        "student_name": "ALKUBATI NOOR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 17:02:03",
+        "student_name": "MAYS AZMI KHALIL ALNAMROUTY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Mohamad Hammoudeh",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-10 18:10:30",
+        "student_name": "YOUSEF MOHAMMED ALI SALEH AL-THAGBANI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:11:47",
+        "student_name": "AHMAD KARKAR",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:12:04",
+        "student_name": "ASMAA MOHAMMAD NATHER AL NASER AL NASER",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:12:48",
+        "student_name": "MUSTAFA SAAD ARIF",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:13:03",
+        "student_name": "FAHAD ALAA MAHDY AL-KHATEEB",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:13:25",
+        "student_name": "KHALID E. O. ABUGHALY",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:15:34",
+        "student_name": "ISMAIL AL OMAR",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-10 18:16:17",
+        "student_name": "AYA LINA BOUKEROU",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-11 17:43:32",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-11 17:52:11",
+        "student_name": "AHAD ABDULRAHMAN JALAB",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-11 17:55:40",
+        "student_name": "YOUSEF MOHAMMED ALI SALEH AL-THAGBANI",
+        "course_name": "2526T1 IT U17 Business Process Support",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 01:12:59",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 01:21:55",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 01:35:25",
+        "student_name": "ABDUL REHMAN MUHAMMAD IBRAHIM",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 01:41:52",
+        "student_name": "MOHAMMA FAWAZ IBRAHIM SHARARAH",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:07:15",
+        "student_name": "SAMI BEN AMEUR",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:33:26",
+        "student_name": "FATEMA ALKADER",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:38:50",
+        "student_name": "MALIK ISMAILOGLU",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:48:04",
+        "student_name": "ZIYA SELIM",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:48:26",
+        "student_name": "HASAN ALHAC MUSTAFA ALABDEN",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:48:58",
+        "student_name": "Aziz Ghezal",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:49:08",
+        "student_name": "AHMAD YASSEN ALSHEHABI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:49:16",
+        "student_name": "RAHAF ALFADIL YOUSIF IDRIS",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:49:24",
+        "student_name": "HENI KTARI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:50:18",
+        "student_name": "MOHAMED RAED JEMIAI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:52:33",
+        "student_name": "Aziz Ghezal",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:52:37",
+        "student_name": "AHMAD YASSEN ALSHEHABI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:52:42",
+        "student_name": "RAHAF ALFADIL YOUSIF IDRIS",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:52:46",
+        "student_name": "HENI KTARI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:16",
+        "student_name": "AREF HALWANI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:21",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:25",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:29",
+        "student_name": "ABDUL REHMAN MUHAMMAD IBRAHIM",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:33",
+        "student_name": "MOHAMMA FAWAZ IBRAHIM SHARARAH",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:37",
+        "student_name": "SAMI BEN AMEUR",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:41",
+        "student_name": "ZEID AMJAD HAMDAN ZEID (ALKILANI)",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:45",
+        "student_name": "FATEMA ALKADER",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:49",
+        "student_name": "ZIYA SELIM",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:53",
+        "student_name": "MOHAMED RAED JEMIAI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:53:56",
+        "student_name": "MALIK ISMAILOGLU",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:54:01",
+        "student_name": "HASAN ALHAC MUSTAFA ALABDEN",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:54:05",
+        "student_name": "Aziz Ghezal",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:54:09",
+        "student_name": "AHMAD YASSEN ALSHEHABI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:54:12",
+        "student_name": "RAHAF ALFADIL YOUSIF IDRIS",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:54:16",
+        "student_name": "HENI KTARI",
+        "course_name": "2526T1 L3 U8 Further Engineering Mathematics",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Tareq ZAINALDIN",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:00",
+        "student_name": "MOHAMAD AL HARAH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:05",
+        "student_name": "IBRAHIM SAMI MOHAMED ELMAZALY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:09",
+        "student_name": "HAYTEM AIT-IDIR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:14",
+        "student_name": "ABDUL AZIZ ELKURAAN",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:18",
+        "student_name": "RIM KASSAB",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:22",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:26",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:30",
+        "student_name": "SANAD SAMER SALEM AL-SHAWABKEH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:34",
+        "student_name": "MOHAMMAD WADDAH KHALIL ALSHAWISH",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:38",
+        "student_name": "MASSAOUDOU YACOUBA MAMADOU",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:42",
+        "student_name": "MOHAMED ABDELBASIT IBRAHIM BASHIR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:46",
+        "student_name": "HAMZA ALNEMR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:49",
+        "student_name": "ALI ALLAF",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:53",
+        "student_name": "RAHMA HAYDAROGLU",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:57:57",
+        "student_name": "AZER MAHMOUD",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:01",
+        "student_name": "MOHAMED YILDIZ",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:06",
+        "student_name": "HASAN ALKHATIB",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:10",
+        "student_name": "MOHAMMAD WAQAS",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:14",
+        "student_name": "ZAID SADEQ ZAID MAHDI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:17",
+        "student_name": "YASMIN ITANI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:21",
+        "student_name": "IHSSANE ELALAOUI ESSOSSI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:25",
+        "student_name": "MAYA MOGHRABI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:28",
+        "student_name": "AYA KASSAB",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:32",
+        "student_name": "ALKUBATI NOOR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:36",
+        "student_name": "MAYS AZMI KHALIL ALNAMROUTY",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:40",
+        "student_name": "SARA ALDERI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:43",
+        "student_name": "MOHAMED AZO",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:47",
+        "student_name": "MOTAZ RAED ABDEL FATTAH AL HUR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:51",
+        "student_name": "ALI SOKKAR",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:55",
+        "student_name": "SAMEER ALI AHMED AHMED",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:58:59",
+        "student_name": "ELHAM KABBANI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:59:02",
+        "student_name": "SAMI FATEH AHMED ALI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:59:06",
+        "student_name": "FARES FATEH AHMED ALI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:59:10",
+        "student_name": "AMR MOHAMED RAGHEB ALI ABDALLA",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:59:14",
+        "student_name": "MAHMOUD BEN YAHYA",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:59:18",
+        "student_name": "ABDULRAHMAN HAYDAROGLU",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 02:59:21",
+        "student_name": "AMMAR ALI KHUDHAIR AL-TAMEEMI",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:11",
+        "student_name": "MOHAMAD AL HARAH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:16",
+        "student_name": "IBRAHIM SAMI MOHAMED ELMAZALY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:20",
+        "student_name": "ABDUL AZIZ ELKURAAN",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:25",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:30",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:34",
+        "student_name": "SANAD SAMER SALEM AL-SHAWABKEH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:38",
+        "student_name": "MOHAMMAD WADDAH KHALIL ALSHAWISH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:42",
+        "student_name": "MASSAOUDOU YACOUBA MAMADOU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:46",
+        "student_name": "MOHAMED ABDELBASIT IBRAHIM BASHIR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:15:51",
+        "student_name": "RAHMA HAYDAROGLU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:19:37",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:19:48",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:19:59",
+        "student_name": "SANAD SAMER SALEM AL-SHAWABKEH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:20:10",
+        "student_name": "MOHAMMAD WADDAH KHALIL ALSHAWISH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:20:22",
+        "student_name": "MASSAOUDOU YACOUBA MAMADOU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:20:33",
+        "student_name": "MOHAMED ABDELBASIT IBRAHIM BASHIR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:20:46",
+        "student_name": "RAHMA HAYDAROGLU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:21:53",
+        "student_name": "AMMAR ALI KHUDHAIR AL-TAMEEMI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:22:25",
+        "student_name": "MOHAMAD AL HARAH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:22:36",
+        "student_name": "IBRAHIM SAMI MOHAMED ELMAZALY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:22:46",
+        "student_name": "ABDUL AZIZ ELKURAAN",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:24",
+        "student_name": "MOHAMAD AL HARAH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:29",
+        "student_name": "IBRAHIM SAMI MOHAMED ELMAZALY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:33",
+        "student_name": "ABDUL AZIZ ELKURAAN",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:37",
+        "student_name": "MIFTAH ABDULLAH ALGHANAY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:40",
+        "student_name": "YAHIA ABUVATFA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:45",
+        "student_name": "SANAD SAMER SALEM AL-SHAWABKEH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:49",
+        "student_name": "MOHAMMAD WADDAH KHALIL ALSHAWISH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:53",
+        "student_name": "MASSAOUDOU YACOUBA MAMADOU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:23:57",
+        "student_name": "MOHAMED ABDELBASIT IBRAHIM BASHIR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:01",
+        "student_name": "RAHMA HAYDAROGLU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:05",
+        "student_name": "M.NOUR BANAH",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:09",
+        "student_name": "FARES ZAYANI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:13",
+        "student_name": "AZER MAHMOUD",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:17",
+        "student_name": "MOHAMMAD ASHRAF MOH'D EL JAFARI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:20",
+        "student_name": "NASER ALA NASER HAMDI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:24",
+        "student_name": "HASAN ALKHATIB",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:28",
+        "student_name": "FAHAD ALAA MAHDY AL-KHATEEB",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:32",
+        "student_name": "MAYA MOGHRABI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:36",
+        "student_name": "AYA KASSAB",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:40",
+        "student_name": "ALKUBATI NOOR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:44",
+        "student_name": "SARA ALDERI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:48",
+        "student_name": "KHALID E. O. ABUGHALY",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:52",
+        "student_name": "ISMAIL AL OMAR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:55",
+        "student_name": "ABDELRHMAN RAGAB MAHROUS ABDRABOU AMER",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:24:59",
+        "student_name": "MOHAMED AZO",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:03",
+        "student_name": "MOTAZ RAED ABDEL FATTAH AL HUR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:07",
+        "student_name": "ALI SOKKAR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:11",
+        "student_name": "SAMEER ALI AHMED AHMED",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:15",
+        "student_name": "ELHAM KABBANI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:19",
+        "student_name": "SAMI FATEH AHMED ALI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:23",
+        "student_name": "FARES FATEH AHMED ALI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:27",
+        "student_name": "AMR MOHAMED RAGHEB ALI ABDALLA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:31",
+        "student_name": "MAHMOUD BEN YAHYA",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:35",
+        "student_name": "HAMZA ALNEMR",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:38",
+        "student_name": "ALI ALLAF",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:43",
+        "student_name": "ABDULRAHMAN HAYDAROGLU",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:25:46",
+        "student_name": "AMMAR ALI KHUDHAIR AL-TAMEEMI",
+        "course_name": "2526T1 IT U28 Cloud Computing",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 03:54:56",
+        "student_name": "AREF HALWANI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 03:59:30",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 04:03:44",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 04:09:25",
+        "student_name": "ABDUL REHMAN MUHAMMAD IBRAHIM",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 04:19:51",
+        "student_name": "MOHAMMA FAWAZ IBRAHIM SHARARAH",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 04:25:01",
+        "student_name": "SAMI BEN AMEUR",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 04:41:07",
+        "student_name": "ZEID AMJAD HAMDAN ZEID (ALKILANI)",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 04:51:03",
+        "student_name": "FATEMA ALKADER",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:01:35",
+        "student_name": "MALIK ISMAILOGLU",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:07:11",
+        "student_name": "ZIYA SELIM",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:07:23",
+        "student_name": "HASAN ALHAC MUSTAFA ALABDEN",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:07:32",
+        "student_name": "Aziz Ghezal",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:08:57",
+        "student_name": "AHMAD YASSEN ALSHEHABI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:09:07",
+        "student_name": "RAHAF ALFADIL YOUSIF IDRIS",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:09:16",
+        "student_name": "HENI KTARI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:09:29",
+        "student_name": "MOHAMED RAED JEMIAI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Created",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-13 05:09:56",
+        "student_name": "AREF HALWANI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:01",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:05",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:10",
+        "student_name": "ABDUL REHMAN MUHAMMAD IBRAHIM",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:14",
+        "student_name": "MOHAMMA FAWAZ IBRAHIM SHARARAH",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:18",
+        "student_name": "SAMI BEN AMEUR",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:22",
+        "student_name": "ZEID AMJAD HAMDAN ZEID (ALKILANI)",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:26",
+        "student_name": "FATEMA ALKADER",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Pass",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:31",
+        "student_name": "ZIYA SELIM",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Merit",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:35",
+        "student_name": "MALIK ISMAILOGLU",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:39",
+        "student_name": "HASAN ALHAC MUSTAFA ALABDEN",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:43",
+        "student_name": "Aziz Ghezal",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:47",
+        "student_name": "AHMAD YASSEN ALSHEHABI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:50",
+        "student_name": "RAHAF ALFADIL YOUSIF IDRIS",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:54",
+        "student_name": "HENI KTARI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 05:10:58",
+        "student_name": "MOHAMED RAED JEMIAI",
+        "course_name": "2526T1 L3 U3 Principles and Applications of Physics I",
+        "grade": "Refer",
+        "status": "Updated",
+        "grader": "Ms. Zahraa Siddique",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-13 14:52:31",
+        "student_name": "MOHAMED AZO",
+        "course_name": "2526T1 IT U2 Networking",
+        "grade": "Distinction",
+        "status": "Updated",
+        "grader": "Sudent Affairs",
+        "grader_role": "teacher",
+        "action": "PUT"
+    },
+    {
+        "timestamp": "2026-01-24 12:15:45",
+        "student_name": "AREF HALWANI",
+        "course_name": "2526T1 L3 U1 Principles and Applications of Biology I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Sondos Alreqeb",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-24 12:40:19",
+        "student_name": "MARYAM AMMAR QASIM AL-KAREEMAWI",
+        "course_name": "2526T1 L3 U1 Principles and Applications of Biology I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Sondos Alreqeb",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-24 12:54:14",
+        "student_name": "RINAD SALLOUM",
+        "course_name": "2526T1 L3 U1 Principles and Applications of Biology I",
+        "grade": "Distinction",
+        "status": "Created",
+        "grader": "Sondos Alreqeb",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-24 13:23:44",
+        "student_name": "ABDUL REHMAN MUHAMMAD IBRAHIM",
+        "course_name": "2526T1 L3 U1 Principles and Applications of Biology I",
+        "grade": "Merit",
+        "status": "Created",
+        "grader": "Sondos Alreqeb",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-24 13:54:43",
+        "student_name": "MOHAMMA FAWAZ IBRAHIM SHARARAH",
+        "course_name": "2526T1 L3 U1 Principles and Applications of Biology I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Sondos Alreqeb",
+        "grader_role": "teacher",
+        "action": "POST"
+    },
+    {
+        "timestamp": "2026-01-24 14:23:38",
+        "student_name": "MOHAMED RAED JEMIAI",
+        "course_name": "2526T1 L3 U1 Principles and Applications of Biology I",
+        "grade": "Pass",
+        "status": "Created",
+        "grader": "Sondos Alreqeb",
+        "grader_role": "teacher",
+        "action": "POST"
+    }
+]

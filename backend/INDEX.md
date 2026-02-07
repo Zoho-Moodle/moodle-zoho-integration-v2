@@ -18,6 +18,20 @@ Welcome! This is the master index for Phase 2 & 3 of the Moodle-Zoho integration
 ### For Deployment (30 minutes)
 6. **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Pre-deployment verification
 
+### For Field Mapping & Sync Workflows ⭐ NEW
+7. **[BACKEND_SYNC_MAPPING.md](BACKEND_SYNC_MAPPING.md)** - Complete Zoho API fields reference
+   - 420+ Zoho fields documented (9 modules)
+   - Critical field mapping (Moodle ↔ Backend ↔ Zoho)
+   - 8 data population workflows (Moodle → Zoho, Zoho → Moodle)
+   - Sync response patterns and naming conventions
+
+### For Moodle Plugin Development
+8. **[MOODLE_PLUGIN_ARCHITECTURE_AR.md](MOODLE_PLUGIN_ARCHITECTURE_AR.md)** - Moodle plugin architecture (Arabic)
+   - Complete plugin structure (8 PHP files)
+   - Observer patterns for webhooks
+   - Data extraction from Moodle tables
+   - 5-day implementation plan
+
 ---
 
 ## 📊 What Was Delivered

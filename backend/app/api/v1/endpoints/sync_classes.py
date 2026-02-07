@@ -1,11 +1,13 @@
 """
 Classes Sync Endpoint
 
-POST /v1/sync/classes
+POST /v1/sync/classes - Sync classes from Zoho to database
 
 Accepts Zoho Classes (BTEC_Classes) payload and syncs to database.
 Returns per-record status (NEW, UNCHANGED, UPDATED, INVALID).
 Idempotency: Requests with same body within 1 hour return cached result.
+
+Note: For creating courses in Moodle, use POST /v1/classes/create
 """
 
 import logging

@@ -21,7 +21,7 @@ class Unit(Base):
     source = Column(String, default="zoho", nullable=True)
 
     # Identifiers
-    zoho_id = Column(String, nullable=False, index=True)
+    zoho_id = Column(String, nullable=True, index=True)  # Nullable: Moodle units don't have Zoho ID initially
     unit_code = Column(String, nullable=False)  # e.g., "UNIT001"
 
     # Unit details
@@ -30,6 +30,9 @@ class Unit(Base):
     credit_hours = Column(Float, nullable=True)
     level = Column(String, nullable=True)  # L3, L4, etc.
     status = Column(String, nullable=False)  # Active, Inactive
+    
+    # Moodle integration
+    moodle_unit_id = Column(String, nullable=True, index=True)  # Moodle grade item ID
 
     # Sync tracking
     sync_status = Column(String, default="pending", nullable=True)

@@ -1,0 +1,41 @@
+❌ CURL Error: URL rejected: Malformed input to a URL function
+✅ Total Teams fetched: 0 (cached)
+
+🔹 Course: 2425T4BUSU2MarketingProcessesAndPlanning2
+❌ No good match found (best score: 0%)
+
+🔹 Course: 2425T4ADU32ProfessionalPractice_1354
+❌ No good match found (best score: 0%)
+
+🔹 Course: 2425T4ADU39AdvancedGraphicDesignStudies
+❌ No good match found (best score: 0%)
+
+🔹 Course: 2425T4BUSU4LeadershipAndManagement2
+❌ No good match found (best score: 0%)
+✅ CSV exported to /home/abchorizon-elearning/htdocs/elearning.abchorizon.com/local/mb_zoho_sync/courses_sharepoint.csv
+
+⚠️ Courses needing manual review:
+- 2425T4BUSU2MarketingProcessesAndPlanning2
+- 2425T4ADU32ProfessionalPractice_1354
+- 2425T4ADU39AdvancedGraphicDesignStudies
+- 2425T4BUSU4LeadershipAndManagement2
+✅ Loaded Teams from cache (0)
+
+🔹 Course: 2425T4BUSU2MarketingProcessesAndPlanning2
+❌ No good match found (best score: 0%)
+
+🔹 Course: 2425T4ADU32ProfessionalPractice_1354
+❌ No good match found (best score: 0%)
+
+🔹 Course: 2425T4ADU39AdvancedGraphicDesignStudies
+❌ No good match found (best score: 0%)
+
+🔹 Course: 2425T4BUSU4LeadershipAndManagement2
+❌ No good match found (best score: 0%)
+✅ CSV exported to /home/abchorizon-elearning/htdocs/elearning.abchorizon.com/local/mb_zoho_sync/courses_sharepoint.csv
+
+⚠️ Courses needing manual review:
+- 2425T4BUSU2MarketingProcessesAndPlanning2
+- 2425T4ADU32ProfessionalPractice_1354
+- 2425T4ADU39AdvancedGraphicDesignStudies
+- 2425T4BUSU4LeadershipAndManagement2

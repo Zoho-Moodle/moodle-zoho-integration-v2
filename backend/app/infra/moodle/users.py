@@ -174,6 +174,42 @@ class MoodleClient:
             logger.error(f"Failed to get course {idnumber}: {e}")
             return None
 
+    def create_course(self, fullname: str, shortname: str, category_id: int, 
+                     start_date: int, num_sections: int = 12) -> Optional[Dict[str, Any]]:
+        """
+        Create a new Moodle course
+        
+        Args:
+            fullname: Full course name
+            shortname: Short course name
+            category_id: Moodle category ID
+            start_date: Course start date (Unix timestamp)
+            num_sections: Number of sections/weeks (default: 12)
+            
+        Returns:
+            Created course data {"id": int, "shortname": str, ...} or None
+        """
+        if not self.enabled:
+            logger.debug(f"TODO: Create Moodle course: {shortname} ({fullname})")
+            return {"id": 9999, "shortname": shortname, "fullname": fullname}
+
+        try:
+            result = self._call_api("core_course_create_courses", {
+                "courses[0][fullname]": fullname,
+                "courses[0][shortname]": shortname,
+                "courses[0][categoryid]": category_id,
+                "courses[0][startdate]": start_date,
+                "courses[0][format]": "weeks",
+                "courses[0][numsections]": num_sections,
+            })
+            
+            if isinstance(result, list) and len(result) > 0:
+                return result[0]
+            return None
+        except Exception as e:
+            logger.error(f"Failed to create course {shortname}: {e}")
+            return None
+
     def enrol_user(self, course_id: int, user_id: int, role_id: int = 5) -> Optional[Dict[str, Any]]:
         """
         Enrol a user in a course
@@ -181,7 +217,7 @@ class MoodleClient:
         Args:
             course_id: Moodle course ID
             user_id: Moodle user ID
-            role_id: Moodle role ID (5=student, 4=teacher, 3=course creator)
+            role_id: Moodle role ID (5=student, 4=teacher, 3=course creator, 1=manager)
             
         Returns:
             Enrollment confirmation or None
@@ -203,6 +239,50 @@ class MoodleClient:
         except Exception as e:
             logger.error(f"Failed to enrol user {user_id} in course {course_id}: {e}")
             return None
+
+    def enrol_default_users(self, course_id: int, class_major: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Enrol default system users (IT Support, Student Affairs, CEO, Admin, etc.)
+        
+        Args:
+            course_id: Moodle course ID
+            class_major: Class major (e.g., "IT") - determines if IT Program Leader is enrolled
+            
+        Returns:
+            Dictionary with enrollment results
+        """
+        if not self.enabled:
+            logger.debug(f"TODO: Enrol default users in course {course_id}")
+            return {"status": "success", "enrolled": 5}
+
+        default_users = [
+            {"userid": 8157, "roleid": 3, "name": "IT Support"},
+            {"userid": 8181, "roleid": 3, "name": "Student Affairs"},
+            {"userid": 8154, "roleid": 3, "name": "CEO"},
+            {"userid": 2, "roleid": 1, "name": "Moodle Super Admin"},
+        ]
+        
+        # Add IT Program Leader only if class major is IT
+        if class_major and class_major.upper() == "IT":
+            default_users.insert(2, {"userid": 8133, "roleid": 3, "name": "IT Program Leader"})
+        
+        results = {"success": [], "failed": []}
+        
+        for user in default_users:
+            try:
+                self.enrol_user(course_id, user["userid"], user["roleid"])
+                results["success"].append(user["name"])
+                logger.info(f"Enrolled {user['name']} (ID: {user['userid']}) in course {course_id}")
+            except Exception as e:
+                results["failed"].append({"name": user["name"], "error": str(e)})
+                logger.error(f"Failed to enrol {user['name']}: {e}")
+        
+        return {
+            "status": "success" if len(results["failed"]) == 0 else "partial",
+            "enrolled": len(results["success"]),
+            "failed": len(results["failed"]),
+            "details": results
+        }
 
 
 # Backward compatibility: also expose as MoodleUsersClient

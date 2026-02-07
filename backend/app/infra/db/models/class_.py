@@ -15,7 +15,7 @@ class Class(Base):
     source = Column(String, default="zoho", nullable=True)
 
     # Class identifiers
-    zoho_id = Column(String, nullable=False, index=True)
+    zoho_id = Column(String, nullable=True, index=True)  # Nullable: Moodle courses don't have Zoho ID initially
     
     # Class information
     name = Column(String, nullable=False)
