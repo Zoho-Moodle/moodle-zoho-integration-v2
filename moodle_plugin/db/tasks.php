@@ -57,4 +57,15 @@ $tasks = array(
         'month' => '*',
         'dayofweek' => '*',
     ),
+
+    // Sync missing grades (F and RR) daily at 3 AM.
+    array(
+        'classname' => 'local_moodle_zoho_sync\task\sync_missing_grades',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '3',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ),
 );

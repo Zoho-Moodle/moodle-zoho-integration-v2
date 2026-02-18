@@ -1,0 +1,93 @@
+# ════════════════════════════════════════════════════════════════
+# Student Dashboard - Complete File Inventory for Deletion
+# ════════════════════════════════════════════════════════════════
+
+## 📁 FRONTEND FILES (Moodle Plugin)
+
+### Main Dashboard Page
+moodle_plugin/ui/dashboard/student.php
+
+### JavaScript
+moodle_plugin/ui/dashboard/js/student_dashboard.js
+
+### CSS
+moodle_plugin/ui/dashboard/css/dashboard.css
+
+### AJAX Proxy Files (6 endpoints)
+moodle_plugin/ui/ajax/load_profile.php
+moodle_plugin/ui/ajax/load_academics.php
+moodle_plugin/ui/ajax/load_finance.php
+moodle_plugin/ui/ajax/load_classes.php
+moodle_plugin/ui/ajax/load_grades.php
+moodle_plugin/ui/ajax/load_requests.php
+
+### AJAX Action Files
+moodle_plugin/ui/ajax/acknowledge_grade.php
+moodle_plugin/ui/ajax/submit_request.php
+
+## 🐍 BACKEND FILES (FastAPI Python)
+
+### API Endpoints
+backend/app/api/v1/endpoints/student_dashboard.py
+
+## 🗄️ DATABASE TABLES
+
+### Grade Acknowledgement Table
+mdl_local_mzi_grade_ack
+
+## 📝 LANGUAGE STRINGS (if exist)
+moodle_plugin/lang/en/local_moodle_zoho_sync.php
+# Check for these strings:
+#   - dashboard_title
+#   - dashboard_welcome
+#   - dashboard_subtitle
+#   - profile_tab, academics_tab, finance_tab, classes_tab, grades_tab, requests_tab
+#   - loading
+
+## 🔗 SETTINGS LINKS (settings.php)
+# Check for dashboard quick access links in:
+moodle_plugin/settings.php
+# Line ~27: Quick Access link to dashboard
+
+## ════════════════════════════════════════════════════════════════
+## DELETION COMMANDS
+## ════════════════════════════════════════════════════════════════
+
+### PowerShell (Local Machine) - Delete from Git repo
+Remove-Item "moodle_plugin/ui/dashboard/student.php" -Force
+Remove-Item "moodle_plugin/ui/dashboard/js/student_dashboard.js" -Force
+Remove-Item "moodle_plugin/ui/dashboard/css/dashboard.css" -Force
+Remove-Item "moodle_plugin/ui/ajax/load_profile.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/load_academics.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/load_finance.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/load_classes.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/load_grades.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/load_requests.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/acknowledge_grade.php" -Force
+Remove-Item "moodle_plugin/ui/ajax/submit_request.php" -Force
+Remove-Item "backend/app/api/v1/endpoints/student_dashboard.py" -Force
+
+### Bash (Server) - Delete from production
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/dashboard/student.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/dashboard/js/student_dashboard.js
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/dashboard/css/dashboard.css
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/load_profile.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/load_academics.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/load_finance.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/load_classes.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/load_grades.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/load_requests.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/acknowledge_grade.php
+rm -f /var/www/html/moodle/local/moodle_zoho_sync/ui/ajax/submit_request.php
+
+### MySQL (Database) - Drop grade acknowledgement table
+mysql -u moodle_user -p'BaBa112233@@' moodle_db -e "
+DROP TABLE IF EXISTS mdl_local_mzi_grade_ack;
+"
+
+### Backend (Python) - Delete API file
+rm -f /home/backend/app/api/v1/endpoints/student_dashboard.py
+
+## ════════════════════════════════════════════════════════════════
+## COMPLETE CLEANUP SCRIPT
+## ════════════════════════════════════════════════════════════════

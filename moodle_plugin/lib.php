@@ -39,15 +39,66 @@ function local_moodle_zoho_sync_extend_navigation(global_navigation $navigation)
 
     // Add Student Dashboard link for students.
     if (has_capability('local/moodle_zoho_sync:viewdashboard', context_system::instance())) {
-        $node = $navigation->add(
+        // Add main Student Dashboard container node.
+        $studentnode = $navigation->add(
             get_string('student_dashboard', 'local_moodle_zoho_sync'),
-            new moodle_url('/local/moodle_zoho_sync/ui/dashboard/student.php'),
-            navigation_node::TYPE_CUSTOM,
+            null,
+            navigation_node::TYPE_CONTAINER,
             null,
             'moodle_zoho_dashboard',
             new pix_icon('i/dashboard', '')
         );
-        $node->showinflatnavigation = true;
+        $studentnode->showinflatnavigation = true;
+
+        // Add Profile page.
+        $profilenode = $studentnode->add(
+            get_string('studentprofile', 'local_moodle_zoho_sync'),
+            new moodle_url('/local/moodle_zoho_sync/ui/student/profile.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'student_profile',
+            new pix_icon('i/user', '')
+        );
+        
+        // Add My Programs page.
+        $programsnode = $studentnode->add(
+            get_string('myprograms', 'local_moodle_zoho_sync'),
+            new moodle_url('/local/moodle_zoho_sync/ui/student/programs.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'student_programs',
+            new pix_icon('i/badge', '')
+        );
+        
+        // Add My Classes page.
+        $classesnode = $studentnode->add(
+            get_string('myclasses', 'local_moodle_zoho_sync'),
+            new moodle_url('/local/moodle_zoho_sync/ui/student/classes.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'student_classes',
+            new pix_icon('i/course', '')
+        );
+        
+        // Add My Requests page.
+        $requestsnode = $studentnode->add(
+            get_string('myrequests', 'local_moodle_zoho_sync'),
+            new moodle_url('/local/moodle_zoho_sync/ui/student/requests.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'student_requests',
+            new pix_icon('i/edit', '')
+        );
+        
+        // Add Student Card page.
+        $cardnode = $studentnode->add(
+            get_string('studentcard', 'local_moodle_zoho_sync'),
+            new moodle_url('/local/moodle_zoho_sync/ui/student/student_card.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'student_card',
+            new pix_icon('i/identity', '')
+        );
     }
 }
 

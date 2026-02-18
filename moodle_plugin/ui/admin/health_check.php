@@ -11,6 +11,7 @@ require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/config_manager.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/event_logger.php');
+require_once(__DIR__ . '/includes/navigation.php');
 
 use local_moodle_zoho_sync\config_manager;
 use local_moodle_zoho_sync\event_logger;
@@ -138,6 +139,14 @@ $healthclass = $overallhealth >= 80 ? 'success' : ($overallhealth >= 50 ? 'warni
 
 // Render page.
 echo $OUTPUT->header();
+
+// Output navigation
+mzi_output_navigation_styles();
+echo '<div class="mzi-page-container">';
+mzi_render_navigation('health_check', 'Moodle-Zoho Integration', 'System Health & Connectivity');
+mzi_render_breadcrumb('Health Check');
+echo '<div class="mzi-content-wrapper">';
+
 echo $OUTPUT->heading('System Health Check');
 
 // Overall health score.
@@ -192,4 +201,6 @@ echo html_writer::link(
 );
 echo html_writer::end_div();
 
+echo '</div>'; // Close mzi-content-wrapper
+echo '</div>'; // Close mzi-page-container
 echo $OUTPUT->footer();

@@ -11,6 +11,7 @@
 
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
+require_once(__DIR__ . '/includes/navigation.php');
 
 use local_moodle_zoho_sync\event_logger;
 use local_moodle_zoho_sync\config_manager;
@@ -58,6 +59,13 @@ $PAGE->set_title(get_string('admin_dashboard', 'local_moodle_zoho_sync'));
 $PAGE->set_heading(get_string('admin_dashboard', 'local_moodle_zoho_sync'));
 
 echo $OUTPUT->header();
+
+// Output navigation
+mzi_output_navigation_styles();
+echo '<div class="mzi-page-container">';
+mzi_render_navigation('dashboard', 'Moodle-Zoho Integration', 'System Dashboard');
+mzi_render_breadcrumb('Dashboard');
+echo '<div class="mzi-content-wrapper">';
 ?>
 
 <!-- Admin Dashboard Header -->
@@ -205,9 +213,15 @@ echo $OUTPUT->header();
                 <?php echo get_string('view_event_logs', 'local_moodle_zoho_sync'); ?>
             </a>
             
+            <a href="<?php echo new moodle_url('/local/moodle_zoho_sync/ui/admin/grade_queue_monitor.php'); ?>" 
+               class="btn btn-outline-primary mb-2">
+                <i class="fa fa-bar-chart"></i>
+                Grade Operations Monitor
+            </a>
+            
             <a href="<?php echo new moodle_url('/local/moodle_zoho_sync/ui/admin/statistics.php'); ?>" 
                class="btn btn-outline-info mb-2">
-                <i class="fa fa-bar-chart"></i>
+                <i class="fa fa-line-chart"></i>
                 <?php echo get_string('view_statistics', 'local_moodle_zoho_sync'); ?>
             </a>
             
@@ -215,6 +229,18 @@ echo $OUTPUT->header();
                class="btn btn-outline-success mb-2">
                 <i class="fa fa-heartbeat"></i>
                 <?php echo get_string('health_check', 'local_moodle_zoho_sync'); ?>
+            </a>
+            
+            <a href="<?php echo new moodle_url('/local/moodle_zoho_sync/ui/admin/btec_templates.php'); ?>" 
+               class="btn btn-outline-info mb-2">
+                <i class="fa fa-file-text"></i>
+                BTEC Templates
+            </a>
+            
+            <a href="<?php echo new moodle_url('/local/moodle_zoho_sync/ui/admin/sync_management.php'); ?>" 
+               class="btn btn-outline-primary mb-2">
+                <i class="fa fa-cogs"></i>
+                Sync Management
             </a>
             
             <button type="button" class="btn btn-outline-danger mb-2" onclick="cleanupOldLogs()">
@@ -343,4 +369,6 @@ function cleanupOldLogs() {
 </script>
 
 <?php
+echo '</div>'; // Close mzi-content-wrapper
+echo '</div>'; // Close mzi-page-container
 echo $OUTPUT->footer();

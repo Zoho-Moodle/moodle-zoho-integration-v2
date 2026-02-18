@@ -13,6 +13,13 @@ import logging
 from typing import Dict, List, Optional, Any
 from urllib.parse import urlencode
 import httpx
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    before_sleep_log
+)
 
 from .auth import ZohoAuthClient
 from .exceptions import (
@@ -62,6 +69,7 @@ class ZohoClient:
         'BTEC_Enrollments',
         'BTEC_Payments',
         'BTEC_Grades',
+        'BTEC_Student_Requests',
     }
     
     # Common module mistakes (for helpful error messages)
@@ -121,6 +129,19 @@ class ZohoClient:
                     f"See ZOHO_API_CONTRACT.md."
                 )
     
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((
+            httpx.HTTPError,
+            httpx.TimeoutException,
+            httpx.ConnectError,
+            httpx.ReadTimeout,
+            httpx.WriteTimeout
+        )),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+        reraise=True
+    )
     async def _make_request(
         self,
         method: str,
@@ -129,7 +150,13 @@ class ZohoClient:
         json_data: Optional[Dict] = None
     ) -> Dict:
         """
-        Make authenticated request to Zoho API.
+        Make authenticated request to Zoho API with automatic retry logic.
+        
+        Retry Strategy:
+        - 3 attempts total
+        - Wait times: 2s, 4s, 8s (exponential backoff)
+        - Retry on: Network errors, timeouts, connection errors
+        - Don't retry: 404, 400 (client errors)
         
         Args:
             method: HTTP method (GET, POST, PUT, DELETE)
@@ -169,31 +196,37 @@ class ZohoClient:
                 
                 # Handle different status codes
                 if response.status_code == 200:
+                    logger.debug(f"✅ Zoho API success: {method} {endpoint}")
                     return response.json()
                 
                 elif response.status_code == 201:
+                    logger.debug(f"✅ Zoho API created: {method} {endpoint}")
                     return response.json()
                 
                 elif response.status_code == 204:
+                    logger.debug(f"✅ Zoho API success (no content): {method} {endpoint}")
                     return {'status': 'success'}
                 
                 elif response.status_code == 404:
+                    logger.error(f"❌ Zoho API not found: {method} {endpoint}")
                     raise ZohoNotFoundError(
                         f"Resource not found: {endpoint}",
                         status_code=404
                     )
                 
                 elif response.status_code == 429:
-                    # Rate limit
+                    # Rate limit - extract retry-after header
                     retry_after = response.headers.get('Retry-After', 60)
+                    logger.warning(f"⚠️ Rate limit hit - retry after {retry_after}s")
                     raise ZohoRateLimitError(
-                        "Rate limit exceeded",
+                        f"Rate limit exceeded - retry after {retry_after}s",
                         retry_after=int(retry_after),
                         status_code=429
                     )
                 
                 elif response.status_code == 400:
                     error_data = response.json() if response.text else {}
+                    logger.error(f"❌ Zoho API validation error: {error_data}")
                     raise ZohoValidationError(
                         f"Validation error: {error_data}",
                         status_code=400,
@@ -203,15 +236,28 @@ class ZohoClient:
                 else:
                     # Generic error
                     error_data = response.json() if response.text else {}
+                    logger.error(f"❌ Zoho API error {response.status_code}: {error_data}")
                     raise ZohoAPIError(
                         f"API error: {error_data}",
                         status_code=response.status_code,
                         response_data=error_data
                     )
         
+        except httpx.TimeoutException as e:
+            logger.warning(f"⏱️ Zoho API timeout: {endpoint} - will retry")
+            raise
+        
+        except httpx.ConnectError as e:
+            logger.warning(f"🔌 Zoho connection error: {endpoint} - will retry")
+            raise
+        
         except httpx.HTTPError as e:
-            logger.error(f"HTTP error calling Zoho API: {e}")
-            raise ZohoAPIError(f"HTTP error: {str(e)}")
+            logger.warning(f"🌐 HTTP error calling Zoho API: {e} - will retry")
+            raise
+        
+        except (ZohoNotFoundError, ZohoValidationError, ZohoRateLimitError):
+            # Don't retry client errors - re-raise immediately
+            raise
         
         except ZohoAPIError:
             # Re-raise our custom exceptions

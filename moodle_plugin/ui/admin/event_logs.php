@@ -10,6 +10,7 @@
 require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/event_logger.php');
+require_once(__DIR__ . '/includes/navigation.php');
 
 use local_moodle_zoho_sync\event_logger;
 
@@ -25,6 +26,20 @@ $page = optional_param('page', 0, PARAM_INT);
 $perpage = optional_param('perpage', 50, PARAM_INT);
 $status = optional_param('status', '', PARAM_ALPHA);
 $eventtype = optional_param('eventtype', '', PARAM_ALPHA);
+$retry = optional_param('retry', 0, PARAM_INT);
+
+// Handle retry action
+if ($retry && confirm_sesskey()) {
+    $event = $DB->get_record('local_mzi_event_log', ['id' => $retry], '*', MUST_EXIST);
+    
+    // Reset status to allow retry
+    $event->status = 'retrying';
+    $event->next_retry_at = time();
+    $event->timemodified = time();
+    $DB->update_record('local_mzi_event_log', $event);
+    
+    redirect($PAGE->url, 'Event queued for retry', null, \core\output\notification::NOTIFY_SUCCESS);
+}
 
 // Page setup.
 $PAGE->set_url('/local/moodle_zoho_sync/ui/admin/event_logs.php', 
@@ -59,6 +74,14 @@ $events = $DB->get_records_sql($sql, $params, $page * $perpage, $perpage);
 
 // Render page.
 echo $OUTPUT->header();
+
+// Output navigation
+mzi_output_navigation_styles();
+echo '<div class="mzi-page-container">';
+mzi_render_navigation('event_logs', 'Moodle-Zoho Integration', 'Event Logs & History');
+mzi_render_breadcrumb('Event Logs');
+echo '<div class="mzi-content-wrapper">';
+
 echo $OUTPUT->heading(get_string('event_logs', 'local_moodle_zoho_sync'));
 
 // Statistics summary.
@@ -148,6 +171,10 @@ if (empty($events)) {
     $table->head = [
         'Event ID',
         'Event Type',
+        'Student',
+        'Course',
+        'Assignment',
+        'Grade',
         'Status',
         'Retry Count',
         'HTTP Status',
@@ -183,6 +210,12 @@ if (empty($events)) {
         }
         $typebadge = html_writer::span(str_replace('_', ' ', $display_type), 'badge badge-secondary');
 
+        // Context details
+        $student = !empty($event->student_name) ? $event->student_name : '-';
+        $course = !empty($event->course_name) ? $event->course_name : '-';
+        $assignment = !empty($event->assignment_name) ? $event->assignment_name : '-';
+        $grade = !empty($event->grade_name) ? $event->grade_name : '-';
+
         // Timestamps.
         $created = $event->timecreated ? userdate($event->timecreated, '%Y-%m-%d %H:%M:%S') : '-';
         $modified = $event->timemodified ? userdate($event->timemodified, '%Y-%m-%d %H:%M:%S') : '-';
@@ -190,10 +223,23 @@ if (empty($events)) {
         // Actions.
         $viewurl = new moodle_url('/local/moodle_zoho_sync/ui/admin/event_detail.php', ['id' => $event->id]);
         $actions = html_writer::link($viewurl, 'View Details', ['class' => 'btn btn-sm btn-info']);
+        
+        // Add Retry button for failed events
+        if ($event->status === 'failed' || $event->status === 'retrying') {
+            $retryurl = new moodle_url($PAGE->url, ['retry' => $event->id, 'sesskey' => sesskey()]);
+            $actions .= ' ' . html_writer::link($retryurl, 'Retry', [
+                'class' => 'btn btn-sm btn-warning',
+                'onclick' => 'return confirm("Retry sending this event?");'
+            ]);
+        }
 
         $table->data[] = [
             substr($event->event_id, 0, 8) . '...',
             $typebadge,
+            $student,
+            $course,
+            $assignment,
+            $grade,
             $statusbadge,
             $event->retry_count,
             $event->http_status ?? '-',
@@ -209,4 +255,6 @@ if (empty($events)) {
     echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $PAGE->url);
 }
 
+echo '</div>'; // Close mzi-content-wrapper
+echo '</div>'; // Close mzi-page-container
 echo $OUTPUT->footer();

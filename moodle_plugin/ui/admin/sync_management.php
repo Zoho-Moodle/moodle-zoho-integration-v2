@@ -12,6 +12,7 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/event_logger.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/config_manager.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/webhook_sender.php');
+require_once(__DIR__ . '/includes/navigation.php');
 
 use local_moodle_zoho_sync\event_logger;
 use local_moodle_zoho_sync\config_manager;
@@ -86,6 +87,14 @@ $failedevents = event_logger::get_failed_events($maxretries);
 
 // Render page.
 echo $OUTPUT->header();
+
+// Output navigation
+mzi_output_navigation_styles();
+echo '<div class="mzi-page-container">';
+mzi_render_navigation('sync_management', 'Moodle-Zoho Integration', 'Manage Sync Operations');
+mzi_render_breadcrumb('Sync Management');
+echo '<div class="mzi-content-wrapper">';
+
 echo $OUTPUT->heading('Sync Management');
 
 // Statistics overview.
@@ -203,5 +212,8 @@ foreach ($links as $link) {
 }
 
 echo html_writer::end_div();
+
+echo '</div>'; // Close mzi-content-wrapper
+echo '</div>'; // Close mzi-page-container
 
 echo $OUTPUT->footer();

@@ -49,11 +49,8 @@ def parse_btec_student_additional(raw_zoho: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("BTEC_Students Student.id is required")
 
     # Optional fields (enrichment data)
-    profile_image = (raw_zoho.get("Profile_Image") or "").strip()
-    profile_image = profile_image or None
-
-    department = (raw_zoho.get("Department") or "").strip()
-    department = department or None
+    branch_id = (raw_zoho.get("Branch_ID") or "").strip()
+    branch_id = branch_id or None
 
     student_id_number = (raw_zoho.get("Student_ID_Number") or "").strip()
     student_id_number = student_id_number or None
@@ -65,8 +62,7 @@ def parse_btec_student_additional(raw_zoho: Dict[str, Any]) -> Dict[str, Any]:
         "btec_id": btec_id,
         "student_zoho_id": student_id,
         "student_name": student_name,
-        "profile_image": profile_image,
-        "department": department,
+        "branch_id": branch_id,
         "student_id_number": student_id_number,
         "status": status,
     }

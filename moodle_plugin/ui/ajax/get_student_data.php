@@ -189,7 +189,7 @@ try {
     switch ($datatype) {
         case 'profile':
             // Fetch student profile from Backend.
-            $response = fetch_backend_data('/v1/extension/students/profile', array(
+            $response = fetch_backend_data('/api/v1/extension/students/profile', array(
                 'moodle_user_id' => $userid
             ));
             json_response($response);
@@ -197,7 +197,7 @@ try {
 
         case 'academics':
             // Fetch academic data (programs, units, enrollments).
-            $response = fetch_backend_data('/v1/extension/students/academics', array(
+            $response = fetch_backend_data('/api/v1/extension/students/academics', array(
                 'moodle_user_id' => $userid
             ));
             json_response($response);
@@ -205,7 +205,7 @@ try {
 
         case 'finance':
             // Fetch financial data (payments, balance).
-            $response = fetch_backend_data('/v1/extension/students/finance', array(
+            $response = fetch_backend_data('/api/v1/extension/students/finance', array(
                 'moodle_user_id' => $userid
             ));
             json_response($response);
@@ -213,7 +213,7 @@ try {
 
         case 'classes':
             // Fetch classes data.
-            $response = fetch_backend_data('/v1/extension/students/classes', array(
+            $response = fetch_backend_data('/api/v1/extension/students/classes', array(
                 'moodle_user_id' => $userid
             ));
             json_response($response);
@@ -221,7 +221,7 @@ try {
 
         case 'grades':
             // Fetch grades data.
-            $response = fetch_backend_data('/v1/extension/students/grades', array(
+            $response = fetch_backend_data('/api/v1/extension/students/grades', array(
                 'moodle_user_id' => $userid
             ));
             json_response($response);

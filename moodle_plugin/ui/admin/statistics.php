@@ -11,6 +11,7 @@ require_once(__DIR__ . '/../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/event_logger.php');
 require_once($CFG->dirroot . '/local/moodle_zoho_sync/classes/config_manager.php');
+require_once(__DIR__ . '/includes/navigation.php');
 
 use local_moodle_zoho_sync\event_logger;
 use local_moodle_zoho_sync\config_manager;
@@ -55,6 +56,14 @@ $hourlydata = $DB->get_records_sql($sql);
 
 // Render page.
 echo $OUTPUT->header();
+
+// Output navigation
+mzi_output_navigation_styles();
+echo '<div class="mzi-page-container">';
+mzi_render_navigation('statistics', 'Moodle-Zoho Integration', 'Detailed Analytics & Reports');
+mzi_render_breadcrumb('Statistics');
+echo '<div class="mzi-content-wrapper">';
+
 echo $OUTPUT->heading('Sync Statistics');
 
 // Time period statistics.
@@ -181,4 +190,6 @@ echo html_writer::table($table);
 echo html_writer::end_div();
 echo html_writer::end_div();
 
+echo '</div>'; // Close mzi-content-wrapper
+echo '</div>'; // Close mzi-page-container
 echo $OUTPUT->footer();

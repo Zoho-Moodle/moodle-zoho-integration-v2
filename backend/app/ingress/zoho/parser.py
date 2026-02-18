@@ -19,7 +19,7 @@ def parse_zoho_payload(payload: dict) -> list[dict]:
             "zoho_id": zoho_id,
             "name": name,
             "academic_email": r.get("Academic_Email"),
-            "phone": r.get("Phone"),
+            "phone": r.get("Phone_Number"),
             "status": r.get("Status")
         })
 

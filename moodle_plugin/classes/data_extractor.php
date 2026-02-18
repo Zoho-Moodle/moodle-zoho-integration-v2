@@ -278,17 +278,22 @@ class data_extractor {
      * @return string
      */
     private function convert_to_btec_grade($rawgrade) {
+        // ✅ PRIORITY 1: grade=0 means F (Observer sets grade=0 for 01122 feedback)
+        if (isset($rawgrade) && $rawgrade == 0) {
+            return 'F';  // Fail - Invalid submission (01122)
+        }
+        
         if (is_null($rawgrade)) {
-            return 'Refer';
+            return 'R';  // Refer
         } elseif ($rawgrade >= 4) {
-            return 'Distinction';
+            return 'D';  // Distinction
         } elseif ($rawgrade >= 3) {
-            return 'Merit';
+            return 'M';  // Merit
         } elseif ($rawgrade >= 2) {
-            return 'Pass';
+            return 'P';  // Pass
         }
 
-        return 'Refer';
+        return 'R';  // Refer (default)
     }
 
     /**
@@ -297,7 +302,7 @@ class data_extractor {
      * @param \stdClass $grade Grade record with assignment/userid
      * @return array
      */
-    private function extract_btec_learning_outcomes($grade) {
+    public function extract_btec_learning_outcomes($grade) {
         global $DB;
 
         error_log('[BTEC LO DEBUG] Starting extraction for grade: ' . json_encode([

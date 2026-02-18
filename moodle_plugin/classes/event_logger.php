@@ -40,9 +40,10 @@ class event_logger {
      * @param array $eventdata Event data
      * @param int $moodleeventid Moodle event ID
      * @param string $eventid Optional pre-generated UUID (for consistency)
+     * @param array $context Optional context (student_name, course_name, assignment_name, grade_name, related_id)
      * @return string Event ID (UUID)
      */
-    public static function log_event($eventtype, $eventdata, $moodleeventid = null, $eventid = null) {
+    public static function log_event($eventtype, $eventdata, $moodleeventid = null, $eventid = null, $context = []) {
         global $DB;
 
         try {
@@ -60,6 +61,23 @@ class event_logger {
             $record->retry_count = 0;
             $record->timecreated = time();
             $record->timemodified = time();
+            
+            // Add context details for enhanced UI.
+            if (!empty($context['student_name'])) {
+                $record->student_name = $context['student_name'];
+            }
+            if (!empty($context['course_name'])) {
+                $record->course_name = $context['course_name'];
+            }
+            if (!empty($context['assignment_name'])) {
+                $record->assignment_name = $context['assignment_name'];
+            }
+            if (!empty($context['grade_name'])) {
+                $record->grade_name = $context['grade_name'];
+            }
+            if (!empty($context['related_id'])) {
+                $record->related_id = $context['related_id'];
+            }
 
             $DB->insert_record('local_mzi_event_log', $record);
 

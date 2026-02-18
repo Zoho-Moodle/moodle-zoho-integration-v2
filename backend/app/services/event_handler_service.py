@@ -206,45 +206,47 @@ class EventHandlerService:
                             # Update existing student
                             existing_student.display_name = full_name
                             existing_student.academic_email = zoho_data.get('Academic_Email', '')
-                            existing_student.phone = zoho_data.get('Phone')
+                            existing_student.phone = zoho_data.get('Phone_Number')
                             existing_student.userid = zoho_data.get('Student_ID_Number')
                             self.db.commit()
                             action = "updated"
                             logger.info(f"💾 Local DB: Student updated in database")
-                        else:
-                            # Insert new student
-                            new_student = Student(
-                                id=record_id,
-                                tenant_id='default',
-                                source='zoho',
-                                zoho_id=record_id,
-                                display_name=full_name,
-                                academic_email=zoho_data.get('Academic_Email', ''),
-                                phone=zoho_data.get('Phone'),
-                                userid=zoho_data.get('Student_ID_Number')
-                            )
-                            self.db.add(new_student)
-                            self.db.commit()
-                            action = "created"
-                            logger.info(f"💾 Local DB: New student created in database")
-                        
-                        # Update sync status in Zoho (tracking fields only)
-                        try:
-                            update_data = {
-                                "Synced_to_Moodle": True,
-                                "Last_Sync_Date": datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-                            }
-                            logger.info(f"Attempting to update Zoho tracking fields: {update_data}")
                             
-                            result = await self.zoho_client.update_record(
-                                module="BTEC_Students",
-                                record_id=record_id,
-                                data=update_data
+                            # ✅ Invalidate cache for this student
+                            if existing_student.moodle_user_id:
+                                cache.delete_pattern(f"zoho:*{existing_student.moodle_user_id}*")
+                                logger.info(f"🗑️ Cleared cache for student {existing_student.moodle_user_id}")
+                        else:
+                            # DISABLED: Do NOT create new students from Zoho webhooks
+                            # Students should only be created in Moodle first, then synced to Zoho
+                            logger.info(f"⚠️ Skipping new student creation from Zoho. Student must be created in Moodle first. (Zoho ID: {record_id})")
+                            action = "skipped"
+                            
+                            return EventProcessingResult(
+                                event_id=event.event_id,
+                                success=True,
+                                action=action,
+                                message=f"Student webhook received but not created (Moodle-first policy). Zoho ID: {record_id}"
                             )
-                            logger.info(f"✅ Successfully updated sync status in Zoho for student {record_id}. Result: {result}")
-                        except Exception as e:
-                            # Don't fail the whole sync if status update fails
-                            logger.error(f"❌ Failed to update sync status in Zoho for student {record_id}: {type(e).__name__}: {str(e)}")
+                        
+                        # Update sync status in Zoho (tracking fields only) - only for existing students
+                        if action == "updated":
+                            try:
+                                update_data = {
+                                    "Synced_to_Moodle": True,
+                                    "Last_Sync_Date": datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+                                }
+                                logger.info(f"Attempting to update Zoho tracking fields: {update_data}")
+                                
+                                result = await self.zoho_client.update_record(
+                                    module="BTEC_Students",
+                                    record_id=record_id,
+                                    data=update_data
+                                )
+                                logger.info(f"✅ Successfully updated sync status in Zoho for student {record_id}. Result: {result}")
+                            except Exception as e:
+                                # Don't fail the whole sync if status update fails
+                                logger.error(f"❌ Failed to update sync status in Zoho for student {record_id}: {type(e).__name__}: {str(e)}")
                         
                         return EventProcessingResult(
                             event_id=event.event_id,

@@ -18,6 +18,11 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
         <FIELD NAME="timeprocessed" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Unix timestamp when successfully sent"/>
+        <FIELD NAME="student_name" TYPE="char" LENGTH="255" NOTNULL="false" COMMENT="Student full name for enhanced UI"/>
+        <FIELD NAME="course_name" TYPE="char" LENGTH="255" NOTNULL="false" COMMENT="Course name for enhanced UI"/>
+        <FIELD NAME="assignment_name" TYPE="char" LENGTH="255" NOTNULL="false" COMMENT="Assignment name for enhanced UI"/>
+        <FIELD NAME="grade_name" TYPE="char" LENGTH="100" NOTNULL="false" COMMENT="Grade value or letter for enhanced UI"/>
+        <FIELD NAME="related_id" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Generic ID reference (user_id, course_id, etc.)"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -74,6 +79,445 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="config_key_idx" UNIQUE="false" FIELDS="config_key"/>
+      </INDEXES>
+    </TABLE>
+    
+    <!-- BTEC Templates Tracking Table -->
+    <TABLE NAME="local_mzi_btec_templates" COMMENT="Tracks synced BTEC grading templates from Zoho">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="definition_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Moodle grading_definitions.id"/>
+        <FIELD NAME="zoho_unit_id" TYPE="char" LENGTH="50" NOTNULL="true" COMMENT="Zoho BTEC record ID"/>
+        <FIELD NAME="unit_name" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="Unit/template name"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp of last sync"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="zoho_unit_id_unique" TYPE="unique" FIELDS="zoho_unit_id"/>
+        <KEY NAME="definition_id_fk" TYPE="foreign" FIELDS="definition_id" REFTABLE="grading_definitions" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+    
+    <!-- Grade Sync Queue Table: For hybrid observer + scheduled task approach -->
+    <TABLE NAME="local_mzi_grade_queue" COMMENT="Queue for grade enrichment and RR/F detection">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        
+        <!-- Moodle IDs -->
+        <FIELD NAME="grade_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="assign_grades.id (0 for F grades)"/>
+        <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="user.id"/>
+        <FIELD NAME="assignment_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="assign.id"/>
+        <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="course.id"/>
+        
+        <!-- Zoho Integration -->
+        <FIELD NAME="zoho_record_id" TYPE="char" LENGTH="50" NOTNULL="false" COMMENT="Zoho CRM record ID"/>
+        <FIELD NAME="composite_key" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="studentid_courseid_assignmentid"/>
+        <FIELD NAME="workflow_state" TYPE="char" LENGTH="50" NOTNULL="false" COMMENT="Assignment workflow state from assign_user_flags"/>
+        
+        <!-- Status Tracking -->
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="BASIC_SENT" COMMENT="BASIC_SENT, ENRICHED, RR_UPDATED, F_CREATED, FAILED"/>
+        
+        <!-- Timestamps -->
+        <FIELD NAME="basic_sent_at" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="When observer sent basic data"/>
+        <FIELD NAME="enriched_at" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="When task added learning outcomes"/>
+        <FIELD NAME="failed_at" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="When enrichment failed"/>
+        
+        <!-- Flags -->
+        <FIELD NAME="needs_enrichment" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" COMMENT="1 if needs learning outcomes"/>
+        <FIELD NAME="needs_rr_check" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" COMMENT="1 if grade is R and needs RR check"/>
+        
+        <!-- Error Handling -->
+        <FIELD NAME="error_message" TYPE="text" NOTNULL="false" COMMENT="Last error message"/>
+        <FIELD NAME="retry_count" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" COMMENT="Number of enrichment retry attempts"/>
+        
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="composite_key_unique" TYPE="unique" FIELDS="composite_key"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="needs_enrichment_idx" UNIQUE="false" FIELDS="needs_enrichment"/>
+        <INDEX NAME="needs_rr_check_idx" UNIQUE="false" FIELDS="needs_rr_check"/>
+        <INDEX NAME="grade_id_idx" UNIQUE="false" FIELDS="grade_id"/>
+        <INDEX NAME="student_assignment_idx" UNIQUE="false" FIELDS="student_id, assignment_id"/>
+        <INDEX NAME="timecreated_idx" UNIQUE="false" FIELDS="timecreated"/>
+      </INDEXES>
+    </TABLE>
+    
+    <!-- Grade Acknowledgement Table - Student Dashboard -->
+    <TABLE NAME="local_mzi_grade_ack" COMMENT="Student grade receipt acknowledgement tracking">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Moodle user.id"/>
+        <FIELD NAME="assignmentid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Assignment ID"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Course ID"/>
+        <FIELD NAME="acknowledged_at" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Unix timestamp"/>
+        <FIELD NAME="ip_address" TYPE="char" LENGTH="45" NOTNULL="false" COMMENT="Client IP address"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_idx" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="userid_assign_idx" UNIQUE="true" FIELDS="userid, assignmentid"/>
+        <INDEX NAME="courseid_idx" UNIQUE="false" FIELDS="courseid"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Student Profile Data from Zoho CRM -->
+    <TABLE NAME="local_mzi_students" COMMENT="Student profile information synced from Zoho CRM BTEC_Students module">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="moodle_user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key to mdl_user.id"/>
+        <FIELD NAME="zoho_student_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho CRM record ID"/>
+        
+        <!-- Basic Information -->
+        <FIELD NAME="student_id" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho Name field (auto-generated Student ID)"/>
+        <FIELD NAME="registration_number" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="BTEC_Registration_Number"/>
+        <FIELD NAME="first_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="First_Name"/>
+        <FIELD NAME="last_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Last_Name"/>
+        <FIELD NAME="email" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Email - Primary email"/>
+        <FIELD NAME="academic_email" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Academic_Email - matches Moodle username"/>
+        <FIELD NAME="phone_number" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Phone_Number"/>
+        <FIELD NAME="date_of_birth" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Date_of_Birth from Zoho"/>
+        <FIELD NAME="nationality" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Nationality picklist value"/>
+        <FIELD NAME="address" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Address textarea"/>
+        <FIELD NAME="city" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="City"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Status - Active, Pending, Approved, etc."/>
+        <FIELD NAME="photo_url" TYPE="char" LENGTH="512" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho profile photo URL if available"/>
+        
+        <!-- Academic Information -->
+        <FIELD NAME="academic_program" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Academic_Program"/>
+        <FIELD NAME="registration_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Registration_Date"/>
+        <FIELD NAME="study_language" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Study_Language - English/Arabic"/>
+        
+        <!-- Sync Metadata -->
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix timestamp - when record created in Moodle"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix timestamp - last update in Moodle"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last sync timestamp from Zoho"/>
+        <FIELD NAME="zoho_created_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho Created_Time"/>
+        <FIELD NAME="zoho_modified_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho Modified_Time"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="moodle_user_fk" TYPE="foreign" FIELDS="moodle_user_id" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="zoho_student_id_idx" UNIQUE="true" FIELDS="zoho_student_id"/>
+        <INDEX NAME="moodle_user_id_idx" UNIQUE="true" FIELDS="moodle_user_id"/>
+        <INDEX NAME="academic_email_idx" UNIQUE="false" FIELDS="academic_email"/>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Webhook Logs for debugging Zoho webhooks -->
+    <TABLE NAME="local_mzi_webhook_logs" COMMENT="Log all incoming Zoho webhooks for student data">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="module" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho module name (BTEC_Students, etc)"/>
+        <FIELD NAME="zoho_record_id" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho record ID"/>
+        <FIELD NAME="operation" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="create, update, delete"/>
+        <FIELD NAME="payload" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Raw webhook JSON payload"/>
+        <FIELD NAME="processed" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0=pending, 1=success, 2=error"/>
+        <FIELD NAME="error_message" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Error details if processing failed"/>
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix timestamp"/>
+        <FIELD NAME="processed_at" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp when processed"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="module_idx" UNIQUE="false" FIELDS="module"/>
+        <INDEX NAME="zoho_record_id_idx" UNIQUE="false" FIELDS="zoho_record_id"/>
+        <INDEX NAME="processed_idx" UNIQUE="false" FIELDS="processed"/>
+        <INDEX NAME="created_at_idx" UNIQUE="false" FIELDS="created_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Sync Status Tracking for each Zoho module -->
+    <TABLE NAME="local_mzi_sync_status" COMMENT="Track sync status for each Zoho module (Students, Classes, etc)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="module" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho module name"/>
+        <FIELD NAME="last_full_sync" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp of last full sync"/>
+        <FIELD NAME="last_incremental_sync" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp of last incremental sync"/>
+        <FIELD NAME="total_records" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Total records synced"/>
+        <FIELD NAME="sync_status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending, running, completed, failed"/>
+        <FIELD NAME="error_message" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Error details if sync failed"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix timestamp"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="module_idx" UNIQUE="true" FIELDS="module"/>
+        <INDEX NAME="sync_status_idx" UNIQUE="false" FIELDS="sync_status"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- ============================== -->
+    <!-- STUDENT DASHBOARD TABLES       -->
+    <!-- ============================== -->
+
+    <!-- Registrations: Student program registrations -->
+    <TABLE NAME="local_mzi_registrations" COMMENT="Student program registrations from Zoho BTEC_Registrations">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_students.id"/>
+        <FIELD NAME="zoho_registration_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho CRM record ID"/>
+        
+        <!-- Program Information -->
+        <FIELD NAME="registration_number" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Auto-generated registration number"/>
+        <FIELD NAME="program_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Program_Name lookup"/>
+        <FIELD NAME="program_level" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Program_Level (Level 4, 5, etc)"/>
+        <FIELD NAME="registration_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Registration_Date"/>
+        <FIELD NAME="expected_graduation" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Expected_Graduation_Date"/>
+        <FIELD NAME="registration_status" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Registration_Status (Active, Completed, etc)"/>
+        
+        <!-- Financial Information -->
+        <FIELD NAME="total_fees" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Total_Fees currency field"/>
+        <FIELD NAME="paid_amount" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Paid_Amount"/>
+        <FIELD NAME="remaining_amount" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Remaining_Amount (formula field)"/>
+        <FIELD NAME="currency" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Currency code (USD, EUR, etc)"/>
+        
+        <!-- Payment Plan -->
+        <FIELD NAME="payment_plan" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Payment_Plan (Full Payment, Installments)"/>
+        <FIELD NAME="number_of_installments" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Number_of_Installments"/>
+        
+        <!-- Sync Metadata -->
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="zoho_created_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="zoho_modified_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="student_fk" TYPE="foreign" FIELDS="student_id" REFTABLE="local_mzi_students" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="zoho_registration_id_idx" UNIQUE="true" FIELDS="zoho_registration_id"/>
+        <INDEX NAME="registration_status_idx" UNIQUE="false" FIELDS="registration_status"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Installments: Payment installment schedule -->
+    <TABLE NAME="local_mzi_installments" COMMENT="Payment installment schedule from Zoho">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="registration_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_registrations.id"/>
+        <FIELD NAME="zoho_installment_id" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho record ID if subform"/>
+        
+        <FIELD NAME="installment_number" TYPE="int" LENGTH="3" NOTNULL="true" SEQUENCE="false" COMMENT="Installment sequence number"/>
+        <FIELD NAME="due_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Due_Date"/>
+        <FIELD NAME="amount" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Installment_Amount"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Paid, Pending, Overdue"/>
+        <FIELD NAME="paid_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Actual payment date"/>
+        
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="registration_fk" TYPE="foreign" FIELDS="registration_id" REFTABLE="local_mzi_registrations" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="status_idx" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="due_date_idx" UNIQUE="false" FIELDS="due_date"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Payments: Actual payment transactions -->
+    <TABLE NAME="local_mzi_payments" COMMENT="Student payment transactions from Zoho BTEC_Payments">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="registration_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_registrations.id"/>
+        <FIELD NAME="zoho_payment_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho CRM record ID"/>
+        
+        <FIELD NAME="payment_number" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Auto-generated payment number"/>
+        <FIELD NAME="payment_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Payment_Date"/>
+        <FIELD NAME="payment_amount" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Payment_Amount"/>
+        <FIELD NAME="payment_method" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Payment_Method (Cash, Bank Transfer, etc)"/>
+        <FIELD NAME="voucher_number" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Voucher_Number"/>
+        <FIELD NAME="bank_name" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Bank_Name"/>
+        <FIELD NAME="receipt_number" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Receipt_Number"/>
+        <FIELD NAME="payment_notes" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Payment_Notes"/>
+        <FIELD NAME="payment_status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Confirmed, Pending, etc"/>
+        
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="zoho_created_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="zoho_modified_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="registration_fk" TYPE="foreign" FIELDS="registration_id" REFTABLE="local_mzi_registrations" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="zoho_payment_id_idx" UNIQUE="true" FIELDS="zoho_payment_id"/>
+        <INDEX NAME="payment_date_idx" UNIQUE="false" FIELDS="payment_date"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Classes: BTEC class/unit information -->
+    <TABLE NAME="local_mzi_classes" COMMENT="BTEC classes/units from Zoho BTEC_Classes">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="zoho_class_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho CRM record ID"/>
+        
+        <FIELD NAME="class_number" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Auto-generated class number"/>
+        <FIELD NAME="class_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Class_Name"/>
+        <FIELD NAME="unit_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Unit_Name lookup"/>
+        <FIELD NAME="program_level" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Program_Level"/>
+        <FIELD NAME="teacher_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Teacher_Name lookup"/>
+        <FIELD NAME="class_type" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Class_Type (Lecture, Lab, etc)"/>
+        <FIELD NAME="start_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Start_Date"/>
+        <FIELD NAME="end_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="End_Date"/>
+        <FIELD NAME="schedule" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Class_Schedule"/>
+        <FIELD NAME="class_status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Active, Completed, Cancelled"/>
+        
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="zoho_created_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="zoho_modified_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="zoho_class_id_idx" UNIQUE="true" FIELDS="zoho_class_id"/>
+        <INDEX NAME="class_status_idx" UNIQUE="false" FIELDS="class_status"/>
+        <INDEX NAME="program_level_idx" UNIQUE="false" FIELDS="program_level"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Enrollments: Student class enrollments -->
+    <TABLE NAME="local_mzi_enrollments" COMMENT="Student class enrollments from Zoho">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_students.id"/>
+        <FIELD NAME="class_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_classes.id"/>
+        <FIELD NAME="zoho_enrollment_id" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho record ID if exists"/>
+        
+        <FIELD NAME="enrollment_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Enrollment_Date"/>
+        <FIELD NAME="enrollment_status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Active, Dropped, Completed"/>
+        <FIELD NAME="attendance_percentage" TYPE="number" LENGTH="5" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Attendance_Percentage"/>
+        <FIELD NAME="completion_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Date completed"/>
+        
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="student_fk" TYPE="foreign" FIELDS="student_id" REFTABLE="local_mzi_students" REFFIELDS="id"/>
+        <KEY NAME="class_fk" TYPE="foreign" FIELDS="class_id" REFTABLE="local_mzi_classes" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="enrollment_status_idx" UNIQUE="false" FIELDS="enrollment_status"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Grades: Student grades for assignments -->
+    <TABLE NAME="local_mzi_grades" COMMENT="Student grades from Zoho BTEC_Grades">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_students.id"/>
+        <FIELD NAME="class_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_classes.id"/>
+        <FIELD NAME="zoho_grade_id" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Zoho CRM record ID"/>
+        
+        <!-- Grade Information -->
+        <FIELD NAME="grade_number" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Auto-generated grade number"/>
+        <FIELD NAME="assignment_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Assignment_Name"/>
+        <FIELD NAME="btec_grade_name" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="BTEC_Grade (P, M, D, R, F, RR)"/>
+        <FIELD NAME="numeric_grade" TYPE="number" LENGTH="5" NOTNULL="false" SEQUENCE="false" DECIMALS="2" COMMENT="Numeric_Grade"/>
+        <FIELD NAME="submission_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Submission_Date"/>
+        <FIELD NAME="grade_date" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Grade_Date"/>
+        <FIELD NAME="feedback" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Feedback textarea"/>
+        <FIELD NAME="learning_outcomes" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Learning_Outcomes JSON"/>
+        
+        <!-- Acknowledgement Tracking -->
+        <FIELD NAME="feedback_acknowledged" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if student acknowledged"/>
+        <FIELD NAME="feedback_acknowledged_at" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp"/>
+        
+        <!-- Attempt Tracking -->
+        <FIELD NAME="attempt_number" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="Attempt_Number (1, 2 for RR)"/>
+        <FIELD NAME="is_resubmission" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if RR attempt"/>
+        
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="zoho_created_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="zoho_modified_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="student_fk" TYPE="foreign" FIELDS="student_id" REFTABLE="local_mzi_students" REFFIELDS="id"/>
+        <KEY NAME="class_fk" TYPE="foreign" FIELDS="class_id" REFTABLE="local_mzi_classes" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="zoho_grade_id_idx" UNIQUE="true" FIELDS="zoho_grade_id"/>
+        <INDEX NAME="btec_grade_name_idx" UNIQUE="false" FIELDS="btec_grade_name"/>
+        <INDEX NAME="feedback_acknowledged_idx" UNIQUE="false" FIELDS="feedback_acknowledged"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Student Requests: Student-submitted requests -->
+    <TABLE NAME="local_mzi_requests" COMMENT="Student requests (Class Drop, Grade Review, etc) from Zoho BTEC_Student_Requests">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to local_mzi_students.id"/>
+        <FIELD NAME="zoho_request_id" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Zoho CRM record ID (null if submitted via Moodle)"/>
+        
+        <FIELD NAME="request_number" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" COMMENT="Auto-generated request number"/>
+        <FIELD NAME="request_type" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Class Drop, Grade Review, Program Change, etc"/>
+        <FIELD NAME="request_status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Submitted, Under Review, Approved, Rejected"/>
+        <FIELD NAME="priority" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Low, Medium, High, Urgent"/>
+        <FIELD NAME="reason" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Request_Reason"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Detailed description"/>
+        
+        <!-- Type-specific fields (JSON for flexibility) -->
+        <FIELD NAME="requested_classes" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON array of class IDs for drop requests"/>
+        <FIELD NAME="grade_details" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON for grade review details"/>
+        <FIELD NAME="change_information" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON for program/schedule changes"/>
+        
+        <!-- Admin Response -->
+        <FIELD NAME="admin_notes" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Admin_Notes"/>
+        <FIELD NAME="admin_response" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Admin_Response to student"/>
+        <FIELD NAME="reviewed_by" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="FK to mdl_user.id (admin)"/>
+        <FIELD NAME="reviewed_at" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Unix timestamp"/>
+        
+        <FIELD NAME="created_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="updated_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="synced_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="zoho_created_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="zoho_modified_time" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="student_fk" TYPE="foreign" FIELDS="student_id" REFTABLE="local_mzi_students" REFFIELDS="id"/>
+        <KEY NAME="reviewed_by_fk" TYPE="foreign" FIELDS="reviewed_by" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="zoho_request_id_idx" UNIQUE="false" FIELDS="zoho_request_id"/>
+        <INDEX NAME="request_type_idx" UNIQUE="false" FIELDS="request_type"/>
+        <INDEX NAME="request_status_idx" UNIQUE="false" FIELDS="request_status"/>
+        <INDEX NAME="synced_at_idx" UNIQUE="false" FIELDS="synced_at"/>
       </INDEXES>
     </TABLE>
     

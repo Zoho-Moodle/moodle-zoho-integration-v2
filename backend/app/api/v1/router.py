@@ -23,6 +23,9 @@ from app.api.v1.endpoints.moodle_events import router as moodle_events_router
 # Webhooks - Receive events from Moodle Plugin
 from app.api.v1.endpoints.webhooks import router as webhooks_router
 
+# Student Dashboard Webhooks - Zoho → Moodle DB (Direct)
+from app.api.v1.endpoints.student_dashboard_webhooks import router as student_dashboard_webhooks_router
+
 # Moodle Ingestion endpoints (Moodle → Backend)
 from app.api.v1.endpoints.moodle_users import router as moodle_users_router
 from app.api.v1.endpoints.moodle_enrollments import router as moodle_enrollments_router
@@ -30,6 +33,9 @@ from app.api.v1.endpoints.moodle_grades import router as moodle_grades_router
 
 # Course Creation (Zoho → Moodle)
 from app.api.v1.endpoints.create_course import router as create_course_router
+
+# BTEC Templates Sync (Zoho → Moodle)
+from app.api.v1.endpoints.btec_templates import router as btec_templates_router
 
 router = APIRouter()
 
@@ -58,6 +64,9 @@ router.include_router(moodle_events_router)
 # Webhooks - Receive events from Moodle Plugin
 router.include_router(webhooks_router, tags=["webhooks"])
 
+# Student Dashboard Webhooks - Zoho → Moodle DB
+router.include_router(student_dashboard_webhooks_router, prefix="/webhooks/student-dashboard", tags=["student-dashboard"])
+
 # Moodle Ingestion - Moodle → Backend
 router.include_router(moodle_users_router)
 router.include_router(moodle_enrollments_router)
@@ -65,6 +74,9 @@ router.include_router(moodle_grades_router)
 
 # Course Creation - Zoho → Moodle
 router.include_router(create_course_router, tags=["classes"])
+
+# BTEC Templates - Zoho → Moodle
+router.include_router(btec_templates_router, tags=["btec"])
 
 # Health check
 router.include_router(health_router, tags=["health"])

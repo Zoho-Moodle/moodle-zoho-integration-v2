@@ -71,6 +71,11 @@ $string['connection_timeout_desc'] = 'HTTP connection timeout in seconds (defaul
 
 // Navigation.
 $string['student_dashboard'] = 'My Dashboard';
+$string['studentprofile'] = 'Profile';
+$string['myprograms'] = 'My Programs';
+$string['myclasses'] = 'My Classes';
+$string['myrequests'] = 'My Requests';
+$string['studentcard'] = 'Student Card';
 $string['sync_management'] = 'Zoho Sync Management';
 $string['event_logs'] = 'Event Logs';
 $string['statistics'] = 'Statistics';
@@ -84,6 +89,27 @@ $string['scheduled_task_logs'] = 'Scheduled Task Logs';
 $string['task_retry_failed_webhooks'] = 'Retry failed webhooks';
 $string['task_cleanup_old_logs'] = 'Cleanup old event logs';
 $string['task_health_monitor'] = 'Monitor system health';
+$string['task_sync_missing_grades'] = 'Hybrid Grading: Enrich grades, detect RR, create F grades';
+
+// Hybrid Grading System
+$string['gradequeue_monitor'] = 'Grade Queue Monitor';
+$string['gradequeue_pending'] = 'Pending Enrichment';
+$string['gradequeue_enriched'] = 'Enriched';
+$string['gradequeue_failed'] = 'Failed';
+$string['gradequeue_total'] = 'Total Queued';
+$string['gradequeue_status'] = 'Status';
+$string['gradequeue_needs_enrichment'] = 'Needs Enrichment';
+$string['gradequeue_needs_rr_check'] = 'Needs RR Check';
+$string['gradequeue_retry'] = 'Retry Failed';
+$string['gradequeue_composite_key'] = 'Composite Key';
+$string['gradequeue_zoho_record_id'] = 'Zoho Record ID';
+$string['gradequeue_error_message'] = 'Error Message';
+$string['gradequeue_basic_sent'] = 'Basic Sent';
+$string['gradequeue_enrichment_failed'] = 'Enrichment Failed';
+$string['gradequeue_f_created'] = 'F Grade Created';
+$string['gradequeue_rr_detected'] = 'RR Detected';
+$string['gradequeue_workflow_state'] = 'Workflow State';
+$string['gradequeue_invalid_submission'] = 'Invalid Submission (01122)';
 
 // Connection messages.
 $string['connection_success'] = 'Backend API connection successful';
@@ -102,6 +128,7 @@ $string['academics_tab'] = 'Academics';
 $string['finance_tab'] = 'Finance';
 $string['classes_tab'] = 'Classes';
 $string['grades_tab'] = 'Grades';
+$string['requests_tab'] = 'Requests';
 
 $string['loading'] = 'Loading...';
 $string['no_data'] = 'No data available';
@@ -266,4 +293,9 @@ $string['copy_event_id'] = 'Copy Event ID';
 // Settings Help Tooltips.
 $string['max_retry_help'] = 'Maximum number of retry attempts before marking an event as permanently failed';
 $string['log_retention_help'] = 'Number of days to keep successfully sent events in the database';
+
+// Student Dashboard Management strings.
+$string['student_dashboard_management'] = 'Student Dashboard Management';
+$string['request_approved'] = 'Request has been approved successfully';
+$string['request_rejected'] = 'Request has been rejected';
 

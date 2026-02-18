@@ -50,11 +50,12 @@ $observers = [
         'internal'  => false,
     ],
 
-    // User graded event
-    [
-        'eventname' => '\\core\\event\\user_graded',
-        'callback'  => '\\local_moodle_zoho_sync\\observer::grade_updated',
-        'priority'  => 9999,
-        'internal'  => false,
-    ],
+    // ❌ User graded event DISABLED - submission_graded handles everything
+    // Enabling both causes duplicate grade records in Zoho
+    // [
+    //     'eventname' => '\\core\\event\\user_graded',
+    //     'callback'  => '\\local_moodle_zoho_sync\\observer::grade_updated',
+    //     'priority'  => 9999,
+    //     'internal'  => false,
+    // ],
 ];

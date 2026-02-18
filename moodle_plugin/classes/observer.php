@@ -39,7 +39,8 @@ class observer {
 
             // Send webhook
             $sender = new webhook_sender();
-            $response = $sender->send_user_created($user_data);
+            $context = webhook_sender::extract_context($user_data, 'user_created');
+            $response = $sender->send_user_created($user_data, null, $context);
 
             self::log_debug('User created webhook sent', [
                 'user_id' => $event->objectid,
@@ -74,7 +75,8 @@ class observer {
 
             // Send webhook
             $sender = new webhook_sender();
-            $response = $sender->send_user_updated($user_data);
+            $context = webhook_sender::extract_context($user_data, 'user_updated');
+            $response = $sender->send_user_updated($user_data, null, $context);
 
             self::log_debug('User updated webhook sent', [
                 'user_id' => $event->objectid,
@@ -121,7 +123,8 @@ class observer {
 
             // Send webhook
             $sender = new webhook_sender();
-            $response = $sender->send_enrollment_created($enrollment_data);
+            $context = webhook_sender::extract_context($enrollment_data, 'enrollment_created');
+            $response = $sender->send_enrollment_created($enrollment_data, null, $context);
 
             error_log('=== WEBHOOK RESPONSE === ' . json_encode($response));
 
@@ -157,21 +160,34 @@ class observer {
         }
 
         try {
-            // Extract enrollment data
-            $extractor = new data_extractor();
-            $enrollment_data = $extractor->extract_enrollment_data($event->objectid);
-
-            if (!$enrollment_data) {
-                self::log_error('Failed to extract enrollment data for deleted enrollment ID: ' . $event->objectid);
-                error_log('=== ENROLLMENT EXTRACTION FAILED === Enrolment ID: ' . $event->objectid);
-                return;
+            // IMPORTANT: For deleted events, the record is already gone from DB
+            // We need to extract data from the event itself
+            $eventdata = $event->get_data();
+            
+            error_log('=== ENROLLMENT DELETE EVENT DATA === ' . json_encode($eventdata));
+            
+            // Build enrollment data from event
+            $enrollment_data = [
+                'enrolment_id' => $event->objectid,
+                'user_id' => $event->relateduserid,
+                'course_id' => $event->courseid,
+                'action' => 'deleted',
+                'timestamp' => $event->timecreated
+            ];
+            
+            // Try to get additional info if available
+            if (!empty($eventdata['other'])) {
+                if (isset($eventdata['other']['userenrolment'])) {
+                    $enrollment_data = array_merge($enrollment_data, $eventdata['other']['userenrolment']);
+                }
             }
 
-            error_log('=== ENROLLMENT DATA EXTRACTED === ' . json_encode($enrollment_data));
+            error_log('=== ENROLLMENT DATA BUILT === ' . json_encode($enrollment_data));
 
             // Send webhook
             $sender = new webhook_sender();
-            $response = $sender->send_enrollment_deleted($enrollment_data);
+            $context = webhook_sender::extract_context($enrollment_data, 'enrollment_deleted');
+            $response = $sender->send_enrollment_deleted($enrollment_data, null, $context);
 
             error_log('=== WEBHOOK RESPONSE === ' . json_encode($response));
 
@@ -221,7 +237,8 @@ class observer {
 
             // Send webhook
             $sender = new webhook_sender();
-            $response = $sender->send_grade_updated($grade_data);
+            $context = webhook_sender::extract_context($grade_data, 'grade_updated');
+            $response = $sender->send_grade_updated($grade_data, null, $context);
 
             error_log('=== WEBHOOK RESPONSE === ' . json_encode($response));
 
@@ -237,84 +254,297 @@ class observer {
     }
 
     /**
-     * Handle assignment submission graded (mod_assign) and forward to grade extraction.
+     * Handle assignment submission graded (mod_assign) - LIGHTWEIGHT VERSION
+     * Sends only BASIC data to Zoho, queues for enrichment by scheduled task.
      *
      * @param \mod_assign\event\submission_graded $event
      */
     public static function submission_graded(\mod_assign\event\submission_graded $event) {
-        // FORCE LOG - ALWAYS fires to verify observer is called
-        error_log('=== SUBMISSION_GRADED OBSERVER FIRED === Assignment: ' . ($event->other['assignmentid'] ?? 'N/A'));
+        global $DB;
+        
+        error_log('=== 🔵 SUBMISSION_GRADED OBSERVER (LIGHTWEIGHT) ===');
         
         // Check if grade sync is enabled
-        $grade_sync_enabled = get_config('local_moodle_zoho_sync', 'enable_grade_sync');
-        $backend_url = get_config('local_moodle_zoho_sync', 'backend_url');
-        
-        error_log('=== SUBMISSION GRADE CONFIG === enable_grade_sync: ' . ($grade_sync_enabled ? 'YES' : 'NO') . ', backend_url: ' . $backend_url);
-        
-        if (!$grade_sync_enabled) {
-            error_log('=== GRADE SYNC DISABLED === Skipping webhook');
+        if (!get_config('local_moodle_zoho_sync', 'enable_grade_sync')) {
+            error_log('Grade sync disabled - skipping');
             return;
         }
 
         try {
-            global $DB;
-
-            // Get grade record from assign_grades (objectid = assign_grades.id)
-            $assign_grade = $DB->get_record('assign_grades', ['id' => $event->objectid]);
-            if (!$assign_grade) {
-                error_log('=== ASSIGN GRADE RECORD NOT FOUND === objectid: ' . $event->objectid);
+            $starttime = microtime(true);
+            
+            // ══════════════════════════════════════════════════════════
+            // STEP 1: Fast Data Extraction (NO heavy queries)
+            // ══════════════════════════════════════════════════════════
+            
+            $grade = $DB->get_record('assign_grades', ['id' => $event->objectid]);
+            if (!$grade) {
+                error_log('Grade record not found: ' . $event->objectid);
                 return;
             }
             
-            error_log('=== ASSIGN GRADE FOUND === ID: ' . $assign_grade->id . ', assignment: ' . $assign_grade->assignment . ', student: ' . $assign_grade->userid);
-
-            // Extract grade data from assign_grades table (BTEC)
-            $extractor = new data_extractor();
-            $grade_data = $extractor->extract_assignment_grade_data($assign_grade->id);
-
-            if (!$grade_data) {
-                self::log_error('Failed to extract assignment grade data for assign_grade ID: ' . $assign_grade->id);
-                error_log('=== GRADE EXTRACTION FAILED === Assign Grade ID: ' . $assign_grade->id);
+            $assignment = $DB->get_record('assign', ['id' => $grade->assignment]);
+            $course = $DB->get_record('course', ['id' => $assignment->course]);
+            $student = $DB->get_record('user', ['id' => $grade->userid]);
+            
+            if (!$assignment || !$course || !$student) {
+                error_log('Missing records - assignment/course/student');
                 return;
             }
-
-            error_log('=== GRADE DATA EXTRACTED === ' . json_encode($grade_data));
-
-            // Send grade to Backend - Backend will check Zoho and determine action
-            error_log('=== SENDING GRADE TO BACKEND === Backend will check Zoho and determine if create or update');
-
+            
+            // Check if submission exists (للتفريق بين F و R)
+            // ✅ ONLY accept 'submitted' status - student MUST submit, not just draft
+            $submission = $DB->get_record('assign_submission', [
+                'assignment' => $assignment->id,
+                'userid' => $student->id
+            ]);
+            $has_submission = ($submission && $submission->status === 'submitted');
+            
+            // Get workflow state (قبل ما نمسح، نجيب الحالة)
+            $workflow_state = null;
+            $user_flags = $DB->get_record('assign_user_flags', [
+                'assignment' => $assignment->id,
+                'userid' => $student->id
+            ]);
+            if ($user_flags && !empty($user_flags->workflowstate)) {
+                $workflow_state = $user_flags->workflowstate;
+            }
+            
+            // Attempt number
+            $attemptnumber = isset($grade->attemptnumber) ? (int)$grade->attemptnumber : 0;
+            
+            // Feedback (نجيبها قبل التحويل لأنها بتأثر على F)
+            $feedback = self::get_quick_feedback($grade->id);
+            
+            // ✅ CRITICAL FIX: If feedback contains "01122", update grade in DB to 0
+            // This ensures consistency: Observer + Extractor + Scheduled Task all see grade=0 → F
+            if (!empty($feedback) && strpos($feedback, '01122') !== false) {
+                error_log("⚠️ 01122 DETECTED - Updating grade in DB: {$grade->grade} → 0 (F)");
+                $grade->grade = 0;  // Set to 0 to indicate F (Fail - Invalid file)
+                $grade->timemodified = time();
+                $DB->update_record('assign_grades', $grade);
+                error_log("✅ Grade updated in DB successfully");
+            }
+            
+            // Quick BTEC grade conversion (F for no submission, R for fail with submission, F if feedback contains 01122)
+            $btec_grade = self::quick_btec_conversion($grade->grade, $has_submission, $feedback);
+            
+            // ⚠️ RR Detection REMOVED from Observer
+            // Reason: Observer only sees submissions - cannot detect "no submission" for attempt 2
+            // RR Logic: attempt 1 = R + attempt 2 = NO SUBMISSION → RR
+            // This can only be detected by Scheduled Task after due date passes
+            
+            // Grader info (quick)
+            $grader = $DB->get_record('user', ['id' => $event->userid]);
+            $graderrole = self::detect_grader_role($grader->id, $course->id);
+            
+            // ✅ Extract Learning Outcomes (complete data in one go)
+            $extractor = new data_extractor();
+            $learning_outcomes = $extractor->extract_btec_learning_outcomes($grade);
+            
+            // ══════════════════════════════════════════════════════════
+            // STEP 2: Build Complete Payload (ALL data in one request)
+            // ══════════════════════════════════════════════════════════
+            
+            $composite_key = $student->id . '_' . $course->id . '_' . $assignment->id;
+            
+            $complete_payload = [
+                'grade_id' => $grade->id,
+                'student_id' => $student->id,
+                'student_name' => fullname($student),
+                'student_email' => $student->email,
+                'assignment_id' => $assignment->id,
+                'assignment_name' => $assignment->name,
+                'course_id' => $course->id,
+                'course_name' => $course->fullname,
+                'grade' => $btec_grade,
+                'raw_grade' => $grade->grade,
+                'attempt_number' => $attemptnumber + 1,  // Display as 1-indexed
+                'attemptnumber_zero_indexed' => $attemptnumber,  // For backend logic
+                'timestamp' => time(),
+                'graded_at' => date('Y-m-d H:i:s', $grade->timemodified),
+                'grader_name' => fullname($grader),
+                'grader_role' => $graderrole,
+                'feedback' => $feedback,
+                'workflow_state' => $workflow_state,
+                'learning_outcomes' => $learning_outcomes,  // ✅ Complete Learning Outcomes included
+                'composite_key' => $composite_key,
+                'sync_type' => 'complete',  // ✅ Flag: this is complete data (not basic)
+            ];
+            
+            $extraction_time = round((microtime(true) - $starttime) * 1000, 2);
+            error_log("✅ Complete extraction: {$extraction_time}ms - {$student->firstname} {$student->lastname} - {$btec_grade}" . 
+                      (count($learning_outcomes) > 0 ? " + " . count($learning_outcomes) . " LOs" : ""));
+            
+            // ═════════════Complete Data to Zoho (ONE request with everything)
+            // ══════════════════════════════════════════════════════════
+            
             $sender = new webhook_sender();
-            $response = $sender->send_grade_updated($grade_data);
-
-            error_log('=== WEBHOOK RESPONSE === ' . json_encode($response));
-
-            // Extract action from Backend response
-            $action = 'unknown';
+            $context = webhook_sender::extract_context($complete_payload, 'grade_updated');
+            $response = $sender->send_grade_updated($complete_payload, null, $context);
+            
+            // Extract Zoho record ID from response
+            $zoho_record_id = null;
             if (isset($response['body'])) {
                 $body = json_decode($response['body'], true);
-                if (isset($body['action'])) {
-                    $action = $body['action']; // 'created' or 'updated'
-                }
+                $zoho_record_id = $body['zoho_id'] ?? null;
             }
-
-            if ($action === 'created') {
-                error_log('=== ✅ NEW GRADE CREATED IN ZOHO === Backend confirmed this is a new grade');
-            } elseif ($action === 'updated') {
-                error_log('=== ✅ EXISTING GRADE UPDATED IN ZOHO === Backend confirmed this is an update');
+            
+            $send_time = round((microtime(true) - $starttime) * 1000, 2);
+            error_log("✅ Zoho sync: {$send_time}ms - Zoho ID: " . ($zoho_record_id ?? 'N/A'));
+            
+            // ══════════════════════════════════════════════════════════
+            // STEP 4: Queue for Tracking (no enrichment needed - already complete)
+            // ══════════════════════════════════════════════════════════
+            
+            $queue_record = new \stdClass();
+            $queue_record->grade_id = $grade->id;
+            $queue_record->student_id = $student->id;
+            $queue_record->assignment_id = $assignment->id;
+            $queue_record->course_id = $course->id;
+            $queue_record->zoho_record_id = $zoho_record_id;
+            $queue_record->composite_key = $composite_key;
+            $queue_record->workflow_state = $workflow_state;
+            $queue_record->status = 'SYNCED';  // ✅ Complete sync (no enrichment needed)
+            $queue_record->basic_sent_at = time();
+            $queue_record->needs_enrichment = 0;  // ✅ Already has Learning Outcomes
+            $queue_record->needs_rr_check = 0;  // ✅ RR already detected in Observer if applicable
+            $queue_record->retry_count = 0;
+            $queue_record->timecreated = time();
+            $queue_record->timemodified = time();
+            
+            // Check if already queued (update instead of insert)
+            $existing = $DB->get_record('local_mzi_grade_queue', ['composite_key' => $composite_key]);
+            if ($existing) {
+                $queue_record->id = $existing->id;
+                $DB->update_record('local_mzi_grade_queue', $queue_record);
+                error_log("✅ Updated queue record (resubmission)");
             } else {
-                error_log('=== ⚠️ GRADE ACTION UNKNOWN === Backend response: ' . json_encode($response));
+                $DB->insert_record('local_mzi_grade_queue', $queue_record);
+                error_log("✅ Inserted queue record (new submission)");
             }
-
-            self::log_debug('Submission graded webhook sent', [
-                'assign_grade_id' => $assign_grade->id,
-                'zoho_action' => $action,
-                'response' => $response
+            
+            $total_time = round((microtime(true) - $starttime) * 1000, 2);
+            error_log("🎉 OBSERVER COMPLETE: {$total_time}ms total (FULL SYNC)");
+            
+            self::log_debug('Grade sync complete (full)', [
+                'grade_id' => $grade->id,
+                'grade' => $btec_grade,
+                'attempt' => $attemptnumber + 1,
+                'learning_outcomes' => count($learning_outcomes),
+                'time_ms' => $total_time,
+                'zoho_id' => $zoho_record_id
             ]);
 
         } catch (\Exception $e) {
-            error_log('=== SUBMISSION_GRADED ERROR === ' . $e->getMessage());
+            error_log('=== ❌ OBSERVER ERROR === ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             self::log_error('Error in submission_graded observer: ' . $e->getMessage());
         }
+    }
+    
+    /**
+     * Quick BTEC grade conversion (no database joins)
+     * Based on raw numeric grade from assign_grades.grade
+     * 
+     * ═══════════════════════════════════════════════════════════
+     * Grade Logic (Updated v4.1 - Corrected RR):
+     * ═══════════════════════════════════════════════════════════
+     * Observer handles normal grading, Scheduled Task handles RR.
+     * 
+     * 1. F (Fail): 
+     *    - grade = 0 (Observer sets this when feedback contains "01122")
+     *    - Teacher explicitly marked wrong file
+     * 
+     * 2. R (Refer) - First OR Second Attempt Failed:
+     *    - Submitted but grade < 2 (didn't meet pass criteria)
+     *    - Teacher grades it as refer
+     *    - ✅ Attempt 2 with R stays as R (not RR)
+     * 
+     * 3. RR (Double Refer) - NO SUBMISSION on Attempt 2:
+     *    - ⚠️ Detected by SCHEDULED TASK (not observer)
+     *    - Logic: attempt 1 = R AND attempt 2 = NO SUBMISSION → RR
+     *    - Observer cannot detect "no submission"
+     * 
+     * 4. P/M/D (Pass):
+     *    - First OR second attempt can pass
+     *    - P: grade >= 2, M: grade >= 3, D: grade >= 4
+     * 
+     * 5. F (No Submission):
+     *    - ⚠️ Created by SCHEDULED TASK create_f_grades()
+     *    - Observer never sees students who don't submit
+     * ═══════════════════════════════════════════════════════════
+     * 
+     * @param float|null $rawgrade Raw numeric grade (0-4)
+     * @param bool $has_submission Whether student submitted work (not used in v4.1)
+     * @param string $feedback Feedback text (not used - 01122 handled before conversion)
+     * @return string BTEC grade (F/R/P/M/D)
+     */
+    private static function quick_btec_conversion($rawgrade, $has_submission = true, $feedback = '') {
+        // ✅ PRIORITY 1: F (Fail) - grade = 0
+        // Observer already set grade=0 if feedback contains "01122"
+        if (isset($rawgrade) && $rawgrade == 0) {
+            return "F";  // Fail - Invalid/Insufficient file
+        }
+        
+        // ✅ PRIORITY 2: R (Refer) - Submitted but didn't meet Pass criteria
+        // Observer ONLY sees submitted grades - cannot detect "no submission"
+        if (is_null($rawgrade) || $rawgrade < 2) {
+            return "R";  // Refer - Needs improvement (scheduled task will check for RR)
+        }
+        
+        // ✅ PRIORITY 3: Pass grades (P/M/D)
+        if ($rawgrade >= 4) {
+            return "D";  // Distinction
+        } elseif ($rawgrade >= 3) {
+            return "M";  // Merit
+        } elseif ($rawgrade >= 2) {
+            return "P";  // Pass
+        }
+        
+        // Default fallback
+        return "R";
+    }
+    
+    /**
+     * Get quick feedback from assignfeedback_comments
+     * Single query - no joins
+     * 
+     * @param int $grade_id assign_grades.id
+     * @return string Feedback text (empty if none)
+     */
+    private static function get_quick_feedback($grade_id) {
+        global $DB;
+        
+        $feedbackplugin = $DB->get_record('assignfeedback_comments', ['grade' => $grade_id]);
+        if ($feedbackplugin && !empty($feedbackplugin->commenttext)) {
+            return trim(strip_tags($feedbackplugin->commenttext));
+        }
+        
+        return '';
+    }
+    
+    /**
+     * Detect grader role (Teacher or IV)
+     * Quick role check without heavy queries
+     * 
+     * @param int $grader_id User ID of grader
+     * @param int $course_id Course ID
+     * @return string 'Teacher', 'IV', or 'Unknown'
+     */
+    private static function detect_grader_role($grader_id, $course_id) {
+        $context = \context_course::instance($course_id);
+        $roles = get_user_roles($context, $grader_id);
+        
+        foreach ($roles as $role) {
+            if ($role->shortname === 'internalverifier') {
+                return 'IV';
+            } elseif ($role->shortname === 'editingteacher') {
+                return 'Teacher';
+            }
+        }
+        
+        return 'Unknown';
     }
 
     /**

@@ -47,46 +47,174 @@ class health_monitor extends \core\task\scheduled_task {
      * Execute task.
      */
     public function execute() {
-        mtrace('Running health check...');
+        mtrace('Running detailed health check...');
 
-        // Check 1: Backend connection.
-        mtrace('Checking Backend API connection...');
-        $connectiontest = config_manager::test_connection();
-        
-        if ($connectiontest['success']) {
-            mtrace('✓ Backend API is reachable.');
-        } else {
-            mtrace('✗ Backend API connection failed: ' . $connectiontest['message']);
+        $services = [
+            'backend_api' => $this->check_backend_api(),
+            'user_sync' => $this->check_service_health('user_created', 'user_updated'),
+            'course_sync' => $this->check_service_health('course_created', 'course_updated'),
+            'enrollment_sync' => $this->check_service_health('enrollment_created', 'enrollment_deleted'),
+            'grade_sync' => $this->check_service_health('grade_created', 'grade_updated'),
+            'learning_outcomes' => $this->check_learning_outcomes_health(),
+        ];
+
+        // Store results in config for dashboard display
+        foreach ($services as $service => $status) {
+            config_manager::set_config("health_status_{$service}", json_encode($status));
+            config_manager::set_config("health_last_check_{$service}", time());
         }
 
-        // Check 2: Event statistics (last 24 hours).
-        mtrace('Checking event statistics (last 24 hours)...');
-        $since = time() - 86400;
-        $stats = event_logger::get_statistics($since);
-
-        mtrace("  Total events: {$stats['total']}");
-        mtrace("  Sent: {$stats['sent']}");
-        mtrace("  Failed: {$stats['failed']}");
-        mtrace("  Pending: {$stats['pending']}");
-        mtrace("  Success rate: {$stats['success_rate']}%");
-
-        // Check 3: Failed events requiring attention.
-        $maxretries = config_manager::get_max_retry_attempts();
-        $failedevents = event_logger::get_failed_events($maxretries);
-        
-        if (!empty($failedevents)) {
-            mtrace("⚠ Warning: " . count($failedevents) . " events have failed and need retry.");
-        } else {
-            mtrace('✓ No failed events requiring attention.');
-        }
-
-        // Check 4: Success rate threshold.
-        if ($stats['total'] > 10 && $stats['success_rate'] < 90) {
-            mtrace('⚠ Warning: Success rate is below 90%!');
-        } elseif ($stats['total'] > 10) {
-            mtrace('✓ Success rate is healthy.');
+        // Display summary
+        mtrace('=== Health Check Summary ===');
+        foreach ($services as $service => $status) {
+            $icon = $status['status'] === 'ok' ? '✓' : ($status['status'] === 'warning' ? '⚠' : '✗');
+            mtrace("$icon " . ucwords(str_replace('_', ' ', $service)) . ": {$status['status']} - {$status['message']}");
         }
 
         mtrace('Health check complete.');
+    }
+
+    /**
+     * Check Backend API connectivity.
+     *
+     * @return array Status details
+     */
+    private function check_backend_api() {
+        $result = config_manager::test_connection();
+        
+        if ($result['success']) {
+            return [
+                'status' => 'ok',
+                'message' => 'Backend API is reachable',
+                'last_success' => time(),
+                'details' => $result
+            ];
+        } else {
+            return [
+                'status' => 'error',
+                'message' => 'Backend API connection failed: ' . $result['message'],
+                'last_failure' => time(),
+                'details' => $result
+            ];
+        }
+    }
+
+    /**
+     * Check health of a specific service based on event types.
+     *
+     * @param string ...$eventtypes Event types to check
+     * @return array Status details
+     */
+    private function check_service_health(...$eventtypes) {
+        global $DB;
+        
+        $since = time() - 86400; // Last 24 hours
+        $total = 0;
+        $sent = 0;
+        $failed = 0;
+        
+        foreach ($eventtypes as $eventtype) {
+            $total += $DB->count_records_select('local_mzi_event_log', 
+                "event_type = ? AND timecreated >= ?", [$eventtype, $since]);
+            $sent += $DB->count_records_select('local_mzi_event_log', 
+                "event_type = ? AND status = 'sent' AND timecreated >= ?", [$eventtype, $since]);
+            $failed += $DB->count_records_select('local_mzi_event_log', 
+                "event_type = ? AND status = 'failed' AND timecreated >= ?", [$eventtype, $since]);
+        }
+        
+        $success_rate = $total > 0 ? round(($sent / $total) * 100, 2) : 100;
+        
+        if ($total === 0) {
+            return [
+                'status' => 'ok',
+                'message' => 'No events in last 24 hours',
+                'total' => 0,
+                'sent' => 0,
+                'failed' => 0,
+                'success_rate' => 100
+            ];
+        }
+        
+        if ($success_rate >= 95) {
+            $status = 'ok';
+            $message = "Success rate: {$success_rate}%";
+        } elseif ($success_rate >= 80) {
+            $status = 'warning';
+            $message = "Success rate below 95%: {$success_rate}%";
+        } else {
+            $status = 'error';
+            $message = "Success rate critically low: {$success_rate}%";
+        }
+        
+        return [
+            'status' => $status,
+            'message' => $message,
+            'total' => $total,
+            'sent' => $sent,
+            'failed' => $failed,
+            'success_rate' => $success_rate,
+            'event_types' => $eventtypes
+        ];
+    }
+
+    /**
+     * Check Learning Outcomes sync health.
+     *
+     * @return array Status details
+     */
+    private function check_learning_outcomes_health() {
+        global $DB;
+        
+        $since = time() - 86400; // Last 24 hours
+        
+        // Count grades with learning outcomes
+        $sql = "SELECT COUNT(*) 
+                FROM {local_mzi_event_log} 
+                WHERE event_type IN ('grade_created', 'grade_updated') 
+                AND timecreated >= ? 
+                AND event_data LIKE '%learning_outcomes%'";
+        
+        $total_with_lo = $DB->count_records_sql($sql, [$since]);
+        
+        // Count successfully sent
+        $sql_sent = "SELECT COUNT(*) 
+                     FROM {local_mzi_event_log} 
+                     WHERE event_type IN ('grade_created', 'grade_updated') 
+                     AND timecreated >= ? 
+                     AND status = 'sent'
+                     AND event_data LIKE '%learning_outcomes%'";
+        
+        $sent_with_lo = $DB->count_records_sql($sql_sent, [$since]);
+        
+        if ($total_with_lo === 0) {
+            return [
+                'status' => 'ok',
+                'message' => 'No LO grades in last 24 hours',
+                'total' => 0,
+                'sent' => 0,
+                'success_rate' => 100
+            ];
+        }
+        
+        $success_rate = round(($sent_with_lo / $total_with_lo) * 100, 2);
+        
+        if ($success_rate >= 95) {
+            $status = 'ok';
+            $message = "LO sync healthy: {$success_rate}%";
+        } elseif ($success_rate >= 80) {
+            $status = 'warning';
+            $message = "LO sync below 95%: {$success_rate}%";
+        } else {
+            $status = 'error';
+            $message = "LO sync critically low: {$success_rate}%";
+        }
+        
+        return [
+            'status' => $status,
+            'message' => $message,
+            'total' => $total_with_lo,
+            'sent' => $sent_with_lo,
+            'success_rate' => $success_rate
+        ];
     }
 }

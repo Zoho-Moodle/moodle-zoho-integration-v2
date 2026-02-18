@@ -38,10 +38,11 @@ class webhook_sender {
      * 
      * @param array $user_data
      * @param int $moodleeventid Optional Moodle event ID for tracking
+     * @param array $context Optional context for enhanced logging
      * @return array Response with event_id, success status
      */
-    public function send_user_created($user_data, $moodleeventid = null) {
-        return $this->send_webhook_with_logging('/api/v1/webhooks', 'user_created', $user_data, $moodleeventid);
+    public function send_user_created($user_data, $moodleeventid = null, $context = []) {
+        return $this->send_webhook_with_logging('/api/v1/webhooks', 'user_created', $user_data, $moodleeventid, $context);
     }
 
     /**
@@ -49,10 +50,11 @@ class webhook_sender {
      * 
      * @param array $user_data
      * @param int $moodleeventid Optional Moodle event ID for tracking
+     * @param array $context Optional context for enhanced logging
      * @return array Response with event_id, success status
      */
-    public function send_user_updated($user_data, $moodleeventid = null) {
-        return $this->send_webhook_with_logging('/api/v1/webhooks', 'user_updated', $user_data, $moodleeventid);
+    public function send_user_updated($user_data, $moodleeventid = null, $context = []) {
+        return $this->send_webhook_with_logging('/api/v1/webhooks', 'user_updated', $user_data, $moodleeventid, $context);
     }
 
     /**
@@ -60,10 +62,11 @@ class webhook_sender {
      * 
      * @param array $enrollment_data
      * @param int $moodleeventid Optional Moodle event ID for tracking
+     * @param array $context Optional context for enhanced logging
      * @return array Response with event_id, success status
      */
-    public function send_enrollment_created($enrollment_data, $moodleeventid = null) {
-        return $this->send_webhook_with_logging('/api/v1/webhooks', 'enrollment_created', $enrollment_data, $moodleeventid);
+    public function send_enrollment_created($enrollment_data, $moodleeventid = null, $context = []) {
+        return $this->send_webhook_with_logging('/api/v1/webhooks', 'enrollment_created', $enrollment_data, $moodleeventid, $context);
     }
 
     /**
@@ -71,10 +74,11 @@ class webhook_sender {
      * 
      * @param array $enrollment_data
      * @param int $moodleeventid Optional Moodle event ID for tracking
+     * @param array $context Optional context for enhanced logging
      * @return array Response with event_id, success status
      */
-    public function send_enrollment_deleted($enrollment_data, $moodleeventid = null) {
-        return $this->send_webhook_with_logging('/api/v1/webhooks', 'enrollment_deleted', $enrollment_data, $moodleeventid);
+    public function send_enrollment_deleted($enrollment_data, $moodleeventid = null, $context = []) {
+        return $this->send_webhook_with_logging('/api/v1/webhooks', 'enrollment_deleted', $enrollment_data, $moodleeventid, $context);
     }
 
     /**
@@ -82,10 +86,11 @@ class webhook_sender {
      * 
      * @param array $grade_data
      * @param int $moodleeventid Optional Moodle event ID for tracking
+     * @param array $context Optional context for enhanced logging
      * @return array Response with event_id, success status
      */
-    public function send_grade_created($grade_data, $moodleeventid = null) {
-        return $this->send_webhook_with_logging('/api/v1/webhooks', 'grade_created', $grade_data, $moodleeventid);
+    public function send_grade_created($grade_data, $moodleeventid = null, $context = []) {
+        return $this->send_webhook_with_logging('/api/v1/webhooks', 'grade_created', $grade_data, $moodleeventid, $context);
     }
 
     /**
@@ -93,10 +98,11 @@ class webhook_sender {
      * 
      * @param array $grade_data
      * @param int $moodleeventid Optional Moodle event ID for tracking
+     * @param array $context Optional context for enhanced logging
      * @return array Response with event_id, success status
      */
-    public function send_grade_updated($grade_data, $moodleeventid = null) {
-        return $this->send_webhook_with_logging('/api/v1/webhooks', 'grade_updated', $grade_data, $moodleeventid);
+    public function send_grade_updated($grade_data, $moodleeventid = null, $context = []) {
+        return $this->send_webhook_with_logging('/api/v1/webhooks', 'grade_updated', $grade_data, $moodleeventid, $context);
     }
     
     /**
@@ -106,14 +112,15 @@ class webhook_sender {
      * @param string $eventtype Event type for logging
      * @param array $data Payload data
      * @param int $moodleeventid Optional Moodle event ID
+     * @param array $context Optional context for enhanced logging (student_name, course_name, etc.)
      * @return array Response with event_id and status
      */
-    private function send_webhook_with_logging($endpoint, $eventtype, $data, $moodleeventid = null) {
+    private function send_webhook_with_logging($endpoint, $eventtype, $data, $moodleeventid = null, $context = []) {
         // Generate UUID EXACTLY ONCE - this is the single source of truth
         $eventid = event_logger::generate_uuid();
         
         // Log event to database BEFORE sending (for idempotency and failure tracking)
-        event_logger::log_event($eventtype, $data, $moodleeventid, $eventid);
+        event_logger::log_event($eventtype, $data, $moodleeventid, $eventid, $context);
         
         // Build webhook payload in the format expected by Backend
         $payload = [
@@ -269,6 +276,100 @@ class webhook_sender {
             'status' => $status_code,
             'body' => $response_body
         ];
+    }
+    
+    /**
+     * Extract context details from event data for enhanced logging
+     * 
+     * @param array $data Event data
+     * @param string $eventtype Event type
+     * @return array Context details
+     */
+    public static function extract_context($data, $eventtype) {
+        global $DB;
+        $context = [];
+        
+        try {
+            // Extract student name - check multiple possible fields
+            $userid = null;
+            if (!empty($data['user_id'])) {
+                $userid = $data['user_id'];
+            } elseif (!empty($data['student_id'])) {
+                $userid = $data['student_id'];
+            } elseif (!empty($data['userid'])) {
+                $userid = $data['userid'];
+            } elseif (!empty($data['id'])) {
+                // For user_created/user_updated events
+                $userid = $data['id'];
+            }
+            
+            if ($userid) {
+                $user = $DB->get_record('user', ['id' => $userid], 'firstname, lastname, email');
+                if ($user) {
+                    // Build full name manually to avoid missing fields warning
+                    $context['student_name'] = trim($user->firstname . ' ' . $user->lastname);
+                    $context['related_id'] = $userid;
+                }
+            }
+            
+            // Extract course name - check multiple possible fields
+            $courseid = null;
+            if (!empty($data['course_id'])) {
+                $courseid = $data['course_id'];
+            } elseif (!empty($data['courseid'])) {
+                $courseid = $data['courseid'];
+            }
+            
+            if ($courseid && $courseid > 1) { // Skip site course
+                $course = $DB->get_record('course', ['id' => $courseid], 'fullname, shortname');
+                if ($course) {
+                    $context['course_name'] = $course->fullname;
+                    if (empty($context['related_id'])) {
+                        $context['related_id'] = $courseid;
+                    }
+                }
+            }
+            
+            // Extract assignment name - check multiple possible fields
+            $assignmentid = null;
+            if (!empty($data['assignment_id'])) {
+                $assignmentid = $data['assignment_id'];
+            } elseif (!empty($data['assignmentid'])) {
+                $assignmentid = $data['assignmentid'];
+            }
+            
+            if ($assignmentid) {
+                $assignment = $DB->get_record('assign', ['id' => $assignmentid], 'name');
+                if ($assignment) {
+                    $context['assignment_name'] = $assignment->name;
+                }
+            }
+            
+            // Extract grade value - check multiple possible fields
+            $grade = null;
+            if (isset($data['grade'])) {
+                $grade = $data['grade'];
+            } elseif (isset($data['finalgrade'])) {
+                $grade = $data['finalgrade'];
+            } elseif (isset($data['rawgrade'])) {
+                $grade = $data['rawgrade'];
+            }
+            
+            if ($grade !== null && $grade !== '') {
+                $context['grade_name'] = is_numeric($grade) ? number_format((float)$grade, 2) : $grade;
+            }
+            
+            // For grade events, also check grade_letter
+            if (!empty($data['grade_letter'])) {
+                $context['grade_name'] = $data['grade_letter'];
+            }
+            
+        } catch (\Exception $e) {
+            debugging('Error extracting context: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            error_log('Context extraction error: ' . $e->getMessage() . ' | Data: ' . json_encode($data));
+        }
+        
+        return $context;
     }
 
     /**

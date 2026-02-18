@@ -16,6 +16,25 @@ if ($hassiteconfig) {
     $settings = new admin_settingpage('local_moodle_zoho_sync', 
         get_string('pluginname', 'local_moodle_zoho_sync'));
     
+    // ══════════════════════════════════════════════════════════
+    // QUICK ACCESS NAVIGATION - Links to all plugin pages
+    // ══════════════════════════════════════════════════════════
+    $quick_links_html = '<ul style="margin:0;padding-left:20px;line-height:2;">
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/dashboard.php'))->out(false) . '">Dashboard - System overview & KPIs</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/student_dashboard_management.php'))->out(false) . '">Student Dashboard Management - Manage student portal</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/grade_queue_monitor.php'))->out(false) . '">Grade Monitor - Grade operations tracking</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/event_logs.php'))->out(false) . '">Event Logs - Webhook & sync events</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/health_check.php'))->out(false) . '">Health Check - System health status</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/statistics.php'))->out(false) . '">Statistics - Analytics & reports</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/sync_management.php'))->out(false) . '">Sync Management - Manage sync operations</a></li>
+    </ul>';
+    
+    $settings->add(new admin_setting_heading(
+        'local_moodle_zoho_sync/quick_access_heading',
+        'Quick Access - Plugin Pages',
+        $quick_links_html
+    ));
+    
     // Create category for plugin.
     $ADMIN->add('localplugins', new admin_category('local_moodle_zoho_sync_category',
         get_string('pluginname', 'local_moodle_zoho_sync')));
@@ -28,6 +47,14 @@ if ($hassiteconfig) {
         'local_moodle_zoho_sync_dashboard',
         get_string('admin_dashboard', 'local_moodle_zoho_sync'),
         new moodle_url('/local/moodle_zoho_sync/ui/admin/dashboard.php'),
+        'local/moodle_zoho_sync:manage'
+    ));
+    
+    // Add Student Dashboard Management (NEW)
+    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
+        'local_moodle_zoho_sync_student_dashboard',
+        get_string('student_dashboard_management', 'local_moodle_zoho_sync'),
+        new moodle_url('/local/moodle_zoho_sync/ui/admin/student_dashboard_management.php'),
         'local/moodle_zoho_sync:manage'
     ));
     
@@ -50,6 +77,29 @@ if ($hassiteconfig) {
         'local_moodle_zoho_sync_health',
         get_string('health_check', 'local_moodle_zoho_sync'),
         new moodle_url('/local/moodle_zoho_sync/ui/admin/health_check.php'),
+        'local/moodle_zoho_sync:manage'
+    ));
+    
+    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
+        'local_moodle_zoho_sync_btec_templates',
+        'BTEC Templates',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin/btec_templates.php'),
+        'local/moodle_zoho_sync:manage'
+    ));
+    
+    // Add Grade Queue Monitor (NEW - Hybrid Grading System)
+    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
+        'local_moodle_zoho_sync_grade_queue',
+        get_string('gradequeue_monitor', 'local_moodle_zoho_sync'),
+        new moodle_url('/local/moodle_zoho_sync/ui/admin/grade_queue_monitor.php'),
+        'local/moodle_zoho_sync:manage'
+    ));
+    
+    // Add Sync Management
+    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
+        'local_moodle_zoho_sync_management',
+        'Sync Management',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin/sync_management.php'),
         'local/moodle_zoho_sync:manage'
     ));
 

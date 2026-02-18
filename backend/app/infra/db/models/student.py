@@ -22,7 +22,7 @@ class Student(Base):
 
     # User information
     display_name = Column(String, nullable=True)
-    academic_email = Column(String, nullable=False)
+    academic_email = Column(String, nullable=False)  # Required - students must be created in Moodle first with email
     birth_date = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     address = Column(String, nullable=True)

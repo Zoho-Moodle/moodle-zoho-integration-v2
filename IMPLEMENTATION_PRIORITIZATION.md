@@ -1,7 +1,155 @@
 # Implementation Prioritization Guide - BTEC Educational Context
 **Context:** ABC Horizon BTEC Programs  
-**Date:** February 4, 2026  
+**Date Created:** February 4, 2026  
+**Last Updated:** February 7, 2026  
 **Stakeholders:** Students, Teachers, Internal Verifiers, Admins, Finance Team
+
+---
+
+## 📊 CURRENT STATUS (February 7, 2026)
+
+### ✅ COMPLETED PRIORITIES
+
+#### 🔴 P1.1: BTEC Learning Outcomes in Grade Sync ✅
+**Status:** COMPLETED & TESTED  
+**Completion Date:** February 7, 2026  
+**What Was Done:**
+- ✅ `data_extractor.php::extract_btec_learning_outcomes()` implemented
+- ✅ Extracts from `grading_instances`, `gradingform_btec_criteria`, `gradingform_btec_fillings`
+- ✅ Backend transforms to Zoho `Learning_Outcomes_Assessm` subform format
+- ✅ Tested successfully: "Found 3 criteria, 3 fillings"
+- ✅ All fields sent: LO_Code, LO_Definition, LO_Score, LO_Feedback
+
+**Evidence:** Production logs show learning outcomes being synced correctly
+
+---
+
+#### 🔴 P1.2: BTEC Grade Conversion ✅
+**Status:** COMPLETED & TESTED  
+**Completion Date:** February 7, 2026  
+**What Was Done:**
+- ✅ Grade conversion logic in `data_extractor.php`
+- ✅ Converts 0-4 scale to Pass/Merit/Distinction/Refer
+- ✅ Backend receives and processes BTEC grades correctly
+- ✅ Zoho displays correct BTEC classification
+
+**Evidence:** Logs show "Grade: Merit" being sent to Zoho
+
+---
+
+#### 🟡 P2.2: Grader Role Detection (Teacher vs IV) ✅
+**Status:** COMPLETED & TESTED  
+**Completion Date:** February 7, 2026  
+**What Was Done:**
+- ✅ `get_grader_role_legacy()` method implemented
+- ✅ Detects 'iv', 'teacher', or 'other' roles
+- ✅ Backend maps to correct Zoho fields (IV_Name vs Grader_Name)
+- ✅ Priority: IV > Teacher role detection
+
+**Evidence:** Backend logs show role mapping working correctly
+
+---
+
+#### 🟡 P2.3: Backend Updates Zoho Moodle ID Fields ✅
+**Status:** COMPLETED  
+**Completion Date:** February 7, 2026  
+**What Was Done:**
+- ✅ User webhooks (created/updated) send userid
+- ✅ Enrollment webhooks send student_id and course_id
+- ✅ Backend searches Zoho and updates Moodle ID fields
+- ✅ Linking works for Students, Teachers, Classes
+
+**Evidence:** Grade sync successfully finds Student and Class by Moodle IDs
+
+---
+
+#### ➕ BONUS: Course Creation Centralized ✅ (NEW)
+**Status:** COMPLETED  
+**Completion Date:** February 7, 2026  
+**What Was Done:**
+- ✅ `MoodleClient::create_course()` implemented
+- ✅ `MoodleClient::enrol_default_users()` with all required users:
+  - IT Support (8157)
+  - Student Affairs (8181)
+  - IT Program Leader (8133) - conditional on Class_Major
+  - CEO (8154)
+  - Moodle Super Admin (2)
+- ✅ `POST /api/v1/classes/create` endpoint
+- ✅ Returns Moodle Course ID to Zoho
+- ✅ Updates Zoho BTEC_Classes with Moodle_Class_ID
+- ✅ Enrolls teacher if provided
+
+**Replaces:** Zoho Deluge function (createClassCreateMoodle2)  
+**Architecture:** Now centralized through Backend API
+
+---
+
+### ⚠️ PARTIALLY COMPLETED
+
+#### 🟡 P1.3: Backend Health Monitoring + Fallback Queue ⚠️
+**Status:** PARTIAL (60% Complete)  
+**What Works:**
+- ✅ Webhook retry logic (3 attempts with backoff)
+- ✅ Event logging in database
+- ✅ Failed webhooks stored for retry
+
+**What's Missing:**
+- ❌ Health monitoring dashboard for admins
+- ❌ Email notifications on Backend downtime
+- ❌ Real-time status indicator
+- ❌ Scheduled health check task
+
+**Impact:** Medium - System retries failures but admins don't get proactive alerts
+
+---
+
+### ❌ NOT STARTED
+
+#### 🟡 P2.1: Student Dashboard Data Implementation ❌
+**Status:** NOT STARTED  
+**Current State:** Dashboard UI exists but shows placeholder text  
+**Blocker:** Need to decide on caching strategy (local vs real-time)
+
+**Estimated Effort:** 4-5 days
+
+---
+
+#### 🟢 P3.1: Zoho → Moodle Enrollment Sync (Reverse Direction) ❌
+**Status:** NOT STARTED  
+**Current State:** Only Moodle → Zoho direction works  
+**Question:** Is this workflow needed? (Check with stakeholders)
+
+**Estimated Effort:** 3-4 days
+
+---
+
+### 📈 SUMMARY BY PRIORITY
+
+| Priority | Total Items | Completed | Partial | Not Started |
+|----------|-------------|-----------|---------|-------------|
+| P1 (Must Fix) | 3 | 2 ✅ | 1 ⚠️ | 0 |
+| P2 (Critical) | 3 | 2 ✅ | 0 | 1 ❌ |
+| P3 (Important) | 2 | 0 | 0 | 2 ❌ |
+| **TOTAL** | **8** | **4 (50%)** | **1 (12.5%)** | **3 (37.5%)** |
+
+---
+
+### 🎯 NEXT PRIORITIES
+
+**Immediate (This Week):**
+1. ⚠️ Complete P1.3: Health Monitoring Dashboard
+2. ❌ Decide on P2.1: Student Dashboard implementation approach
+
+**Short-term (Next 2 Weeks):**
+3. Implement P2.1 if approved
+4. Validate with stakeholders: Need P3.1 (reverse enrollment)?
+
+**Production Readiness:**
+- ✅ Core BTEC compliance features working (P1.1, P1.2)
+- ✅ Data linking complete (P2.2, P2.3)
+- ✅ Grade sync with Learning Outcomes functional
+- ⚠️ Health monitoring needs completion before production
+- ❓ Student dashboard optional for first release
 
 ---
 
