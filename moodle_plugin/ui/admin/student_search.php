@@ -7,6 +7,7 @@
  */
 
 require_once(__DIR__ . '/../../../../../config.php');
+require_once(__DIR__ . '/includes/navigation.php');
 require_login();
 
 // Check if user has admin or manager capabilities
@@ -24,6 +25,10 @@ $search = optional_param('search', '', PARAM_TEXT);
 $student_id = optional_param('student_id', 0, PARAM_INT);
 
 echo $OUTPUT->header();
+mzi_output_navigation_styles();
+echo '<div class="mzi-page-container">';
+mzi_render_navigation('student_search', 'Moodle-Zoho Integration', 'Student Data Search');
+mzi_render_breadcrumb('Student Search');
 ?>
 
 <script>
@@ -40,9 +45,10 @@ function switchTab(tabName, button) {
         buttons[i].classList.remove('active');
     }
     
-    // Show selected tab
-    document.getElementById(tabName + '-tab').classList.add('active');
-    button.classList.add('active');
+    // Show selected tab - safe null check
+    var target = document.getElementById(tabName + '-tab');
+    if (target) target.classList.add('active');
+    if (button) button.classList.add('active');
 }
 </script>
 
@@ -264,8 +270,8 @@ if ($student_id > 0) {
         // Tabs
         echo '<div class="nav-tabs">';
         echo '<button class="tab-button active" onclick="switchTab(\'profile\', this)">Profile</button>';
-        echo '<button class="tab-button" onclick="switchTab(\'programs\', this)">Programs</button>';
-        echo '<button class="tab-button" onclick="switchTab(\'classes\', this)">Classes</button>';
+        echo '<button class="tab-button" onclick="switchTab(\'programs\', this)">Enrollments</button>';
+        echo '<button class="tab-button" onclick="switchTab(\'classes\', this)">Grades</button>';
         echo '<button class="tab-button" onclick="switchTab(\'requests\', this)">Requests</button>';
         echo '</div>';
         
@@ -302,65 +308,90 @@ if ($student_id > 0) {
         }
         echo '</div>';
         
-        // Programs Tab
+        // Programs/Enrollments Tab
         echo '<div id="programs-tab" class="tab-content">';
-        echo '<h3>Enrolled Programs</h3>';
-        $programs = $DB->get_records('local_mzi_enrollments', ['zoho_student_id' => $student->zoho_student_id]);
-        if ($programs) {
+        echo '<h3>Enrolled Classes</h3>';
+        $enrollments = $DB->get_records_sql("
+            SELECT e.*, c.class_name, c.unit_name, c.program_level, c.teacher_name,
+                   c.start_date, c.end_date, c.class_status, c.class_type
+            FROM {local_mzi_enrollments} e
+            LEFT JOIN {local_mzi_classes} c ON e.class_id = c.id
+            WHERE e.student_id = ?
+            ORDER BY e.enrollment_date DESC
+        ", [$student->id]);
+        if ($enrollments) {
             echo '<table class="data-table">';
-            echo '<thead><tr><th>Program Name</th><th>Enrollment Date</th><th>Status</th><th>Expected Graduation</th></tr></thead>';
+            echo '<thead><tr><th>Class Name</th><th>Unit</th><th>Program Level</th><th>Teacher</th><th>Enrollment Date</th><th>Status</th><th>Attendance %</th></tr></thead>';
             echo '<tbody>';
-            foreach ($programs as $program) {
+            foreach ($enrollments as $enrollment) {
                 echo '<tr>';
-                echo '<td>' . s(isset($program->program_name) ? $program->program_name : 'N/A') . '</td>';
-                echo '<td>' . s($program->enrollment_date ?: 'N/A') . '</td>';
-                echo '<td>' . s($program->enrollment_status ?: 'N/A') . '</td>';
-                echo '<td>' . s(isset($program->expected_graduation_date) ? $program->expected_graduation_date : 'N/A') . '</td>';
+                echo '<td>' . s($enrollment->class_name ?: 'N/A') . '</td>';
+                echo '<td>' . s($enrollment->unit_name ?: 'N/A') . '</td>';
+                echo '<td>' . s($enrollment->program_level ?: 'N/A') . '</td>';
+                echo '<td>' . s($enrollment->teacher_name ?: 'N/A') . '</td>';
+                echo '<td>' . s($enrollment->enrollment_date ?: 'N/A') . '</td>';
+                echo '<td><span style="padding:3px 8px;border-radius:4px;background:' . ($enrollment->enrollment_status === 'Active' ? '#d4edda;color:#155724' : '#f8d7da;color:#721c24') . '">' . s($enrollment->enrollment_status ?: 'N/A') . '</span></td>';
+                echo '<td>' . (isset($enrollment->attendance_percentage) ? number_format($enrollment->attendance_percentage, 1) . '%' : 'N/A') . '</td>';
                 echo '</tr>';
             }
             echo '</tbody></table>';
         } else {
-            echo '<p class="no-results">No programs found</p>';
+            echo '<p class="no-results">No enrollments found</p>';
         }
         echo '</div>';
         
-        // Classes Tab
+        // Grades Tab
         echo '<div id="classes-tab" class="tab-content">';
-        echo '<h3>Registered Classes</h3>';
-        $classes = $DB->get_records('local_mzi_classes', ['zoho_student_id' => $student->zoho_student_id]);
-        if ($classes) {
+        echo '<h3>Grades</h3>';
+        $grades = $DB->get_records_sql("
+            SELECT g.*, c.class_name, c.unit_name
+            FROM {local_mzi_grades} g
+            LEFT JOIN {local_mzi_classes} c ON g.class_id = c.id
+            WHERE g.student_id = ?
+            ORDER BY g.grade_date DESC
+        ", [$student->id]);
+        if ($grades) {
             echo '<table class="data-table">';
-            echo '<thead><tr><th>Class Name</th><th>Section</th><th>Instructor</th><th>Schedule</th><th>Status</th></tr></thead>';
+            echo '<thead><tr><th>Assignment</th><th>Class</th><th>Grade</th><th>Attempt</th><th>Feedback</th><th>Grade Date</th></tr></thead>';
             echo '<tbody>';
-            foreach ($classes as $class) {
+            foreach ($grades as $grade) {
+                $grade_colors = ['P' => '#d4edda;color:#155724', 'M' => '#d1ecf1;color:#0c5460', 'D' => '#e2d9f3;color:#432874', 'R' => '#fff3cd;color:#856404', 'F' => '#f8d7da;color:#721c24', 'RR' => '#fde8d8;color:#8a3c0e'];
+                $gc = $grade_colors[$grade->btec_grade_name] ?? '#e2e3e5;color:#383d41';
                 echo '<tr>';
-                echo '<td>' . s($class->class_name ?: 'N/A') . '</td>';
-                echo '<td>' . s($class->section ?: 'N/A') . '</td>';
-                echo '<td>' . s($class->instructor_name ?: 'N/A') . '</td>';
-                echo '<td>' . s($class->class_schedule ?: 'N/A') . '</td>';
-                echo '<td>' . s($class->registration_status ?: 'N/A') . '</td>';
+                echo '<td>' . s($grade->assignment_name ?: 'N/A') . '</td>';
+                echo '<td>' . s($grade->class_name ?: 'N/A') . '</td>';
+                echo '<td><span style="padding:3px 10px;border-radius:12px;font-weight:700;background:' . $gc . '">' . s($grade->btec_grade_name ?: 'N/A') . '</span></td>';
+                echo '<td>' . s($grade->attempt_number ?: '1') . '</td>';
+                echo '<td><small>' . s(mb_substr($grade->feedback ?: '', 0, 80)) . (strlen($grade->feedback ?? '') > 80 ? '...' : '') . '</small></td>';
+                echo '<td>' . s($grade->grade_date ?: 'N/A') . '</td>';
                 echo '</tr>';
             }
             echo '</tbody></table>';
         } else {
-            echo '<p class="no-results">No classes found</p>';
+            echo '<p class="no-results">No grades found</p>';
         }
         echo '</div>';
         
         // Requests Tab
         echo '<div id="requests-tab" class="tab-content">';
         echo '<h3>Student Requests</h3>';
-        $requests = $DB->get_records('local_mzi_requests', ['zoho_student_id' => $student->zoho_student_id]);
+        $requests = $DB->get_records('local_mzi_requests', ['student_id' => $student->id], 'created_at DESC');
         if ($requests) {
             echo '<table class="data-table">';
-            echo '<thead><tr><th>Request Type</th><th>Subject</th><th>Status</th><th>Submitted</th></tr></thead>';
+            echo '<thead><tr><th>Request Type</th><th>Priority</th><th>Reason</th><th>Status</th><th>Admin Notes</th><th>Submitted</th></tr></thead>';
             echo '<tbody>';
             foreach ($requests as $request) {
+                $status_colors = ['Approved' => '#d4edda;color:#155724', 'Rejected' => '#f8d7da;color:#721c24', 'Under Review' => '#fff3cd;color:#856404', 'Submitted' => '#d1ecf1;color:#0c5460'];
+                $sc = $status_colors[$request->request_status] ?? '#e2e3e5;color:#383d41';
+                $priority_colors = ['Urgent' => '#f8d7da;color:#721c24', 'High' => '#fde8d8;color:#8a3c0e', 'Medium' => '#fff3cd;color:#856404', 'Low' => '#e2e3e5;color:#383d41'];
+                $pc = $priority_colors[$request->priority] ?? '#e2e3e5;color:#383d41';
                 echo '<tr>';
                 echo '<td>' . s($request->request_type ?: 'N/A') . '</td>';
-                echo '<td>' . s($request->request_subject ?: 'N/A') . '</td>';
-                echo '<td>' . s($request->request_status ?: 'N/A') . '</td>';
-                echo '<td>' . s($request->submission_date ?: 'N/A') . '</td>';
+                echo '<td><span style="padding:3px 8px;border-radius:4px;background:' . $pc . '">' . s($request->priority ?: 'N/A') . '</span></td>';
+                echo '<td><small>' . s(mb_substr($request->reason ?: '', 0, 80)) . '</small></td>';
+                echo '<td><span style="padding:3px 8px;border-radius:4px;background:' . $sc . '">' . s($request->request_status ?: 'N/A') . '</span></td>';
+                echo '<td><small>' . s(mb_substr($request->admin_notes ?: '', 0, 80)) . '</small></td>';
+                echo '<td>' . ($request->created_at ? userdate($request->created_at, '%d %b %Y') : 'N/A') . '</td>';
                 echo '</tr>';
             }
             echo '</tbody></table>';
@@ -378,5 +409,6 @@ if ($student_id > 0) {
 ?>
 
 <?php
+echo '</div>'; // Close mzi-page-container
 echo $OUTPUT->footer();
 ?>
