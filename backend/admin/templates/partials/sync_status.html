@@ -1,0 +1,128 @@
+<!-- HTMX partial: Sync Status Panel
+     Returned by GET /admin/sync/status-partial
+     Also rendered inline on first load of sync_control.html -->
+
+<span data-sync-status="{{ sync.status or 'no_job' }}" hidden></span>
+
+{% if sync.status == 'no_job' or sync.status == 'unreachable' %}
+<div class="flex flex-col items-center justify-center py-16 text-gray-400">
+  <svg class="w-12 h-12 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.3" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+  </svg>
+  <p class="text-sm font-medium">No sync job has run yet.</p>
+  <p class="text-xs mt-1">Click "Start Full Sync" to begin.</p>
+</div>
+
+{% else %}
+
+<!-- Header row -->
+<div class="flex flex-wrap items-center gap-3 mb-5">
+  {% if sync.status == 'completed' %}
+    <span class="badge-success text-sm px-3 py-1">✓ Completed</span>
+  {% elif sync.status == 'running' %}
+    <span class="badge-info text-sm px-3 py-1">⟳ Running…</span>
+  {% elif sync.status == 'failed' %}
+    <span class="badge-error text-sm px-3 py-1">✗ Failed</span>
+  {% elif sync.status == 'pending' %}
+    <span class="badge-warn text-sm px-3 py-1">◷ Pending</span>
+  {% else %}
+    <span class="badge-gray text-sm px-3 py-1">{{ sync.status }}</span>
+  {% endif %}
+
+  <span class="text-xs text-gray-400 font-mono">{{ sync.job_id[:12] if sync.job_id else '' }}…</span>
+  <span class="text-xs text-gray-400">Started: {{ ts(sync.started_at) }}</span>
+  {% if sync.finished_at %}
+  <span class="text-xs text-gray-400">Finished: {{ ts(sync.finished_at) }}</span>
+  {% endif %}
+</div>
+
+<!-- Current step -->
+<div class="mb-4">
+  <p class="text-xs text-gray-400 uppercase font-semibold tracking-wide mb-1">Current Step</p>
+  <p class="text-sm font-medium text-gray-800">{{ sync.current_step or '—' }}</p>
+</div>
+
+<!-- Overall progress bar -->
+{% set total_all = namespace(val=0) %}
+{% set synced_all = namespace(val=0) %}
+{% if sync.results %}
+  {% for step_key, step in sync.results.items() %}
+    {% set total_all.val = total_all.val + (step.total or 0) %}
+    {% set synced_all.val = synced_all.val + (step.synced or 0) %}
+  {% endfor %}
+{% endif %}
+{% if total_all.val > 0 %}
+<div class="mb-5">
+  <div class="flex justify-between text-xs text-gray-500 mb-1">
+    <span>Overall Progress</span>
+    <span>{{ synced_all.val }} / {{ total_all.val }}</span>
+  </div>
+  <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+    <div class="h-full bg-brand-500 rounded-full transition-all duration-500"
+         style="width: {{ [(synced_all.val / total_all.val * 100)|int, 100]|min }}%"></div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Per-step details -->
+{% if sync.results %}
+<div class="space-y-3">
+  {% set steps_order = ['students', 'classes', 'registrations', 'enrollments', 'payments', 'grades', 'requests'] %}
+  {% for step_name in steps_order %}
+    {% if step_name in sync.results %}
+    {% set step = sync.results[step_name] %}
+    <div class="rounded-lg border {% if step.errors > 0 %}border-red-100 bg-red-50{% else %}border-gray-100 bg-gray-50{% endif %} p-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-gray-700 capitalize">{{ step_name }}</span>
+        <div class="flex items-center gap-1.5">
+          {% if step.synced > 0 %}<span class="badge-success text-xs">{{ step.synced }} synced</span>{% endif %}
+          {% if step.skipped > 0 %}<span class="badge-gray text-xs">{{ step.skipped }} skip</span>{% endif %}
+          {% if step.errors > 0 %}<span class="badge-error text-xs">{{ step.errors }} errors</span>{% endif %}
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      {% if step.total > 0 %}
+      <div class="h-1.5 bg-white rounded-full overflow-hidden mb-2">
+        <div class="h-full rounded-full transition-all duration-500 {% if step.errors > 0 %}bg-red-400{% else %}bg-brand-500{% endif %}"
+             style="width: {{ [((step.synced + step.skipped) / step.total * 100)|int, 100]|min }}%"></div>
+      </div>
+      <div class="flex justify-between text-xs text-gray-400">
+        <span>{{ step.module or step_name }}</span>
+        <span>{{ step.synced + step.skipped }}/{{ step.total }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Error details (collapsed) -->
+      {% if step.error_details and step.error_details|length > 0 %}
+      <details class="mt-2">
+        <summary class="text-xs text-red-600 cursor-pointer font-medium">{{ step.error_details|length }} error details</summary>
+        <div class="mt-1.5 space-y-1 max-h-32 overflow-y-auto">
+          {% for err in step.error_details %}
+          <p class="text-xs font-mono text-red-600 bg-red-50 px-2 py-1 rounded border border-red-100 break-all">{{ err }}</p>
+          {% endfor %}
+        </div>
+      </details>
+      {% endif %}
+
+    </div>
+    {% endif %}
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-sm text-gray-400 text-center py-8">Sync results will appear here as steps complete.</p>
+{% endif %}
+
+<!-- Totals footer -->
+<div class="mt-5 pt-4 border-t border-gray-100 flex gap-6">
+  <div>
+    <p class="text-xs text-gray-400 font-medium">Total Synced</p>
+    <p class="text-2xl font-bold text-gray-800">{{ sync.total_synced or 0 }}</p>
+  </div>
+  <div>
+    <p class="text-xs text-gray-400 font-medium">Total Errors</p>
+    <p class="text-2xl font-bold {% if (sync.total_errors or 0) > 0 %}text-red-600{% else %}text-gray-800{% endif %}">{{ sync.total_errors or 0 }}</p>
+  </div>
+</div>
+
+{% endif %}

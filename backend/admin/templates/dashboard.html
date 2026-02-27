@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle_text %}Integration overview &amp; live status{% endblock %}
+
+{% block content %}
+
+<!-- Integration warning banner -->
+{% if not integration_ok %}
+<div class="mb-5 flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+  <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+  </svg>
+  <div>
+    <span class="font-semibold">Integration not fully configured.</span>
+    Zoho Client ID or Moodle URL is missing.
+    <a href="/admin/settings" class="underline font-medium ml-1">Go to Settings →</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Stat cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+  {% set stat_items = [
+    ("Students in DB",        stats.students,           "text-brand-600",  "bg-brand-50",   "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"),
+    ("Events Total",          stats.events_total,        "text-blue-600",  "bg-blue-50",    "M13 10V3L4 14h7v7l9-11h-7z"),
+    ("Events Completed",      stats.events_completed,    "text-green-600", "bg-green-50",   "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"),
+    ("Events Failed",         stats.events_failed,       "text-red-600",   "bg-red-50",     "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"),
+  ] %}
+
+  {% for label, value, text_color, bg_color, icon_path in stat_items %}
+  <div class="card flex items-center gap-4">
+    <div class="h-10 w-10 rounded-xl {{ bg_color }} flex items-center justify-center shrink-0">
+      <svg class="{{ text_color }}" style="width:1.25rem;height:1.25rem" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="{{ icon_path }}"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-xs text-gray-500 font-medium leading-tight">{{ label }}</p>
+      <p class="{{ text_color }} text-2xl font-bold leading-tight">{{ value }}</p>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Two columns: Sync status + Recent events -->
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+  <!-- Sync status card (3 cols) -->
+  <div class="lg:col-span-3 card">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-gray-800">Latest Sync Job</h2>
+      {% if sync.status not in ['no_job', 'unreachable'] %}
+      <a href="/admin/sync" class="text-xs text-brand-600 hover:underline font-medium">View full control →</a>
+      {% endif %}
+    </div>
+
+    {% if sync.status == 'no_job' or sync.status == 'unreachable' %}
+    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+      <svg class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <p class="text-sm">No sync job has been run yet.</p>
+      <a href="/admin/sync" class="mt-3 btn-primary text-xs">Start First Sync</a>
+    </div>
+    {% else %}
+    <!-- Status badge + meta -->
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+      {% if sync.status == 'completed' %}
+        <span class="badge-success text-sm px-3 py-1">✓ Completed</span>
+      {% elif sync.status == 'running' %}
+        <span class="badge-info text-sm px-3 py-1 animate-pulse">⟳ Running</span>
+      {% elif sync.status == 'failed' %}
+        <span class="badge-error text-sm px-3 py-1">✗ Failed</span>
+      {% else %}
+        <span class="badge-gray text-sm px-3 py-1">{{ sync.status }}</span>
+      {% endif %}
+      <span class="text-xs text-gray-400">Started: {{ ts(sync.started_at) }}</span>
+      {% if sync.finished_at %}
+      <span class="text-xs text-gray-400">Finished: {{ ts(sync.finished_at) }}</span>
+      {% endif %}
+    </div>
+
+    <!-- Step progress -->
+    <p class="text-xs text-gray-500 mb-2 font-medium">{{ sync.current_step or '—' }}</p>
+
+    <!-- Results per step -->
+    {% if sync.results %}
+    <div class="space-y-2">
+      {% for step_key, step in sync.results.items() %}
+      <div class="flex items-center gap-2">
+        <span class="w-28 text-xs text-gray-500 capitalize truncate">{{ step_key }}</span>
+        <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+          {% if step.total > 0 %}
+          <div class="h-full bg-brand-500 rounded-full"
+               style="width: {{ [(step.synced / step.total * 100)|int, 100]|min }}%"></div>
+          {% endif %}
+        </div>
+        <span class="text-xs text-gray-600 w-20 text-right">{{ step.synced }}/{{ step.total }}</span>
+        {% if step.errors > 0 %}
+        <span class="badge-error">{{ step.errors }} err</span>
+        {% else %}
+        <span class="badge-success">OK</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Totals -->
+    <div class="mt-4 pt-4 border-t border-gray-100 flex gap-6 text-sm">
+      <div><span class="text-gray-400 text-xs">Total Synced</span><p class="font-semibold text-gray-800">{{ sync.total_synced or 0 }}</p></div>
+      <div><span class="text-gray-400 text-xs">Total Errors</span><p class="font-semibold {% if (sync.total_errors or 0) > 0 %}text-red-600{% else %}text-gray-800{% endif %}">{{ sync.total_errors or 0 }}</p></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent events (2 cols) -->
+  <div class="lg:col-span-2 card">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-gray-800">Recent Events</h2>
+      <a href="/admin/logs" class="text-xs text-brand-600 hover:underline font-medium">View all →</a>
+    </div>
+
+    {% if recent_events %}
+    <div class="space-y-2">
+      {% for evt in recent_events %}
+      <div class="flex items-start gap-2.5 py-1.5 border-b border-gray-50 last:border-0">
+        {% if evt.status == 'completed' %}
+          <span class="mt-0.5 h-2 w-2 rounded-full bg-green-400 shrink-0"></span>
+        {% elif evt.status == 'failed' %}
+          <span class="mt-0.5 h-2 w-2 rounded-full bg-red-400 shrink-0"></span>
+        {% elif evt.status in ['pending', 'processing'] %}
+          <span class="mt-0.5 h-2 w-2 rounded-full bg-yellow-400 animate-pulse shrink-0"></span>
+        {% else %}
+          <span class="mt-0.5 h-2 w-2 rounded-full bg-gray-300 shrink-0"></span>
+        {% endif %}
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-gray-700 truncate">{{ evt.module }} / {{ evt.event_type }}</p>
+          <p class="text-xs text-gray-400 truncate">{{ evt.record_id }}</p>
+        </div>
+        <span class="text-xs text-gray-300 shrink-0">{{ ts(evt.created_at) }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-400 py-8 text-center">No events yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Quick actions -->
+<div class="mt-6 card">
+  <h2 class="text-sm font-semibold text-gray-800 mb-4">Quick Actions</h2>
+  <div class="flex flex-wrap gap-3">
+    <a href="/admin/sync" class="btn-primary">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Run Full Sync
+    </a>
+    <a href="/admin/logs" class="btn-secondary">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      View Logs
+    </a>
+    <a href="/admin/data/students" class="btn-secondary">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      Students Browser
+    </a>
+    {% if user.role == 'admin' %}
+    <a href="/admin/settings" class="btn-secondary">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0..."/>
+      </svg>
+      Settings
+    </a>
+    {% endif %}
+    <a href="/docs" target="_blank" class="btn-secondary">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+      </svg>
+      API Docs (Swagger)
+    </a>
+  </div>
+</div>
+
+{% endblock %}

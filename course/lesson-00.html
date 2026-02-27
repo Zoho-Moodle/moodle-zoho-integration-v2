@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 00 — Environment Setup | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 00</div>
+      <div class="lesson-number">Lesson 00</div>
+      <div class="lesson-title-en">Environment Setup</div>
+      <div class="lesson-title-ar">إعداد بيئة العمل</div>
+      <div class="lesson-meta">
+        <span>🕐 ~30 minutes</span>
+        <span>🎯 Beginner</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <!-- OBJECTIVES -->
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Install Python 3.11+, FastAPI, and Uvicorn on your machine</li>
+          <li>Set up VS Code with the right extensions for Python development</li>
+          <li>Create a minimal "Hello World" FastAPI app and run it</li>
+          <li>Understand the full project folder structure before we write any logic</li>
+          <li>فهم هيكل المشروع الكامل وإعداد بيئة العمل من الصفر</li>
+        </ul>
+      </div>
+
+      <!-- SECTION 1 -->
+      <div class="section">
+        <div class="section-title">1. Why These Tools? — لماذا هذه الأدوات؟</div>
+        <div class="section-divider"></div>
+
+        <div class="bilingual">
+          <div class="lang-en">
+            <span class="lang-badge en">English</span>
+            <p>We're building a <strong>middleware backend</strong> that sits between Zoho CRM and Moodle. We chose FastAPI because:</p>
+            <ul style="margin-top:10px; padding-left:20px;">
+              <li>It's the fastest Python web framework</li>
+              <li>Built-in data validation with Pydantic</li>
+              <li>Automatic Swagger documentation at <code class="inline">/docs</code></li>
+              <li>Native async/await support for handling multiple webhooks simultaneously</li>
+            </ul>
+          </div>
+          <div class="lang-ar">
+            <span class="lang-badge ar">عربي</span>
+            <p>نبني <strong>Backend وسيط</strong> بين Zoho CRM وMoodle. اخترنا FastAPI لأن:</p>
+            <ul style="margin-top:10px; padding-right:20px;">
+              <li>أسرع إطار عمل Python للويب</li>
+              <li>التحقق التلقائي من البيانات مع Pydantic</li>
+              <li>توثيق Swagger تلقائي على <code class="inline">/docs</code></li>
+              <li>دعم async/await لمعالجة عدة webhooks في آن واحد</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Tool</th><th>Version</th><th>Purpose</th><th>الاستخدام</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Python</td><td>3.11+</td><td>Backend language</td><td>لغة الـ Backend</td></tr>
+              <tr><td>FastAPI</td><td>0.110+</td><td>Web framework</td><td>إطار عمل الويب</td></tr>
+              <tr><td>Uvicorn</td><td>0.27+</td><td>ASGI server</td><td>خادم ASGI</td></tr>
+              <tr><td>SQLAlchemy</td><td>2.x</td><td>ORM / Database layer</td><td>طبقة قاعدة البيانات</td></tr>
+              <tr><td>PostgreSQL</td><td>15+</td><td>Production database</td><td>قاعدة بيانات الإنتاج</td></tr>
+              <tr><td>SQLite</td><td>built-in</td><td>Development database</td><td>قاعدة بيانات التطوير</td></tr>
+              <tr><td>ngrok</td><td>any</td><td>Expose local server to Zoho</td><td>تعريض الخادم المحلي لـ Zoho</td></tr>
+              <tr><td>VS Code</td><td>latest</td><td>IDE</td><td>بيئة التطوير</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 2 -->
+      <div class="section">
+        <div class="section-title">2. Install Python &amp; Create Virtual Environment</div>
+        <div class="section-title-ar">تثبيت Python وإنشاء البيئة الافتراضية</div>
+        <div class="section-divider"></div>
+
+        <ol class="steps">
+          <li>
+            <div class="step-content">
+              <div class="step-title">Download Python 3.11+ from python.org</div>
+              <div class="step-ar">تحميل Python من موقع python.org — تأكد من تفعيل "Add to PATH" أثناء التثبيت</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Create a project folder and virtual environment</div>
+              <div class="step-ar">إنشاء مجلد المشروع والبيئة الافتراضية</div>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">bash</span>
+                  <span class="code-filename">Terminal</span>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code class="language-bash">mkdir my-integration
+cd my-integration
+
+# Create virtual environment / إنشاء البيئة الافتراضية
+python -m venv .venv
+
+# Activate it / تفعيلها
+.venv\Scripts\activate        # Windows PowerShell
+source .venv/bin/activate     # macOS / Linux
+
+# You should see (.venv) in your prompt / يجب أن ترى (.venv) قبل المؤشر</code></pre>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Install core dependencies</div>
+              <div class="step-ar">تثبيت المكتبات الأساسية</div>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">bash</span>
+                  <span class="code-filename">Terminal (inside .venv)</span>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code class="language-bash">pip install fastapi uvicorn[standard] sqlalchemy pydantic-settings \
+            httpx python-dotenv jinja2 python-multipart aiofiles
+
+# Verify installation / التحقق من التثبيت
+pip show fastapi
+# → Name: fastapi
+# → Version: 0.110.x</code></pre>
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <div class="callout-title">Why Virtual Environments?</div>
+            <p>A virtual environment isolates your project's dependencies. This prevents version conflicts when you work on multiple projects, and ensures your production server uses the exact same package versions as your development machine.</p>
+            <div class="callout-ar">البيئة الافتراضية تعزل مكتبات مشروعك — تمنع تعارض الإصدارات بين المشاريع المختلفة وتضمن أن الخادم يستخدم نفس إصدارات المكتبات.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3 -->
+      <div class="section">
+        <div class="section-title">3. VS Code Setup</div>
+        <div class="section-title-ar">إعداد VS Code</div>
+        <div class="section-divider"></div>
+
+        <p>Install these VS Code extensions for the best development experience:</p>
+        <p style="font-family:'Tajawal',sans-serif;direction:rtl;margin:4px 0 16px;color:var(--gray-600);">ثبّت هذه الإضافات في VS Code للحصول على أفضل تجربة تطوير:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Extension</th><th>Purpose</th><th>الوظيفة</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Python</strong> (ms-python)</td><td>IntelliSense, linting, debugging</td><td>ذكاء الكود والتصحيح</td></tr>
+              <tr><td><strong>Pylance</strong></td><td>Fast type checking</td><td>فحص الأنواع السريع</td></tr>
+              <tr><td><strong>REST Client</strong></td><td>Test HTTP requests in .http files</td><td>اختبار طلبات HTTP مباشرة</td></tr>
+              <tr><td><strong>GitLens</strong></td><td>Git blame, history</td><td>تتبع تاريخ الكود</td></tr>
+              <tr><td><strong>Thunder Client</strong></td><td>Built-in Postman alternative</td><td>بديل Postman داخل VS Code</td></tr>
+              <tr><td><strong>SQLite Viewer</strong></td><td>Browse SQLite DB visually</td><td>تصفح قاعدة البيانات بشكل مرئي</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 4 -->
+      <div class="section">
+        <div class="section-title">4. Project Structure</div>
+        <div class="section-title-ar">هيكل المشروع الكامل</div>
+        <div class="section-divider"></div>
+
+        <p>This is the <strong>exact folder structure</strong> we will build throughout the course:</p>
+        <p style="font-family:'Tajawal',sans-serif;direction:rtl;margin:4px 0 16px;color:var(--gray-600);">هذا هو هيكل المجلدات الكامل الذي سنبنيه خلال الدورة:</p>
+
+        <div class="arch-diagram">my-integration/
+├── backend/                         ← FastAPI Application
+│   ├── app/
+│   │   ├── main.py                  ← App entry point (FastAPI instance)
+│   │   ├── core/
+│   │   │   └── config.py            ← Settings loaded from .env
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── router.py        ← Registers all endpoints
+│   │   │       └── endpoints/
+│   │   │           ├── health.py    ← GET /health
+│   │   │           ├── sync_students.py   ← POST /sync/students
+│   │   │           └── webhooks_dashboard_sync.py  ← Zoho webhook handlers
+│   │   ├── infra/
+│   │   │   ├── db/
+│   │   │   │   ├── base.py          ← SQLAlchemy engine + Base
+│   │   │   │   ├── session.py       ← DB session factory
+│   │   │   │   └── models/
+│   │   │   │       ├── student.py
+│   │   │   │       ├── registration.py
+│   │   │   │       ├── grade.py
+│   │   │   │       └── payment.py
+│   │   │   └── zoho/
+│   │   │       └── auth.py          ← Zoho OAuth2 client
+│   │   └── services/                ← Business logic layer
+│   ├── admin/                       ← Admin HTML panel (Jinja2)
+│   │   ├── router.py
+│   │   └── templates/
+│   ├── .env                         ← 🔒 SECRET — never commit!
+│   ├── .env.example                 ← Template for .env
+│   ├── requirements.txt
+│   └── start_server.py              ← Uvicorn launcher
+│
+├── moodle_plugin/                   ← PHP Moodle Plugin
+│   ├── version.php
+│   ├── lib.php
+│   ├── db/
+│   │   ├── install.xml
+│   │   ├── upgrade.php
+│   │   └── services.xml
+│   ├── classes/external/
+│   ├── lang/en/
+│   └── amd/src/
+│
+└── course/                          ← This tutorial!</div>
+
+        <div class="callout warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <div class="callout-title">Important: .env and .gitignore</div>
+            <p>The <code class="inline">.env</code> file contains your API keys and passwords. <strong>Never commit it to Git.</strong> Add it to <code class="inline">.gitignore</code> immediately.</p>
+            <div class="callout-ar">ملف <code class="inline">.env</code> يحتوي على كلمات سر وتوكنات سرية. <strong>لا تضعه أبداً في Git.</strong> أضفه إلى <code class="inline">.gitignore</code> فوراً.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 5 -->
+      <div class="section">
+        <div class="section-title">5. Hello World FastAPI App</div>
+        <div class="section-title-ar">أول تطبيق FastAPI</div>
+        <div class="section-divider"></div>
+
+        <p>Let's build the simplest possible FastAPI app and run it:</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/main.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from fastapi import FastAPI
+
+# إنشاء التطبيق / Create the app
+app = FastAPI(
+    title="Moodle-Zoho Integration",
+    description="API middleware between Zoho CRM and Moodle"
+)
+
+
+@app.get("/")
+def root():
+    """
+    الصفحة الرئيسية / Root endpoint
+    """
+    return {
+        "message": "Welcome to the Moodle-Zoho Integration API",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+
+@app.get("/health")
+def health_check():
+    """
+    فحص الصحة — يُستخدم للتأكد أن الخادم يعمل
+    Health check — used to verify the server is running
+    """
+    return {"status": "ok", "message": "API is healthy"}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Terminal</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash">cd backend
+uvicorn app.main:app --reload --port 8001
+
+# Output / الناتج:
+# INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+# INFO:     Started reloader process
+# INFO:     Application startup complete.</code></pre>
+        </div>
+
+        <p>Now open your browser and visit:</p>
+        <ul style="margin:12px 0 0 20px; line-height:2.2;">
+          <li><code class="inline">http://localhost:8001/</code> → Root endpoint JSON</li>
+          <li><code class="inline">http://localhost:8001/health</code> → Health check</li>
+          <li><code class="inline">http://localhost:8001/docs</code> → 🎉 Interactive Swagger UI</li>
+          <li><code class="inline">http://localhost:8001/redoc</code> → ReDoc documentation</li>
+        </ul>
+
+        <div class="callout success">
+          <div class="callout-icon">✅</div>
+          <div class="callout-content">
+            <div class="callout-title">The --reload flag</div>
+            <p>The <code class="inline">--reload</code> flag tells Uvicorn to automatically restart whenever you save a Python file. Use it <strong>only during development</strong> — never in production.</p>
+            <div class="callout-ar">خيار <code class="inline">--reload</code> يجعل Uvicorn يعيد التشغيل تلقائياً عند حفظ أي ملف Python. استخدمه <strong>فقط أثناء التطوير</strong> — ليس في الإنتاج.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 6 -->
+      <div class="section">
+        <div class="section-title">6. The .env File</div>
+        <div class="section-title-ar">ملف الإعدادات السرية</div>
+        <div class="section-divider"></div>
+
+        <p>Create these two files in the <code class="inline">backend/</code> folder:</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">backend/.env.example</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash"># ============================================================
+# Application Settings
+# ============================================================
+APP_NAME="Moodle Zoho Integration"
+ENV=development
+
+# Database — use SQLite for dev, PostgreSQL for prod
+DATABASE_URL=sqlite:///./moodle_zoho_local.db
+# DATABASE_URL=postgresql://user:password@localhost:5432/mzi_db
+
+# ============================================================
+# Moodle Configuration
+# ============================================================
+MOODLE_BASE_URL=https://your-moodle.com
+MOODLE_TOKEN=your_moodle_webservice_token_here
+MOODLE_ENABLED=false   # Set to true when ready
+
+# ============================================================
+# Zoho CRM Configuration
+# ============================================================
+ZOHO_CLIENT_ID=your_zoho_client_id
+ZOHO_CLIENT_SECRET=your_zoho_client_secret
+ZOHO_REFRESH_TOKEN=your_zoho_refresh_token
+ZOHO_REGION=com   # or eu, in, au
+
+# ============================================================
+# Webhook
+# ============================================================
+WEBHOOK_BASE_URL=https://your-ngrok-url.ngrok-free.app</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">text</span>
+            <span class="code-filename">backend/.gitignore</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-text">.env
+*.db
+__pycache__/
+.venv/
+*.pyc
+*.log
+.pytest_cache/</code></pre>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 00 Quiz</div>
+        <div class="section-title-ar">اختبار الدرس الأول</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">What URL shows the interactive Swagger documentation automatically generated by FastAPI?</div>
+          <div class="quiz-question-ar">ما هو الرابط الذي يعرض توثيق Swagger التلقائي في FastAPI؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> /swagger</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> /docs</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> /api</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> /openapi</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! FastAPI automatically serves Swagger UI at <code>/docs</code> — no extra configuration needed.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">Why should <code>.env</code> never be committed to Git?</div>
+          <div class="quiz-question-ar">لماذا يجب ألا يُضاف ملف <code>.env</code> إلى Git؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because it's too large</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because Git doesn't support .env files</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> Because it contains API keys and passwords that would be exposed publicly</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because it causes merge conflicts</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! The .env file contains secrets like ZOHO_CLIENT_SECRET and MOODLE_TOKEN. If pushed to a public repository, anyone could access your Zoho CRM and Moodle instance.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">What does the <code>--reload</code> flag do when running Uvicorn?</div>
+          <div class="quiz-question-ar">ماذا يفعل خيار <code>--reload</code> عند تشغيل Uvicorn؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Restarts the server every hour</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Automatically reloads the server when Python files change</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Reloads the .env file on every request</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Enables hot-reloading of the database</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! --reload watches for file changes and automatically restarts the server. This is a development-only feature — never use it in production!</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+      </div>
+
+    </div><!-- /.lesson-body -->
+
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(0);</script>
+</body>
+</html>

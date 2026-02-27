@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_moodle_zoho_sync';
-$plugin->version   = 2026021606; // Student Dashboard: Added DELETE endpoints (soft delete)
+$plugin->version   = 2026022600; // Add photo_pending_url + photo_pending_status for photo approval workflow
 $plugin->requires  = 2022041900;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '4.1.2'; // Student Dashboard - Database Complete
+$plugin->release   = '4.2.3';

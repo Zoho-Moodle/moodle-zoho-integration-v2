@@ -37,6 +37,13 @@ from app.api.v1.endpoints.create_course import router as create_course_router
 # BTEC Templates Sync (Zoho → Moodle)
 from app.api.v1.endpoints.btec_templates import router as btec_templates_router
 
+# Admin: Zoho webhook setup
+from app.api.v1.endpoints.zoho_webhook_setup import router as zoho_webhook_setup_router
+
+# Admin: Full Zoho → Moodle sync
+from app.api.v1.endpoints.full_sync import router as full_sync_router
+# Student Requests — Moodle → Zoho write-back
+from app.api.v1.endpoints.submit_request import router as submit_request_router
 router = APIRouter()
 
 # Sync endpoints - Phase 1/2/3
@@ -77,6 +84,15 @@ router.include_router(create_course_router, tags=["classes"])
 
 # BTEC Templates - Zoho → Moodle
 router.include_router(btec_templates_router, tags=["btec"])
+
+# Admin - Zoho Workflow Rules setup (permanent, works with all BTEC Custom Modules)
+router.include_router(zoho_webhook_setup_router)
+
+# Admin - Full Zoho → Moodle sync
+router.include_router(full_sync_router)
+
+# Student Requests — Moodle → Zoho write-back
+router.include_router(submit_request_router, tags=["requests"])
 
 # Health check
 router.include_router(health_router, tags=["health"])

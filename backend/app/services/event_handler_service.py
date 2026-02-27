@@ -203,19 +203,65 @@ class EventHandlerService:
                         ).first()
                         
                         if existing_student:
-                            # Update existing student
+                            # Update existing student — all fields
                             existing_student.display_name = full_name
                             existing_student.academic_email = zoho_data.get('Academic_Email', '')
                             existing_student.phone = zoho_data.get('Phone_Number')
                             existing_student.userid = zoho_data.get('Student_ID_Number')
+                            existing_student.city = zoho_data.get('City')
+                            existing_student.address = zoho_data.get('Address')
+                            existing_student.status = zoho_data.get('Status')
+                            existing_student.major = zoho_data.get('Major')
+                            existing_student.sub_major = zoho_data.get('Sub_Major')
                             self.db.commit()
                             action = "updated"
                             logger.info(f"💾 Local DB: Student updated in database")
-                            
-                            # ✅ Invalidate cache for this student
-                            if existing_student.moodle_user_id:
-                                cache.delete_pattern(f"zoho:*{existing_student.moodle_user_id}*")
-                                logger.info(f"🗑️ Cleared cache for student {existing_student.moodle_user_id}")
+
+                            # Push full student data to Moodle WS → local_mzi_students
+                            try:
+                                import json as _json
+                                import httpx as _httpx
+                                moodle_data = {
+                                    "zoho_student_id":  record_id,
+                                    "first_name":       first_name,
+                                    "last_name":        last_name,
+                                    "display_name":     full_name,
+                                    "email":            zoho_data.get('Academic_Email', ''),
+                                    "phone_number":     zoho_data.get('Phone_Number', ''),
+                                    "address":          zoho_data.get('Address', ''),
+                                    "city":             zoho_data.get('City', ''),
+                                    "nationality":      zoho_data.get('Nationality', ''),
+                                    "date_of_birth":    zoho_data.get('Birth_Date', ''),
+                                    "gender":           zoho_data.get('Gender', ''),
+                                    "status":           zoho_data.get('Status', ''),
+                                    "national_id":      zoho_data.get('National_Number', ''),
+                                    "moodle_user_id":   zoho_data.get('Student_Moodle_ID', ''),
+                                    "emergency_contact_name":  zoho_data.get('Emergency_Contact_Name', ''),
+                                    "emergency_contact_phone": zoho_data.get('Emergency_Phone_Number', ''),
+                                    "academic_email":          zoho_data.get('Academic_Email', ''),
+                                    "major":                   zoho_data.get('Major', ''),
+                                    "sub_major":               zoho_data.get('Sub_Major', ''),
+                                }
+                                from app.core.config import settings as _settings
+                                if _settings.MOODLE_ENABLED and _settings.MOODLE_BASE_URL and _settings.MOODLE_TOKEN:
+                                    ws_url = f"{_settings.MOODLE_BASE_URL}/webservice/rest/server.php"
+                                    ws_payload = {
+                                        "wstoken": _settings.MOODLE_TOKEN,
+                                        "wsfunction": "local_mzi_update_student",
+                                        "moodlewsrestformat": "json",
+                                        "studentdata": _json.dumps(moodle_data),
+                                    }
+                                    async with _httpx.AsyncClient(timeout=30.0) as _client:
+                                        ws_resp = await _client.post(ws_url, data=ws_payload)
+                                        ws_resp.raise_for_status()
+                                        ws_result = ws_resp.json()
+                                        if isinstance(ws_result, dict) and "exception" in ws_result:
+                                            logger.error(f"Moodle WS error for student {record_id}: {ws_result}")
+                                        else:
+                                            logger.info(f"✅ Moodle WS updated student {record_id}: {ws_result}")
+                            except Exception as ws_err:
+                                logger.error(f"❌ Moodle WS call failed for student {record_id}: {ws_err}")
+
                         else:
                             # DISABLED: Do NOT create new students from Zoho webhooks
                             # Students should only be created in Moodle first, then synced to Zoho
@@ -224,9 +270,9 @@ class EventHandlerService:
                             
                             return EventProcessingResult(
                                 event_id=event.event_id,
-                                success=True,
-                                action=action,
-                                message=f"Student webhook received but not created (Moodle-first policy). Zoho ID: {record_id}"
+                                status=EventStatus.COMPLETED,
+                                action_taken=action,
+                                record_id=record_id
                             )
                         
                         # Update sync status in Zoho (tracking fields only) - only for existing students

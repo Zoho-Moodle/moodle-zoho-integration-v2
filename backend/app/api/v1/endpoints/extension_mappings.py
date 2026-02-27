@@ -2,7 +2,7 @@
 Extension API Endpoints - Field Mappings & Metadata
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel

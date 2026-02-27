@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ entity|title }} Browser{% endblock %}
+{% block page_title %}Data Browser — {{ entity|title }}{% endblock %}
+{% block page_subtitle_text %}Browse synced records in the backend database{% endblock %}
+
+{% block content %}
+
+<!-- Entity tabs -->
+<div class="flex gap-1 mb-5 flex-wrap">
+  {% for ent in ['students', 'events', 'registrations', 'enrollments', 'payments', 'grades'] %}
+  <a href="/admin/data/{{ ent }}"
+     class="px-3 py-1.5 text-sm rounded-lg font-medium transition-colors
+            {% if entity == ent %}bg-brand-600 text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-brand-50 hover:text-brand-700{% endif %}">
+    {{ ent|title }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Search + filter bar -->
+<div class="card mb-4">
+  <form method="get" action="/admin/data/{{ entity }}" class="flex flex-wrap gap-3 items-end">
+    <div class="flex-1 min-w-40">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
+      <input type="text" name="search" value="{{ search }}"
+             placeholder="Search by name, email, Zoho ID…"
+             class="input-field" />
+    </div>
+    {% if entity == 'students' %}
+    <div class="w-36">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+      <select name="status" class="input-field">
+        <option value="">All</option>
+        <option value="active"   {% if status=='active'   %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status=='inactive' %}selected{% endif %}>Inactive</option>
+        <option value="pending"  {% if status=='pending'  %}selected{% endif %}>Pending</option>
+      </select>
+    </div>
+    {% endif %}
+    <div class="flex gap-2">
+      <button type="submit" class="btn-primary">Search</button>
+      <a href="/admin/data/{{ entity }}" class="btn-secondary">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- Table card -->
+<div class="card p-0 overflow-hidden">
+
+  <!-- Header -->
+  <div class="px-4 py-3 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center">
+    <p class="text-sm text-gray-600">
+      <span class="font-semibold text-gray-800">{{ total }}</span> records
+      {% if search %} matching "<strong>{{ search }}</strong>"{% endif %}
+    </p>
+    <p class="text-xs text-gray-400">Page {{ page }} of {{ total_pages }}</p>
+  </div>
+
+  {% if rows %}
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr>
+          {% for col in columns %}
+          <th class="table-th">{{ col.replace('_', ' ')|title }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          {% for col in columns %}
+          <td class="table-td max-w-xs">
+            {% set val = row[col] %}
+            {% if col == 'status' or col == 'sync_status' %}
+              {% if val in ['active', 'completed', 'synced'] %}
+                <span class="badge-success">{{ val }}</span>
+              {% elif val in ['failed', 'error', 'Deleted'] %}
+                <span class="badge-error">{{ val }}</span>
+              {% elif val in ['pending', 'processing'] %}
+                <span class="badge-warn">{{ val }}</span>
+              {% else %}
+                <span class="badge-gray">{{ val }}</span>
+              {% endif %}
+            {% elif col in ['zoho_id', 'record_id'] %}
+              <span class="font-mono text-xs text-gray-600 truncate block max-w-xs" title="{{ val }}">{{ val }}</span>
+            {% elif col == 'error_message' and val and val != '—' %}
+              <span class="text-xs text-red-600 truncate block max-w-xs" title="{{ val }}">{{ val[:80] }}{% if val|length > 80 %}…{% endif %}</span>
+            {% else %}
+              <span class="text-sm {% if col in ['academic_email', 'email'] %}text-blue-600{% endif %} truncate block max-w-xs" title="{{ val }}">{{ val }}</span>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+    <p class="text-xs text-gray-500">
+      Showing {{ (page-1)*30 + 1 }}–{{ [page*30, total]|min }} of {{ total }}
+    </p>
+    <div class="flex gap-2">
+      {% if page > 1 %}
+      <a href="/admin/data/{{ entity }}?search={{ search }}&status={{ status }}&page={{ page-1 }}"
+         class="btn-secondary text-xs py-1 px-3">← Prev</a>
+      {% endif %}
+      {% if page < total_pages %}
+      <a href="/admin/data/{{ entity }}?search={{ search }}&status={{ status }}&page={{ page+1 }}"
+         class="btn-secondary text-xs py-1 px-3">Next →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-16 text-gray-400">
+    <svg class="w-10 h-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+    </svg>
+    <p class="text-sm">No records found.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

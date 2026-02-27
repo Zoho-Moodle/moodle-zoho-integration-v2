@@ -1,0 +1,168 @@
+{
+  "webhook_base_url": "https://polyphyletically-unnagged-amare.ngrok-free.dev",
+  "created_at": "2026-02-23T09:33:07.100064+00:00",
+  "rules": [
+    {
+      "rule_id": "5398830000126885417",
+      "name": "MZI - BTEC_Students - create edit",
+      "webhook_id": "5398830000126966267",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126946202",
+      "name": "MZI - BTEC_Students - delete",
+      "webhook_id": "5398830000126953326",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126966275",
+      "name": "MZI - BTEC_Registrations - create edit",
+      "webhook_id": "5398830000126977351",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126964113",
+      "name": "MZI - BTEC_Registrations - delete",
+      "webhook_id": "5398830000126938261",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126927440",
+      "name": "MZI - BTEC_Payments - create edit",
+      "webhook_id": "5398830000126885413",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126904295",
+      "name": "MZI - BTEC_Payments - delete",
+      "webhook_id": "5398830000126954426",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126948481",
+      "name": "MZI - BTEC_Classes - create edit",
+      "webhook_id": "5398830000126892467",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126989227",
+      "name": "MZI - BTEC_Classes - delete",
+      "webhook_id": "5398830000126904287",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126904307",
+      "name": "MZI - BTEC_Enrollments - create edit",
+      "webhook_id": "5398830000126972466",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126893301",
+      "name": "MZI - BTEC_Enrollments - delete",
+      "webhook_id": "5398830000126893297",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126934237",
+      "name": "MZI - BTEC_Grades - create edit",
+      "webhook_id": "5398830000126905268",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126946214",
+      "name": "MZI - BTEC_Grades - delete",
+      "webhook_id": "5398830000127003419",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126893313",
+      "name": "MZI - BTEC_Student_Requests - create edit",
+      "webhook_id": "5398830000126892471",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126964125",
+      "name": "MZI - BTEC_Student_Requests - delete",
+      "webhook_id": "5398830000126904291",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126927452",
+      "name": "MZI - BTEC - create edit",
+      "webhook_id": "5398830000126966271",
+      "status": "created"
+    },
+    {
+      "rule_id": "5398830000126937293",
+      "name": "MZI - BTEC - delete",
+      "webhook_id": "5398830000126953330",
+      "status": "created"
+    }
+  ],
+  "webhooks": [
+    {
+      "webhook_id": "5398830000126966267",
+      "name": "MZI - BTEC_Students - create edit"
+    },
+    {
+      "webhook_id": "5398830000126953326",
+      "name": "MZI - BTEC_Students - delete"
+    },
+    {
+      "webhook_id": "5398830000126977351",
+      "name": "MZI - BTEC_Registrations - create edit"
+    },
+    {
+      "webhook_id": "5398830000126938261",
+      "name": "MZI - BTEC_Registrations - delete"
+    },
+    {
+      "webhook_id": "5398830000126885413",
+      "name": "MZI - BTEC_Payments - create edit"
+    },
+    {
+      "webhook_id": "5398830000126954426",
+      "name": "MZI - BTEC_Payments - delete"
+    },
+    {
+      "webhook_id": "5398830000126892467",
+      "name": "MZI - BTEC_Classes - create edit"
+    },
+    {
+      "webhook_id": "5398830000126904287",
+      "name": "MZI - BTEC_Classes - delete"
+    },
+    {
+      "webhook_id": "5398830000126972466",
+      "name": "MZI - BTEC_Enrollments - create edit"
+    },
+    {
+      "webhook_id": "5398830000126893297",
+      "name": "MZI - BTEC_Enrollments - delete"
+    },
+    {
+      "webhook_id": "5398830000126905268",
+      "name": "MZI - BTEC_Grades - create edit"
+    },
+    {
+      "webhook_id": "5398830000127003419",
+      "name": "MZI - BTEC_Grades - delete"
+    },
+    {
+      "webhook_id": "5398830000126892471",
+      "name": "MZI - BTEC_Student_Requests - create edit"
+    },
+    {
+      "webhook_id": "5398830000126904291",
+      "name": "MZI - BTEC_Student_Requests - delete"
+    },
+    {
+      "webhook_id": "5398830000126966271",
+      "name": "MZI - BTEC - create edit"
+    },
+    {
+      "webhook_id": "5398830000126953330",
+      "name": "MZI - BTEC - delete"
+    }
+  ]
+}

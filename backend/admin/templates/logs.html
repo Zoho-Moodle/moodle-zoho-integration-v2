@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Logs Viewer{% endblock %}
+{% block page_title %}Logs Viewer{% endblock %}
+{% block page_subtitle_text %}Webhook events and integration activity log{% endblock %}
+
+{% block header_actions %}
+<button class="btn-secondary text-xs"
+        hx-get="/admin/logs/partial?source={{ source }}&status={{ status }}&search={{ search }}&page={{ page }}"
+        hx-target="#logs-container"
+        hx-swap="innerHTML">
+  ↻ Refresh
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filters bar -->
+<div class="card mb-4">
+  <form method="get" action="/admin/logs" class="flex flex-wrap gap-3 items-end">
+    <div class="flex-1 min-w-40">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
+      <input type="text" name="search" value="{{ search }}"
+             placeholder="Record ID, module, event type…"
+             class="input-field" />
+    </div>
+    <div class="w-36">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Source</label>
+      <select name="source" class="input-field">
+        <option value="">All Sources</option>
+        <option value="zoho" {% if source == 'zoho' %}selected{% endif %}>Zoho</option>
+        <option value="moodle" {% if source == 'moodle' %}selected{% endif %}>Moodle</option>
+      </select>
+    </div>
+    <div class="w-40">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+      <select name="status" class="input-field">
+        <option value="">All Statuses</option>
+        <option value="completed"  {% if status == 'completed'  %}selected{% endif %}>Completed</option>
+        <option value="failed"     {% if status == 'failed'     %}selected{% endif %}>Failed</option>
+        <option value="pending"    {% if status == 'pending'    %}selected{% endif %}>Pending</option>
+        <option value="processing" {% if status == 'processing' %}selected{% endif %}>Processing</option>
+        <option value="duplicate"  {% if status == 'duplicate'  %}selected{% endif %}>Duplicate</option>
+      </select>
+    </div>
+    <div class="flex gap-2">
+      <button type="submit" class="btn-primary">Filter</button>
+      <a href="/admin/logs" class="btn-secondary">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- Auto-refresh toggle -->
+<div x-data="{ autoRefresh: false }" class="mb-3">
+  <div class="flex items-center gap-3 mb-3">
+    <button @click="autoRefresh = !autoRefresh;"
+            :class="autoRefresh ? 'btn-primary text-xs' : 'btn-secondary text-xs'">
+      <span x-text="autoRefresh ? '⏸ Stop Auto-Refresh' : '▶ Auto-Refresh (5s)'"></span>
+    </button>
+    <p class="text-xs text-gray-400">Live auto-refresh updates the table every 5 seconds.</p>
+  </div>
+
+  <!-- Logs table — HTMX target -->
+  <div id="logs-container"
+       :hx-trigger="autoRefresh ? 'every 5s' : 'manual'"
+       hx-get="/admin/logs/partial?source={{ source }}&amp;status={{ status }}&amp;search={{ search }}&amp;page={{ page }}"
+       hx-target="#logs-container"
+       hx-swap="innerHTML"
+       @alpine:initialized="htmx.process($el)">
+    {% include "partials/logs_table.html" %}
+  </div>
+</div>
+
+{% endblock %}

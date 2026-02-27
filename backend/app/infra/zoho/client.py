@@ -584,3 +584,87 @@ class ZohoClient:
             return response['data'][0]
         else:
             raise ZohoAPIError("Invalid upsert response", response_data=response)
+
+    async def upload_attachment(
+        self,
+        module: str,
+        record_id: str,
+        file_bytes: bytes,
+        file_name: str,
+    ) -> Dict:
+        """
+        Upload a file as an attachment to an existing record.
+
+        Uses Zoho CRM Attachments API:
+            POST /crm/v2/{module}/{record_id}/Attachments
+
+        Args:
+            module:     Module API name (e.g. 'BTEC_Student_Requests')
+            record_id:  ID of the record to attach the file to
+            file_bytes: Raw file content
+            file_name:  Filename including extension (e.g. 'id_doc.pdf')
+
+        Returns:
+            Attachment info dict from Zoho (contains 'id')
+        """
+        self._validate_module(module)
+
+        url = f"{self.base_url}/{module}/{record_id}/Attachments"
+        access_token = await self.auth.get_access_token()
+
+        headers = {
+            'Authorization': f'Zoho-oauthtoken {access_token}',
+        }
+        if self.organization_id:
+            headers['orgId'] = self.organization_id
+
+        # Determine content-type from extension
+        ext = file_name.rsplit('.', 1)[-1].lower() if '.' in file_name else ''
+        mime_map = {
+            'pdf': 'application/pdf',
+            'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+        }
+        mime = mime_map.get(ext, 'application/octet-stream')
+
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
+                    url,
+                    headers=headers,
+                    files={'file': (file_name, file_bytes, mime)},
+                )
+        except Exception as exc:
+            logger.error("upload_attachment: HTTP error — %s", exc)
+            raise ZohoAPIError(f"Attachment upload failed: {exc}")
+
+        if response.status_code in (200, 201):
+            data = response.json()
+            # Zoho returns {data: [{details: {id: ...}, status: "success"}]}
+            try:
+                result = data['data'][0]
+                logger.info(
+                    "upload_attachment: uploaded %s to %s/%s → attachment id=%s",
+                    file_name, module, record_id,
+                    result.get('details', {}).get('id'),
+                )
+                return result
+            except (KeyError, IndexError, TypeError):
+                return data
+        else:
+            error_data = {}
+            try:
+                error_data = response.json()
+            except Exception:
+                pass
+            logger.error(
+                "upload_attachment: Zoho returned %s — %s",
+                response.status_code, error_data,
+            )
+            raise ZohoAPIError(
+                f"Attachment upload HTTP {response.status_code}",
+                status_code=response.status_code,
+                response_data=error_data,
+            )

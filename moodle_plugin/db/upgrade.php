@@ -814,5 +814,354 @@ function xmldb_local_moodle_zoho_sync_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026021603, 'local', 'moodle_zoho_sync');
     }
 
+    // Version 2026022001: Add moodle_class_id to local_mzi_classes
+    // Required for enrollment: maps Zoho class → Moodle course ID
+    if ($oldversion < 2026022001) {
+        $table = new xmldb_table('local_mzi_classes');
+        $field = new xmldb_field(
+            'moodle_class_id',
+            XMLDB_TYPE_CHAR, '20',
+            null, null, null, null,
+            'class_status'  // insert after class_status
+        );
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022001, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022100: Add local_mzi_request_windows table for admin-controlled request activation windows.
+    if ($oldversion < 2026022100) {
+        $table = new xmldb_table('local_mzi_request_windows');
+
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id',           XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('request_type', XMLDB_TYPE_CHAR,    '50',  null, XMLDB_NOTNULL);
+            $table->add_field('enabled',      XMLDB_TYPE_INTEGER, '1',   null, XMLDB_NOTNULL, null, '1');
+            $table->add_field('start_date',   XMLDB_TYPE_INTEGER, '10',  null, null);
+            $table->add_field('end_date',     XMLDB_TYPE_INTEGER, '10',  null, null);
+            $table->add_field('message',      XMLDB_TYPE_CHAR,    '255', null, null);
+            $table->add_field('updated_by',   XMLDB_TYPE_INTEGER, '10',  null, null);
+            $table->add_field('updated_at',   XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+
+            $table->add_key('primary',        XMLDB_KEY_PRIMARY,  ['id']);
+            $table->add_index('request_type_idx', XMLDB_INDEX_UNIQUE, ['request_type']);
+            $table->add_index('enabled_idx',      XMLDB_INDEX_NOTUNIQUE, ['enabled']);
+
+            $dbman->create_table($table);
+
+            // Seed default rows for all five request types (enabled, no date restriction).
+            $now = time();
+            $types = ['Enroll Next Semester', 'Class Drop', 'Late Submission', 'Change Information', 'Student Card'];
+            foreach ($types as $t) {
+                $DB->insert_record('local_mzi_request_windows', (object)[
+                    'request_type' => $t,
+                    'enabled'      => 1,
+                    'start_date'   => null,
+                    'end_date'     => null,
+                    'message'      => '',
+                    'updated_by'   => null,
+                    'updated_at'   => $now,
+                ]);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026022100, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022200: Add local_mzi_teachers table;
+    //                     add Zoho FK ID columns to local_mzi_classes;
+    //                     add new Zoho fields to local_mzi_enrollments.
+    if ($oldversion < 2026022200) {
+
+        // 1. Create local_mzi_teachers table (teachers from Zoho BTEC_Teachers module).
+        $table = new xmldb_table('local_mzi_teachers');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id',                XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('zoho_teacher_id',   XMLDB_TYPE_CHAR,    '20',  null, XMLDB_NOTNULL);
+            $table->add_field('moodle_user_id',    XMLDB_TYPE_INTEGER, '10',  null, null);
+            $table->add_field('teacher_name',      XMLDB_TYPE_CHAR,    '255', null, null);
+            $table->add_field('email',             XMLDB_TYPE_CHAR,    '100', null, null);
+            $table->add_field('academic_email',    XMLDB_TYPE_CHAR,    '100', null, null);
+            $table->add_field('phone_number',      XMLDB_TYPE_CHAR,    '30',  null, null);
+            $table->add_field('created_at',        XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('updated_at',        XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('synced_at',         XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('zoho_created_time', XMLDB_TYPE_CHAR,    '30',  null, null);
+            $table->add_field('zoho_modified_time',XMLDB_TYPE_CHAR,    '30',  null, null);
+
+            $table->add_key('primary',        XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('moodle_user_fk', XMLDB_KEY_FOREIGN, ['moodle_user_id'], 'user', ['id']);
+            $table->add_index('zoho_teacher_id_idx', XMLDB_INDEX_UNIQUE,    ['zoho_teacher_id']);
+            $table->add_index('academic_email_idx',  XMLDB_INDEX_NOTUNIQUE, ['academic_email']);
+            $table->add_index('synced_at_idx',       XMLDB_INDEX_NOTUNIQUE, ['synced_at']);
+
+            $dbman->create_table($table);
+        }
+
+        // 2. Add Zoho FK ID columns to local_mzi_classes.
+        $table = new xmldb_table('local_mzi_classes');
+        $class_fields = [
+            ['teacher_zoho_id', XMLDB_TYPE_CHAR, '20'],
+            ['unit_zoho_id',    XMLDB_TYPE_CHAR, '20'],
+            ['program_zoho_id', XMLDB_TYPE_CHAR, '20'],
+        ];
+        foreach ($class_fields as [$fname, $ftype, $flen]) {
+            $field = new xmldb_field($fname, $ftype, $flen, null, null);
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // 3. Add new Zoho fields to local_mzi_enrollments.
+        $table = new xmldb_table('local_mzi_enrollments');
+        $enrol_fields = [
+            // [name, type, len, unsigned, notnull, seq, default]
+            ['zoho_student_id',  XMLDB_TYPE_CHAR,    '20',  null, null,          null, null],
+            ['zoho_class_id',    XMLDB_TYPE_CHAR,    '20',  null, null,          null, null],
+            ['end_date',         XMLDB_TYPE_CHAR,    '20',  null, null,          null, null],
+            ['enrollment_type',  XMLDB_TYPE_CHAR,    '50',  null, null,          null, null],
+            ['student_name',     XMLDB_TYPE_CHAR,    '255', null, null,          null, null],
+            ['class_name',       XMLDB_TYPE_CHAR,    '255', null, null,          null, null],
+            ['enrolled_program', XMLDB_TYPE_CHAR,    '255', null, null,          null, null],
+            ['moodle_course_id', XMLDB_TYPE_CHAR,    '20',  null, null,          null, null],
+            ['synced_to_moodle', XMLDB_TYPE_INTEGER, '1',   null, XMLDB_NOTNULL, null, '0'],
+        ];
+        foreach ($enrol_fields as [$fname, $ftype, $flen, $unsigned, $notnull, $seq, $default]) {
+            $field = new xmldb_field($fname, $ftype, $flen, $unsigned, $notnull, $seq, $default);
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // 4. Add missing personal fields to local_mzi_students.
+        $table = new xmldb_table('local_mzi_students');
+        $student_fields = [
+            ['gender',                  XMLDB_TYPE_CHAR, '20',  null, null, null, null],
+            ['emergency_contact_name',  XMLDB_TYPE_CHAR, '255', null, null, null, null],
+            ['emergency_contact_phone', XMLDB_TYPE_CHAR, '30',  null, null, null, null],
+        ];
+        foreach ($student_fields as [$fname, $ftype, $flen, $unsigned, $notnull, $seq, $default]) {
+            $field = new xmldb_field($fname, $ftype, $flen, $unsigned, $notnull, $seq, $default);
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // 5. Add denorm + status fields to local_mzi_grades.
+        $table = new xmldb_table('local_mzi_grades');
+        $grade_fields = [
+            ['zoho_student_id', XMLDB_TYPE_CHAR, '20',  null, null, null, null],
+            ['zoho_class_id',   XMLDB_TYPE_CHAR, '20',  null, null, null, null],
+            ['unit_name',       XMLDB_TYPE_CHAR, '255', null, null, null, null],
+            ['grade_status',    XMLDB_TYPE_CHAR, '20',  null, null, null, null],
+        ];
+        foreach ($grade_fields as [$fname, $ftype, $flen, $unsigned, $notnull, $seq, $default]) {
+            $field = new xmldb_field($fname, $ftype, $flen, $unsigned, $notnull, $seq, $default);
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026022200, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022201: Add national_id column to local_mzi_students (National_Number from Zoho).
+    if ($oldversion < 2026022201) {
+        $table = new xmldb_table('local_mzi_students');
+        $field = new xmldb_field('national_id', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'city');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026022201, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022202: Fix 5 critical DB schema bugs; add major/sub_major to students.
+    //
+    // Critical fixes (DB INSERT was crashing):
+    //   - Add zoho_student_id to local_mzi_registrations
+    //   - Add zoho_registration_id to local_mzi_payments
+    //   - Add class_short_name to local_mzi_classes
+    //   - Add study_mode to local_mzi_registrations
+    // High fixes (data loss / duplicate risk):
+    //   - Make zoho_enrollment_id UNIQUE in local_mzi_enrollments
+    //   - Make zoho_request_id UNIQUE in local_mzi_requests
+    //   - Add request_date column to local_mzi_requests
+    // New fields:
+    //   - Add major, sub_major to local_mzi_students (Major / Sub_Major from Zoho BTEC_Students)
+    if ($oldversion < 2026022202) {
+
+        // 1. Add major + sub_major to local_mzi_students.
+        $table = new xmldb_table('local_mzi_students');
+        $field = new xmldb_field('major', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'status');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('sub_major', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'major');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // 2. Add zoho_student_id to local_mzi_registrations (was crashing on INSERT).
+        $table = new xmldb_table('local_mzi_registrations');
+        $field = new xmldb_field('zoho_student_id', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'zoho_registration_id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // 3. Add study_mode to local_mzi_registrations.
+        $field = new xmldb_field('study_mode', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'payment_plan');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // 4. Add zoho_registration_id to local_mzi_payments (was crashing on INSERT).
+        $table = new xmldb_table('local_mzi_payments');
+        $field = new xmldb_field('zoho_registration_id', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'zoho_payment_id');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // 5. Add class_short_name to local_mzi_classes (was crashing on INSERT).
+        $table = new xmldb_table('local_mzi_classes');
+        $field = new xmldb_field('class_short_name', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'class_name');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // 6. Add UNIQUE index on zoho_enrollment_id in local_mzi_enrollments.
+        $table = new xmldb_table('local_mzi_enrollments');
+        $index = new xmldb_index('zoho_enrollment_id_idx', XMLDB_INDEX_UNIQUE, ['zoho_enrollment_id']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // 7. Fix zoho_request_id index to be UNIQUE in local_mzi_requests.
+        $table = new xmldb_table('local_mzi_requests');
+        // Drop the old non-unique index first.
+        $old_index = new xmldb_index('zoho_request_id_idx', XMLDB_INDEX_NOTUNIQUE, ['zoho_request_id']);
+        if ($dbman->index_exists($table, $old_index)) {
+            $dbman->drop_index($table, $old_index);
+        }
+        $new_index = new xmldb_index('zoho_request_id_idx', XMLDB_INDEX_UNIQUE, ['zoho_request_id']);
+        if (!$dbman->index_exists($table, $new_index)) {
+            $dbman->add_index($table, $new_index);
+        }
+
+        // 8. Add request_date to local_mzi_requests.
+        $field = new xmldb_field('request_date', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'description');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022202, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022203: Allow nullable class_id in grades; expand btec_grade_name to 255.
+    if ($oldversion < 2026022203) {
+
+        $table = new xmldb_table('local_mzi_grades');
+
+        // Step 1: Drop the class_fk foreign key — DDL requires no FK dependency before changing the field.
+        $class_fk = new xmldb_key('class_fk', XMLDB_KEY_FOREIGN, ['class_id'], 'local_mzi_classes', ['id']);
+        if ($dbman->find_key_name($table, $class_fk)) {
+            $dbman->drop_key($table, $class_fk);
+        }
+
+        // Step 2: Make class_id nullable — grades can arrive before the class is synced.
+        $field = new xmldb_field('class_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'student_id');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_notnull($table, $field);
+        }
+
+        // Step 3: Re-add the FK (MySQL allows NULL in FK columns — unlinked grades simply have class_id = NULL).
+        $dbman->add_key($table, $class_fk);
+
+        // Step 4: Expand btec_grade_name 50 → 255 — must drop dependent index first.
+        $btec_idx = new xmldb_index('btec_grade_name_idx', XMLDB_INDEX_NOTUNIQUE, ['btec_grade_name']);
+        if ($dbman->index_exists($table, $btec_idx)) {
+            $dbman->drop_index($table, $btec_idx);
+        }
+        $field = new xmldb_field('btec_grade_name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'assignment_name');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_precision($table, $field);
+        }
+        // Re-add the index after resize.
+        if (!$dbman->index_exists($table, $btec_idx)) {
+            $dbman->add_index($table, $btec_idx);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022203, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022500: Create local_mzi_btec_templates and local_mzi_request_windows
+    // if they were not present in older installs (they exist in install.xml but not in upgrade steps).
+    if ($oldversion < 2026022500) {
+
+        // ── local_mzi_btec_templates ──────────────────────────────────────────
+        $table = new xmldb_table('local_mzi_btec_templates');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id',            XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('definition_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('zoho_unit_id',  XMLDB_TYPE_CHAR,    '50', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('unit_name',     XMLDB_TYPE_CHAR,   '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('synced_at',     XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+            $table->add_key('primary',             XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('zoho_unit_id_unique', XMLDB_KEY_UNIQUE,  ['zoho_unit_id']);
+
+            $table->add_index('synced_at_idx', XMLDB_INDEX_NOTUNIQUE, ['synced_at']);
+
+            $dbman->create_table($table);
+        }
+
+        // ── local_mzi_request_windows ─────────────────────────────────────────
+        $table = new xmldb_table('local_mzi_request_windows');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id',           XMLDB_TYPE_INTEGER,  '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('request_type', XMLDB_TYPE_CHAR,     '50', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('enabled',      XMLDB_TYPE_INTEGER,   '1', null, XMLDB_NOTNULL, null, '1');
+            $table->add_field('start_date',   XMLDB_TYPE_INTEGER,  '10', null, null,           null, null);
+            $table->add_field('end_date',     XMLDB_TYPE_INTEGER,  '10', null, null,           null, null);
+            $table->add_field('message',      XMLDB_TYPE_CHAR,    '255', null, null,           null, null);
+            $table->add_field('updated_by',   XMLDB_TYPE_INTEGER,  '10', null, null,           null, null);
+            $table->add_field('updated_at',   XMLDB_TYPE_INTEGER,  '10', null, XMLDB_NOTNULL, null, '0');
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+            $table->add_index('request_type_idx', XMLDB_INDEX_UNIQUE,    ['request_type']);
+            $table->add_index('enabled_idx',      XMLDB_INDEX_NOTUNIQUE, ['enabled']);
+
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022500, 'local', 'moodle_zoho_sync');
+    }
+
+    // Version 2026022600: Add photo_pending_url and photo_pending_status to local_mzi_students
+    // for the photo approval workflow (student uploads → pending → Zoho approves/rejects).
+    if ($oldversion < 2026022600) {
+
+        $table = new xmldb_table('local_mzi_students');
+
+        $field_pending_url = new xmldb_field(
+            'photo_pending_url', XMLDB_TYPE_CHAR, '512', null, null, null, null, 'photo_url'
+        );
+        if (!$dbman->field_exists($table, $field_pending_url)) {
+            $dbman->add_field($table, $field_pending_url);
+        }
+
+        $field_pending_status = new xmldb_field(
+            'photo_pending_status', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'photo_pending_url'
+        );
+        if (!$dbman->field_exists($table, $field_pending_status)) {
+            $dbman->add_field($table, $field_pending_status);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022600, 'local', 'moodle_zoho_sync');
+    }
+
     return true;
 }

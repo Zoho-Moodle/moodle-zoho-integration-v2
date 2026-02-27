@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Sync History{% endblock %}
+{% block page_title %}Sync History{% endblock %}
+{% block page_subtitle_text %}All sync jobs run this session (in-memory){% endblock %}
+
+{% block content %}
+
+{% if not jobs %}
+<div class="card flex flex-col items-center justify-center py-20 text-gray-400">
+  <svg class="w-12 h-12 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.3" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  <p class="text-sm font-medium">No sync history yet.</p>
+  <a href="/admin/sync" class="mt-4 btn-primary text-xs">Run First Sync</a>
+</div>
+{% else %}
+
+<div class="space-y-4">
+  {% for job in jobs %}
+  <div class="card" x-data="{ open: false }">
+    <!-- Job header row -->
+    <div class="flex flex-wrap items-center gap-3 cursor-pointer" @click="open = !open">
+      <!-- Status badge -->
+      {% if job.status == 'completed' %}
+        <span class="badge-success">✓ Completed</span>
+      {% elif job.status == 'running' %}
+        <span class="badge-info animate-pulse">⟳ Running</span>
+      {% elif job.status == 'failed' %}
+        <span class="badge-error">✗ Failed</span>
+      {% elif job.status == 'pending' %}
+        <span class="badge-warn">◷ Pending</span>
+      {% else %}
+        <span class="badge-gray">{{ job.status }}</span>
+      {% endif %}
+
+      <span class="text-xs font-mono text-gray-500">{{ job.job_id[:16] }}…</span>
+      <span class="text-xs text-gray-400">{{ ts(job.started_at) }}</span>
+      {% if job.finished_at %}<span class="text-xs text-gray-400">→ {{ ts(job.finished_at) }}</span>{% endif %}
+
+      <div class="flex-1"></div>
+
+      <div class="flex items-center gap-3 text-sm">
+        <span class="text-green-700 font-semibold">{{ job.total_synced or 0 }} synced</span>
+        {% if (job.total_errors or 0) > 0 %}
+        <span class="text-red-600 font-semibold">{{ job.total_errors }} errors</span>
+        {% endif %}
+      </div>
+
+      <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+
+    <!-- Per-step breakdown (collapsed) -->
+    <div x-show="open" x-cloak class="mt-4 pt-4 border-t border-gray-100">
+      {% if job.results %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr>
+              <th class="table-th">Step</th>
+              <th class="table-th text-right">Total</th>
+              <th class="table-th text-right">Synced</th>
+              <th class="table-th text-right">Skipped</th>
+              <th class="table-th text-right">Errors</th>
+              <th class="table-th">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for step_key, step in job.results.items() %}
+            <tr>
+              <td class="table-td font-medium capitalize">{{ step_key }}</td>
+              <td class="table-td text-right text-gray-500">{{ step.total or 0 }}</td>
+              <td class="table-td text-right text-green-700 font-semibold">{{ step.synced or 0 }}</td>
+              <td class="table-td text-right text-gray-500">{{ step.skipped or 0 }}</td>
+              <td class="table-td text-right {% if (step.errors or 0) > 0 %}text-red-600 font-semibold{% else %}text-gray-500{% endif %}">{{ step.errors or 0 }}</td>
+              <td class="table-td">
+                {% if step.error_details %}
+                <details>
+                  <summary class="text-xs text-red-600 cursor-pointer">{{ step.error_details|length }} errors</summary>
+                  <ul class="mt-1 space-y-0.5 max-h-24 overflow-y-auto">
+                    {% for err in step.error_details %}
+                    <li class="text-xs font-mono text-red-700 bg-red-50 px-1.5 py-0.5 rounded break-all">{{ err }}</li>
+                    {% endfor %}
+                  </ul>
+                </details>
+                {% else %}
+                <span class="text-xs text-gray-400">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-xs text-gray-400">No step data available.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endif %}
+
+{% endblock %}

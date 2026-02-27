@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MZI Admin{% endblock %} — Moodle·Zoho Integration</title>
+
+  <!-- Tailwind CSS (Play CDN — no build step) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+
+    /* Sidebar links */
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0.75rem; border-radius: 0.5rem;
+      font-size: 0.875rem; font-weight: 500; color: #4b5563;
+      text-decoration: none;
+      transition: background-color 0.15s, color 0.15s;
+    }
+    .sidebar-link:hover { background-color: #f0fdf4; color: #15803d; }
+    .sidebar-link.active { background-color: #f0fdf4; color: #15803d; }
+    .sidebar-link svg { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
+
+    /* Badges */
+    .badge-success { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background-color: #dcfce7; color: #166534; }
+    .badge-error   { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background-color: #fee2e2; color: #991b1b; }
+    .badge-warn    { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background-color: #fef9c3; color: #854d0e; }
+    .badge-info    { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background-color: #dbeafe; color: #1e40af; }
+    .badge-gray    { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; background-color: #f3f4f6; color: #374151; }
+
+    /* Cards */
+    .card { background: #fff; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); border: 1px solid #f3f4f6; padding: 1.25rem; }
+
+    /* Buttons */
+    .btn-primary   { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: #16a34a; color: #fff; font-weight: 500; font-size: 0.875rem; border-radius: 0.5rem; border: none; cursor: pointer; text-decoration: none; transition: background-color 0.15s; }
+    .btn-primary:hover   { background-color: #15803d; }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: #fff; border: 1px solid #e5e7eb; color: #374151; font-weight: 500; font-size: 0.875rem; border-radius: 0.5rem; cursor: pointer; text-decoration: none; transition: background-color 0.15s; }
+    .btn-secondary:hover { background-color: #f9fafb; }
+    .btn-danger    { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: #dc2626; color: #fff; font-weight: 500; font-size: 0.875rem; border-radius: 0.5rem; border: none; cursor: pointer; text-decoration: none; transition: background-color 0.15s; }
+    .btn-danger:hover    { background-color: #b91c1c; }
+
+    /* Inputs */
+    .input-field { width: 100%; border-radius: 0.5rem; border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #1f2937; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    .input-field:focus { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,.2); }
+
+    /* Tables */
+    .table-th { padding: 0.625rem 0.75rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; background-color: #f9fafb; }
+    .table-td { padding: 0.625rem 0.75rem; font-size: 0.875rem; color: #374151; border-top: 1px solid #f3f4f6; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="h-full flex" x-data="{ mobileSidebarOpen: false }">
+
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
+  <!-- Mobile backdrop -->
+  <div x-show="mobileSidebarOpen" x-cloak
+       @click="mobileSidebarOpen = false"
+       class="fixed inset-0 z-20 bg-gray-900/50 lg:hidden"></div>
+
+  <!-- Sidebar panel -->
+  <aside :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+         class="fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-white border-r border-gray-200 transition-transform duration-200 lg:static lg:translate-x-0">
+
+    <!-- Logo -->
+    <div class="flex h-16 shrink-0 items-center gap-2.5 px-5 border-b border-gray-100">
+      <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-bold text-lg">M</div>
+      <div>
+        <p class="text-sm font-bold text-gray-900 leading-tight">MZI Admin</p>
+        <p class="text-xs text-gray-400 leading-tight">Moodle · Zoho</p>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+
+      <p class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Overview</p>
+
+      <a href="/admin/dashboard"
+         class="sidebar-link {% if request.url.path == '/admin/dashboard' %}active{% endif %}">
+        <!-- Dashboard icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Dashboard
+      </a>
+
+      <a href="/admin/services"
+         class="sidebar-link {% if request.url.path == '/admin/services' %}active{% endif %}">
+        <!-- Grid icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        All Services
+      </a>
+
+      <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sync</p>
+
+      <a href="/admin/sync"
+         class="sidebar-link {% if '/admin/sync' in request.url.path and 'history' not in request.url.path %}active{% endif %}">
+        <!-- Refresh icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Sync Control
+      </a>
+
+      <a href="/admin/sync/history"
+         class="sidebar-link {% if 'history' in request.url.path %}active{% endif %}">
+        <!-- Clock icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Sync History
+      </a>
+
+      <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Data</p>
+
+      <a href="/admin/data/students"
+         class="sidebar-link {% if 'data/students' in request.url.path %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Students
+      </a>
+
+      <a href="/admin/data/events"
+         class="sidebar-link {% if 'data/events' in request.url.path %}active{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Events
+      </a>
+
+      <a href="/admin/logs"
+         class="sidebar-link {% if request.url.path == '/admin/logs' %}active{% endif %}">
+        <!-- Document text icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Logs Viewer
+      </a>
+
+      {% if user and user.role == 'admin' %}
+      <p class="px-3 pt-4 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</p>
+
+      <a href="/admin/setup"
+         class="sidebar-link {% if request.url.path == '/admin/setup' %}active{% endif %}">
+        <!-- Rocket icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+        </svg>
+        Setup Wizard
+      </a>
+
+      <a href="/admin/mappings"
+         class="sidebar-link {% if request.url.path == '/admin/mappings' %}active{% endif %}">
+        <!-- Table/mapping icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+        </svg>
+        Field Mappings
+      </a>
+
+      <a href="/admin/settings"
+         class="sidebar-link {% if request.url.path == '/admin/settings' %}active{% endif %}">
+        <!-- Cog icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Settings
+      </a>
+
+      <a href="/admin/users"
+         class="sidebar-link {% if request.url.path == '/admin/users' %}active{% endif %}">
+        <!-- User group icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        Users
+      </a>
+      {% endif %}
+    </nav>
+
+    <!-- User info at bottom -->
+    {% if user %}
+    <div class="border-t border-gray-100 p-4">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-semibold text-sm">
+          {{ user.full_name[0].upper() }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">{{ user.full_name }}</p>
+          <p class="text-xs text-gray-500 capitalize">{{ user.role }}</p>
+        </div>
+        <form action="/admin/logout" method="post">
+          <button type="submit" title="Sign out"
+                  class="text-gray-400 hover:text-red-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </aside>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <div class="flex flex-1 flex-col min-w-0 overflow-hidden">
+
+    <!-- Top header -->
+    <header class="flex h-16 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 lg:px-6">
+      <!-- Mobile menu button -->
+      <button @click="mobileSidebarOpen = !mobileSidebarOpen"
+              class="lg:hidden p-1.5 rounded-md text-gray-500 hover:bg-gray-100">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+
+      <div class="flex-1">
+        <h1 class="text-base font-semibold text-gray-900">{% block page_title %}{% endblock %}</h1>
+        {% block page_subtitle %}<p class="text-xs text-gray-500 hidden sm:block">{% endblock %}{% block page_subtitle_text %}{% endblock %}{% block page_subtitle_end %}</p>{% endblock %}
+      </div>
+
+      <div class="flex items-center gap-2">
+        {% block header_actions %}{% endblock %}
+
+        <!-- Backend status indicator -->
+        <a href="/docs" target="_blank"
+           class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-md hover:bg-gray-100">
+          <span class="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+          API
+        </a>
+      </div>
+    </header>
+
+    <!-- Flash messages -->
+    {% block flash %}{% endblock %}
+
+    <!-- Page content -->
+    <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

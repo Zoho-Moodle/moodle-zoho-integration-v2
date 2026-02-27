@@ -52,7 +52,13 @@ $string['gradequeue_f_created'] = 'تم إنشاء درجة F';
 $string['gradequeue_rr_detected'] = 'تم كشف RR';$string['gradequeue_workflow_state'] = 'حالة سير العمل';
 $string['gradequeue_invalid_submission'] = 'تسليم غير صالح (01122)';
 // Navigation
-$string['student_dashboard'] = 'لوحة التحكم';
+$string['mystudentarea'] = 'منطقة الطالب';
+$string['studentprofile'] = 'الملف الشخصي';
+$string['myprograms'] = 'برامجي';
+$string['myclasses'] = 'حصصي';
+$string['mygrades'] = 'درجاتي';
+$string['myrequests'] = 'طلباتي';
+$string['studentcard'] = 'بطاقة الطالب';
 $string['sync_management'] = 'إدارة Zoho Sync';
 $string['event_logs'] = 'سجلات الأحداث';
 $string['statistics'] = 'الإحصائيات';

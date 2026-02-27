@@ -14,3 +14,9 @@ pytest-cov==4.1.0
 
 # Retry logic for Zoho API reliability
 tenacity==8.2.3
+
+# Scheduled jobs (auto-renew Zoho webhook channels every 23h)
+apscheduler==3.10.4
+
+# Admin panel
+jinja2>=3.1.0

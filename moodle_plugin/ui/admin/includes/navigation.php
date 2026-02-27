@@ -74,7 +74,7 @@ function mzi_render_navigation($current_page = 'dashboard', $page_title = 'Moodl
             'icon' => '⚙️',
             'key' => 'sync_management',
             'description' => 'Manage sync operations'
-        ]
+        ],
     ];
     
     ?>

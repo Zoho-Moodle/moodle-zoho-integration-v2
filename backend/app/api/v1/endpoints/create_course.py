@@ -12,7 +12,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from app.infra.db.session import get_db
 from app.infra.moodle.users import MoodleClient
@@ -99,8 +99,9 @@ async def create_course_in_moodle(
         moodle = MoodleClient()
         zoho = ZohoClient()
         
-        # Convert start_date to Unix timestamp
-        start_date_obj = datetime.strptime(request.start_date, "%Y-%m-%d")
+        # Convert start_date to Unix epoch in GMT+3 (matches Zoho Deluge vStartDate.unixEpoch("GMT+3:00"))
+        _tz_plus3 = timezone(timedelta(hours=3))
+        start_date_obj = datetime.strptime(request.start_date, "%Y-%m-%d").replace(tzinfo=_tz_plus3)
         start_timestamp = int(start_date_obj.timestamp())
         
         # Step 1: Create course in Moodle

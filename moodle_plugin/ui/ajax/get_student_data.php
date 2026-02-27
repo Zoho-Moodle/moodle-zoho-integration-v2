@@ -15,7 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * AJAX endpoint to fetch student data from Backend API.
+ * AJAX endpoint to fetch student data from local_mzi_* Moodle DB tables.
+ *
+ * SOURCE OF TRUTH: Zoho CRM.
+ * local_mzi_* tables are a write-through mirror maintained exclusively by the
+ * Zoho → Middleware → Moodle WS pipeline.  This file MUST NOT call the backend
+ * API or any external service — it reads only from local_mzi_* tables.
  *
  * @package    local_moodle_zoho_sync
  * @copyright  2026 Mohyeddine Farhat
@@ -26,80 +31,24 @@ define('AJAX_SCRIPT', true);
 
 require_once(__DIR__ . '/../../../../config.php');
 
-use local_moodle_zoho_sync\config_manager;
-
 require_login();
 
 // CSRF protection.
 $sesskey = required_param('sesskey', PARAM_ALPHANUM);
 require_sesskey();
 
-$context = context_system::instance();
+$userid   = required_param('userid', PARAM_INT);
+$datatype = required_param('type', PARAM_ALPHANUMEXT);
 
-$userid = required_param('userid', PARAM_INT);
-$datatype = required_param('type', PARAM_ALPHA); // profile, academics, finance, classes, grades
-
-// Verify user can only access their own data (no role check needed)
+// Students can only view their own data.
 if ($userid != $USER->id) {
     header('HTTP/1.1 403 Forbidden');
-    echo json_encode(array('error' => 'Access denied - you can only view your own data'));
+    echo json_encode(['error' => true, 'message' => 'Access denied – you can only view your own data']);
     exit;
 }
 
 /**
- * Fetch data from Backend API.
- *
- * @param string $endpoint API endpoint
- * @param array $params Query parameters
- * @return array Response data
- */
-function fetch_backend_data($endpoint, $params = array()) {
-    $baseurl = config_manager::get_backend_url();
-    $token = config_manager::get_api_token();
-    $sslverify = config_manager::is_ssl_verify_enabled();
-    $timeout = config_manager::get_connection_timeout();
-
-    // Build URL with query parameters.
-    $url = $baseurl . $endpoint;
-    if (!empty($params)) {
-        $url .= '?' . http_build_query($params);
-    }
-
-    // Initialize cURL.
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslverify);
-
-    // Add authorization header if token exists.
-    $headers = array('Content-Type: application/json');
-    if (!empty($token)) {
-        $headers[] = 'Authorization: Bearer ' . $token;
-    }
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-    // Execute request.
-    $response = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    // Handle response.
-    if ($httpcode === 200 && $response) {
-        return json_decode($response, true);
-    } else {
-        return array(
-            'error' => true,
-            'message' => $error ? $error : "HTTP $httpcode",
-            'http_code' => $httpcode
-        );
-    }
-}
-
-/**
- * Format response as JSON and exit.
- *
- * @param mixed $data Response data
+ * Emit JSON and terminate.
  */
 function json_response($data) {
     header('Content-Type: application/json');
@@ -108,129 +57,219 @@ function json_response($data) {
 }
 
 try {
-    // Get Moodle user.
-    $user = $DB->get_record('user', array('id' => $userid, 'deleted' => 0));
-    
-    if (!$user) {
-        json_response(array('error' => true, 'message' => 'User not found'));
-    }
+    // ------------------------------------------------------------------
+    // Resolve student mirror record by Moodle user ID
+    // ------------------------------------------------------------------
+    $student = $DB->get_record(
+        'local_mzi_students',
+        ['moodle_user_id' => $userid],
+        '*',
+        IGNORE_MISSING
+    );
 
-    // Get Backend URL
-    $backendurl = config_manager::get_backend_url();
-    
-    // If no Backend URL configured, return sample data
-    if (empty($backendurl)) {
-        // Return sample/demo data for testing
-        switch ($datatype) {
-            case 'profile':
-                json_response(array(
-                    'success' => true,
-                    'data' => array(
-                        'fullname' => fullname($user),
-                        'email' => $user->email,
-                        'username' => $user->username,
-                        'student_id' => $user->idnumber ?: 'N/A',
-                        'phone' => $user->phone1 ?: 'N/A',
-                        'address' => $user->address ?: 'N/A',
-                        'city' => $user->city ?: 'N/A'
-                    )
-                ));
-                break;
-            
-            case 'academics':
-                json_response(array(
-                    'success' => true,
-                    'data' => array(
-                        'programs' => array(),
-                        'message' => 'No programs found. Backend API not configured.'
-                    )
-                ));
-                break;
-            
-            case 'finance':
-                json_response(array(
-                    'success' => true,
-                    'data' => array(
-                        'total_fees' => 0,
-                        'amount_paid' => 0,
-                        'balance_due' => 0,
-                        'payments' => array(),
-                        'message' => 'Backend API not configured.'
-                    )
-                ));
-                break;
-            
-            case 'classes':
-                json_response(array(
-                    'success' => true,
-                    'data' => array(
-                        'classes' => array(),
-                        'message' => 'Backend API not configured.'
-                    )
-                ));
-                break;
-            
-            case 'grades':
-                json_response(array(
-                    'success' => true,
-                    'data' => array(
-                        'grades' => array(),
-                        'message' => 'Backend API not configured.'
-                    )
-                ));
-                break;
-            
-            default:
-                json_response(array('error' => true, 'message' => 'Invalid data type'));
-        }
-    }
-
-    // Route based on data type.
     switch ($datatype) {
+
+        // ------------------------------------------------------------------
         case 'profile':
-            // Fetch student profile from Backend.
-            $response = fetch_backend_data('/api/v1/extension/students/profile', array(
-                'moodle_user_id' => $userid
-            ));
-            json_response($response);
-            break;
+        // ------------------------------------------------------------------
+            if (!$student) {
+                json_response(['success' => true, 'student' => null]);
+            }
+            json_response([
+                'success' => true,
+                'student' => [
+                    'student_id'     => $student->zoho_student_id  ?: 'N/A',
+                    'full_name'      => trim($student->first_name . ' ' . $student->last_name),
+                    'email'          => $student->email           ?: '',
+                    'phone'          => $student->phone_number    ?: 'N/A',
+                    'student_status' => $student->status          ?: 'Active',
+                    'nationality'    => $student->nationality     ?: '',
+                    'date_of_birth'  => $student->date_of_birth   ?: ''
+                ],
+            ]);
+            break; // unreachable – json_response() exits, satisfies linters
 
+        // ------------------------------------------------------------------
         case 'academics':
-            // Fetch academic data (programs, units, enrollments).
-            $response = fetch_backend_data('/api/v1/extension/students/academics', array(
-                'moodle_user_id' => $userid
-            ));
-            json_response($response);
+        // ------------------------------------------------------------------
+            if (!$student) {
+                json_response(['success' => true, 'programs' => []]);
+            }
+            $regs = $DB->get_records(
+                'local_mzi_registrations',
+                ['student_id' => $student->id],
+                'registration_date DESC'
+            );
+            $programs = [];
+            foreach ($regs as $reg) {
+                $programs[] = [
+                    'program_name'   => $reg->program_name        ?: 'N/A',
+                    'program_status' => $reg->registration_status ?: 'N/A',
+                    'start_date'     => $reg->registration_date   ?: 'N/A',
+                    'units_count'    => (int)$DB->count_records('local_mzi_grades', ['student_id' => $student->id]),
+                    'total_fees'     => (float)($reg->total_fees       ?? 0),
+                    'remaining'      => (float)($reg->remaining_amount ?? 0),
+                    'study_mode'     => $reg->study_mode ?: '',
+                ];
+            }
+            json_response(['success' => true, 'programs' => $programs]);
             break;
 
+        // ------------------------------------------------------------------
         case 'finance':
-            // Fetch financial data (payments, balance).
-            $response = fetch_backend_data('/api/v1/extension/students/finance', array(
-                'moodle_user_id' => $userid
-            ));
-            json_response($response);
+        // ------------------------------------------------------------------
+            if (!$student) {
+                json_response([
+                    'success'  => true,
+                    'summary'  => ['total_fees' => 0, 'amount_paid' => 0, 'balance_due' => 0],
+                    'payments' => [],
+                ]);
+            }
+
+            // Aggregate fees from registrations.
+            $regs = $DB->get_records(
+                'local_mzi_registrations',
+                ['student_id' => $student->id],
+                '',
+                'id, total_fees, remaining_amount'
+            );
+            $total_fees  = 0;
+            $balance_due = 0;
+            foreach ($regs as $reg) {
+                $total_fees  += (float)($reg->total_fees       ?? 0);
+                $balance_due += (float)($reg->remaining_amount ?? 0);
+            }
+
+            // Payments list — join through registrations since payments have no direct student FK.
+            $payment_rows = $DB->get_records_sql(
+                "SELECT p.*
+                   FROM {local_mzi_payments} p
+                   JOIN {local_mzi_registrations} r ON r.id = p.registration_id
+                  WHERE r.student_id = ?
+                  ORDER BY p.payment_date DESC",
+                [$student->id]
+            );
+            $amount_paid  = 0;
+            $payments_out = [];
+            foreach ($payment_rows as $p) {
+                $amount_paid += (float)($p->payment_amount ?? 0);
+                $payments_out[] = [
+                    'payment_date'   => $p->payment_date   ?: 'N/A',
+                    'amount'         => (float)($p->payment_amount ?? 0),
+                    'payment_method' => $p->payment_method ?: 'N/A',
+                    'payment_status' => $p->payment_status ?: 'Completed',
+                    'note'           => $p->payment_notes  ?: '',
+                ];
+            }
+
+            json_response([
+                'success' => true,
+                'summary' => [
+                    'total_fees'  => $total_fees,
+                    'amount_paid' => $amount_paid,
+                    'balance_due' => $balance_due,
+                ],
+                'payments' => $payments_out,
+            ]);
             break;
 
+        // ------------------------------------------------------------------
         case 'classes':
-            // Fetch classes data.
-            $response = fetch_backend_data('/api/v1/extension/students/classes', array(
-                'moodle_user_id' => $userid
-            ));
-            json_response($response);
+        // ------------------------------------------------------------------
+            if (!$student) {
+                json_response(['success' => true, 'classes' => []]);
+            }
+
+            // Join enrollments → classes on Zoho class ID.
+            $sql = "SELECT c.class_name, c.class_short_name, c.teacher_name,
+                           c.start_date, c.end_date, c.class_status,
+                           c.program_level, c.unit_name,
+                           e.enrollment_date, e.enrollment_status
+                      FROM {local_mzi_enrollments} e
+                      JOIN {local_mzi_classes} c ON c.zoho_class_id = e.zoho_class_id
+                     WHERE e.zoho_student_id = :zoho_student_id
+                  ORDER BY e.enrollment_date DESC";
+
+            $rows = $DB->get_records_sql($sql, ['zoho_student_id' => $student->zoho_student_id]);
+
+            $classes_out = [];
+            foreach ($rows as $row) {
+                $schedule = $row->start_date ?: '';
+                if ($schedule && $row->end_date) {
+                    $schedule .= ' – ' . $row->end_date;
+                }
+                $classes_out[] = [
+                    'class_name'        => $row->class_name        ?: 'N/A',
+                    'instructor'        => $row->teacher_name      ?: 'N/A',  // key JS uses
+                    'schedule'          => $schedule               ?: 'N/A',
+                    'room'              => '',                                 // not in schema
+                    'class_status'      => $row->class_status      ?: '',
+                    'program_level'     => $row->program_level     ?: '',
+                    'unit_name'         => $row->unit_name         ?: '',
+                    'enrollment_status' => $row->enrollment_status ?: '',
+                ];
+            }
+            json_response(['success' => true, 'classes' => $classes_out]);
             break;
 
+        // ------------------------------------------------------------------
         case 'grades':
-            // Fetch grades data.
-            $response = fetch_backend_data('/api/v1/extension/students/grades', array(
-                'moodle_user_id' => $userid
-            ));
-            json_response($response);
+        // ------------------------------------------------------------------
+            if (!$student) {
+                json_response(['success' => true, 'grades' => []]);
+            }
+            $grade_rows = $DB->get_records(
+                'local_mzi_grades',
+                ['student_id' => $student->id],
+                'grade_date DESC'
+            );
+            $grades_out = [];
+            foreach ($grade_rows as $g) {
+                // JS reads 'grade' — prefer named grade, fall back to numeric.
+                $grade_display = $g->btec_grade_name
+                    ?: ($g->numeric_grade !== null ? (string)$g->numeric_grade : 'N/A');
+                $grades_out[] = [
+                    'unit_name'       => $g->unit_name       ?: 'N/A',
+                    'grade'           => $grade_display,
+                    'grade_status'    => $g->grade_status    ?: 'N/A',
+                    'submission_date' => $g->grade_date      ?: 'N/A',
+                    'assignment_name' => $g->assignment_name ?: '',
+                    'attempt_number'  => (int)($g->attempt_number ?? 1),
+                    'feedback'        => $g->feedback        ?: '',
+                ];
+            }
+            json_response(['success' => true, 'grades' => $grades_out]);
             break;
 
+        // ------------------------------------------------------------------
+        case 'requests':
+        // ------------------------------------------------------------------
+            if (!$student) {
+                json_response(['success' => true, 'requests' => []]);
+            }
+            $req_rows = $DB->get_records(
+                'local_mzi_requests',
+                ['student_id' => $student->id],
+                'created_at DESC'
+            );
+            $requests_out = [];
+            foreach ($req_rows as $req) {
+                $requests_out[] = [
+                    'request_type'   => $req->request_type   ?: 'N/A',
+                    'request_status' => $req->request_status ?: 'Pending',
+                    'description'    => $req->description    ?: '',
+                    'request_date'   => !empty($req->created_at) ? userdate($req->created_at, '%d %b %Y') : 'N/A',
+                ];
+            }
+            json_response(['success' => true, 'requests' => $requests_out]);
+            break;
+
+        // ------------------------------------------------------------------
         default:
-            json_response(array('error' => true, 'message' => 'Invalid data type'));
+        // ------------------------------------------------------------------
+            json_response(['error' => true, 'message' => 'Invalid data type: ' . $datatype]);
     }
 
 } catch (Exception $e) {
-    json_response(array('error' => true, 'message' => $e->getMessage()));
+    json_response(['error' => true, 'message' => $e->getMessage()]);
 }

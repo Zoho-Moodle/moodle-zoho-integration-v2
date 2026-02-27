@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Integration Settings{% endblock %}
+{% block page_subtitle_text %}Configure Zoho, Moodle, webhooks, schedule and notifications{% endblock %}
+
+{% block content %}
+
+{% if saved %}
+<div class="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
+  <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+  </svg>
+  Settings saved successfully. <strong class="ml-1">Restart the backend</strong> for changes to take effect.
+</div>
+{% endif %}
+
+<!-- Tab bar -->
+{% set tabs = [
+  ('zoho',          'Zoho CRM'),
+  ('moodle',        'Moodle'),
+  ('webhooks',      'Webhooks'),
+  ('schedule',      'Schedule'),
+  ('notifications', 'Notifications'),
+] %}
+
+<div class="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto">
+  {% for tab_id, tab_label in tabs %}
+  <a href="/admin/settings?tab={{ tab_id }}"
+     class="px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px
+            {% if tab == tab_id %}border-brand-600 text-brand-700{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">
+    {{ tab_label }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- === ZOHO TAB === -->
+{% if tab == 'zoho' %}
+<form method="post" action="/admin/settings/zoho" class="space-y-5 max-w-2xl">
+  <div class="card space-y-5">
+
+    <div>
+      <h3 class="text-sm font-semibold text-gray-800 mb-4">Zoho CRM OAuth Configuration</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Client ID</label>
+          <p class="text-xs text-gray-400 mb-1.5">From Zoho API Console → Your App → Client ID</p>
+          <input type="text" name="ZOHO_CLIENT_ID"
+                 value="{{ env.get('ZOHO_CLIENT_ID', '') }}"
+                 class="input-field font-mono" placeholder="1000.XXXXXX…" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Client Secret</label>
+          <p class="text-xs text-gray-400 mb-1.5">From Zoho API Console → Your App → Client Secret</p>
+          <input type="password" name="ZOHO_CLIENT_SECRET"
+                 value="{{ env.get('ZOHO_CLIENT_SECRET', '') }}"
+                 class="input-field font-mono" placeholder="••••••••" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Refresh Token</label>
+          <p class="text-xs text-gray-400 mb-1.5">Generate via Zoho OAuth flow → Self Client → long-lived refresh token</p>
+          <input type="text" name="ZOHO_REFRESH_TOKEN"
+                 value="{{ env.get('ZOHO_REFRESH_TOKEN', '') }}"
+                 class="input-field font-mono text-xs" placeholder="1000.XXXX…" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Region</label>
+          <p class="text-xs text-gray-400 mb-1.5">Your Zoho CRM region: com, eu, in, jp, com.au</p>
+          <select name="ZOHO_REGION" class="input-field">
+            {% for r in ['com', 'eu', 'in', 'jp', 'com.au'] %}
+            <option value="{{ r }}" {% if env.get('ZOHO_REGION', 'com') == r %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Organization ID</label>
+          <p class="text-xs text-gray-400 mb-1.5">Zoho CRM Settings → Org Info → Organization ID</p>
+          <input type="text" name="ZOHO_ORGANIZATION_ID"
+                 value="{{ env.get('ZOHO_ORGANIZATION_ID', '') }}"
+                 class="input-field font-mono" placeholder="60XXXXXX" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Webhook Secret</label>
+          <p class="text-xs text-gray-400 mb-1.5">Secret token to validate incoming Zoho webhook calls</p>
+          <input type="text" name="ZOHO_WEBHOOK_SECRET"
+                 value="{{ env.get('ZOHO_WEBHOOK_SECRET', '') }}"
+                 class="input-field font-mono" placeholder="any-random-secret" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">API Timeout (seconds)</label>
+          <p class="text-xs text-gray-400 mb-1.5">HTTP timeout for Zoho API calls (default: 30)</p>
+          <input type="number" name="ZOHO_TIMEOUT" step="0.5" min="5" max="120"
+                 value="{{ env.get('ZOHO_TIMEOUT', '30.0') }}"
+                 class="input-field" />
+        </div>
+
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+      <button type="submit" class="btn-primary">Save Zoho Settings</button>
+    </div>
+  </div>
+</form>
+{% endif %}
+
+<!-- === MOODLE TAB === -->
+{% if tab == 'moodle' %}
+<form method="post" action="/admin/settings/moodle" class="space-y-5 max-w-2xl">
+  <div class="card space-y-5">
+
+    <h3 class="text-sm font-semibold text-gray-800">Moodle API Configuration</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Moodle Base URL</label>
+        <p class="text-xs text-gray-400 mb-1.5">Your Moodle installation URL (no trailing slash). E.g. https://lms.example.com</p>
+        <input type="url" name="MOODLE_BASE_URL"
+               value="{{ env.get('MOODLE_BASE_URL', '') }}"
+               class="input-field" placeholder="https://lms.yourdomain.com" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Moodle Web Services Token</label>
+        <p class="text-xs text-gray-400 mb-1.5">Moodle Admin → Site Administration → Plugins → Web Services → Manage tokens → Create a token for the integration user</p>
+        <input type="text" name="MOODLE_TOKEN"
+               value="{{ env.get('MOODLE_TOKEN', '') }}"
+               class="input-field font-mono text-xs" placeholder="32-character token" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Default Course Category ID</label>
+        <p class="text-xs text-gray-400 mb-1.5">Moodle course category ID where new courses (classes) will be created</p>
+        <input type="number" name="MOODLE_DEFAULT_CATEGORY_ID" min="1"
+               value="{{ env.get('MOODLE_DEFAULT_CATEGORY_ID', '1') }}"
+               class="input-field" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Moodle Webhook Secret</label>
+        <p class="text-xs text-gray-400 mb-1.5">Secret header value that Moodle sends when triggering backend events</p>
+        <input type="text" name="MOODLE_WEBHOOK_SECRET"
+               value="{{ env.get('MOODLE_WEBHOOK_SECRET', '') }}"
+               class="input-field font-mono" placeholder="any-random-secret" />
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Moodle DB Direct URL (optional)</label>
+        <p class="text-xs text-gray-400 mb-1.5">For direct DB access (advanced). Format: mysql://user:pass@host:3306/moodle_db — Leave blank to use only WS API</p>
+        <input type="text" name="MOODLE_DB_URL"
+               value="{{ env.get('MOODLE_DB_URL', '') }}"
+               class="input-field font-mono text-xs" placeholder="mysql://user:pass@localhost:3306/moodle" />
+      </div>
+
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+      <button type="submit" class="btn-primary">Save Moodle Settings</button>
+    </div>
+  </div>
+</form>
+{% endif %}
+
+<!-- === WEBHOOKS TAB === -->
+{% if tab == 'webhooks' %}
+<form method="post" action="/admin/settings/webhooks" class="space-y-5 max-w-2xl">
+  <div class="card space-y-5">
+    <h3 class="text-sm font-semibold text-gray-800">Webhook Configuration</h3>
+    <div class="grid grid-cols-1 gap-4">
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Webhook Base URL</label>
+        <p class="text-xs text-gray-400 mb-1.5">Public URL of this backend (used when registering notification channels in Zoho). In dev: use ngrok URL. In production: your public server URL. E.g. https://api.yourdomain.com</p>
+        <input type="url" name="WEBHOOK_BASE_URL"
+               value="{{ env.get('WEBHOOK_BASE_URL', '') }}"
+               class="input-field" placeholder="https://your-backend-domain.com" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Zoho HMAC Webhook Secret</label>
+        <p class="text-xs text-gray-400 mb-1.5">HMAC-SHA256 secret for verifying Zoho webhook signatures. Must match what's configured in Zoho CRM notification settings</p>
+        <input type="text" name="ZOHO_WEBHOOK_HMAC_SECRET"
+               value="{{ env.get('ZOHO_WEBHOOK_HMAC_SECRET', '') }}"
+               class="input-field font-mono" placeholder="hmac-secret-key" />
+      </div>
+
+    </div>
+
+    <!-- Endpoint reference table -->
+    <div>
+      <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Webhook Endpoints Reference</h4>
+      <div class="overflow-x-auto text-xs">
+        <table class="w-full border border-gray-100 rounded-lg overflow-hidden">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="table-th">Direction</th>
+              <th class="table-th">Endpoint URL</th>
+              <th class="table-th">Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set endpoints = [
+              ('Zoho → Moodle', '/api/v1/events/zoho/student',        'Student create/update/delete'),
+              ('Zoho → Moodle', '/api/v1/events/zoho/enrollment',     'Enrollment events'),
+              ('Zoho → Moodle', '/api/v1/events/zoho/grade',          'Grade submission events'),
+              ('Zoho → Moodle', '/api/v1/events/zoho/payment',        'Payment recorded events'),
+              ('Moodle → Zoho', '/api/v1/moodle/user_created',        'New Moodle user → Zoho'),
+              ('Moodle → Zoho', '/api/v1/moodle/user_updated',        'Moodle user update → Zoho'),
+              ('Moodle → Zoho', '/api/v1/moodle/user_enrolled',       'Moodle enrollment → Zoho'),
+              ('Moodle → Zoho', '/api/v1/moodle/grade_updated',       'Moodle grade → Zoho'),
+            ] %}
+            {% for direction, endpoint, purpose in endpoints %}
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+              <td class="table-td">
+                {% if 'Zoho' in direction and direction.startswith('Zoho') %}
+                  <span class="badge-info">Z→M</span>
+                {% else %}
+                  <span class="badge-gray">M→Z</span>
+                {% endif %}
+              </td>
+              <td class="table-td font-mono text-xs">
+                <span class="text-gray-400">{{ env.get('WEBHOOK_BASE_URL', 'https://your-domain.com') }}</span>{{ endpoint }}
+              </td>
+              <td class="table-td text-gray-500">{{ purpose }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+      <button type="submit" class="btn-primary">Save Webhook Settings</button>
+    </div>
+  </div>
+</form>
+{% endif %}
+
+<!-- === SCHEDULE TAB === -->
+{% if tab == 'schedule' %}
+<form method="post" action="/admin/settings/schedule" class="space-y-5 max-w-2xl">
+  <div class="card space-y-5">
+    <h3 class="text-sm font-semibold text-gray-800">Automatic Sync Schedule</h3>
+
+    <div class="p-3 rounded-lg bg-blue-50 border border-blue-100 text-xs text-blue-700">
+      <strong>Note:</strong> Schedule changes require a backend restart to take effect. The scheduler uses APScheduler (already installed).
+    </div>
+
+    <div class="space-y-4">
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="schedule_enabled" name="SYNC_SCHEDULE_ENABLED"
+               value="true"
+               {% if env.get('SYNC_SCHEDULE_ENABLED', 'false') == 'true' %}checked{% endif %}
+               class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
+        <label for="schedule_enabled" class="text-sm font-medium text-gray-700">Enable automatic scheduled sync</label>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Cron Expression</label>
+        <p class="text-xs text-gray-400 mb-1.5">Standard cron expression (5 fields). Default: <code class="font-mono bg-gray-100 px-1 rounded">0 2 * * *</code> = every day at 2:00 AM</p>
+        <input type="text" name="SYNC_SCHEDULE_CRON"
+               value="{{ env.get('SYNC_SCHEDULE_CRON', '0 2 * * *') }}"
+               class="input-field font-mono" placeholder="0 2 * * *" />
+      </div>
+
+      <!-- Cron quick reference -->
+      <div class="text-xs rounded-lg bg-gray-50 border border-gray-100 p-3">
+        <p class="font-semibold text-gray-600 mb-2">Quick Reference:</p>
+        <div class="grid grid-cols-2 gap-1 text-gray-500">
+          <span><code class="font-mono bg-white px-1 rounded">0 2 * * *</code> — Daily at 2 AM</span>
+          <span><code class="font-mono bg-white px-1 rounded">0 */6 * * *</code> — Every 6 hours</span>
+          <span><code class="font-mono bg-white px-1 rounded">0 0 * * 1</code> — Every Monday</span>
+          <span><code class="font-mono bg-white px-1 rounded">*/30 * * * *</code> — Every 30 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+      <button type="submit" class="btn-primary">Save Schedule</button>
+    </div>
+  </div>
+</form>
+{% endif %}
+
+<!-- === NOTIFICATIONS TAB === -->
+{% if tab == 'notifications' %}
+<form method="post" action="/admin/settings/notifications" class="space-y-5 max-w-2xl">
+  <div class="card space-y-5">
+    <h3 class="text-sm font-semibold text-gray-800">Email Notifications</h3>
+
+    <div class="p-3 rounded-lg bg-yellow-50 border border-yellow-100 text-xs text-yellow-700">
+      <strong>Note:</strong> Email notifications require SMTP configuration. Add <code class="font-mono">smtplib</code> support in the backend service.
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Notification Email</label>
+        <p class="text-xs text-gray-400 mb-1.5">Email address that will receive sync alerts and error reports</p>
+        <input type="email" name="NOTIFY_EMAIL"
+               value="{{ env.get('NOTIFY_EMAIL', '') }}"
+               class="input-field" placeholder="admin@yourdomain.com" />
+      </div>
+
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="notify_error" name="NOTIFY_ON_ERROR" value="true"
+               {% if env.get('NOTIFY_ON_ERROR', 'false') == 'true' %}checked{% endif %}
+               class="w-4 h-4 rounded border-gray-300 text-brand-600" />
+        <label for="notify_error" class="text-sm text-gray-700">Notify on sync errors</label>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="notify_complete" name="NOTIFY_ON_COMPLETE" value="true"
+               {% if env.get('NOTIFY_ON_COMPLETE', 'false') == 'true' %}checked{% endif %}
+               class="w-4 h-4 rounded border-gray-300 text-brand-600" />
+        <label for="notify_complete" class="text-sm text-gray-700">Notify on sync completion</label>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">SMTP Host</label>
+        <p class="text-xs text-gray-400 mb-1.5">SMTP server hostname (e.g. smtp.gmail.com)</p>
+        <input type="text" name="SMTP_HOST"
+               value="{{ env.get('SMTP_HOST', '') }}"
+               class="input-field" placeholder="smtp.gmail.com" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">SMTP Port</label>
+        <p class="text-xs text-gray-400 mb-1.5">Usually 587 (STARTTLS) or 465 (SSL)</p>
+        <input type="number" name="SMTP_PORT"
+               value="{{ env.get('SMTP_PORT', '587') }}"
+               class="input-field" placeholder="587" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">SMTP Username</label>
+        <p class="text-xs text-gray-400 mb-1.5">Your email address for authentication</p>
+        <input type="email" name="SMTP_USER"
+               value="{{ env.get('SMTP_USER', '') }}"
+               class="input-field" placeholder="notifications@yourdomain.com" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">SMTP Password</label>
+        <p class="text-xs text-gray-400 mb-1.5">App password (not your regular email password)</p>
+        <input type="password" name="SMTP_PASSWORD"
+               value="{{ env.get('SMTP_PASSWORD', '') }}"
+               class="input-field" placeholder="••••••••" />
+      </div>
+
+    </div>
+
+    <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+      <button type="submit" class="btn-primary">Save Notifications</button>
+    </div>
+  </div>
+</form>
+{% endif %}
+
+{% endblock %}

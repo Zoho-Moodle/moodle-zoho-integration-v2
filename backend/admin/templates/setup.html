@@ -1,0 +1,1206 @@
+{% extends "base.html" %}
+{% block title %}Setup Wizard{% endblock %}
+{% block page_title %}Setup Wizard{% endblock %}
+{% block page_subtitle_text %}Deploy your Moodle-Zoho integration — step by step{% endblock %}
+
+{% block content %}
+<div x-data="setupWizard()" x-init="init()" class="max-w-3xl mx-auto">
+
+  <!-- ═══════════════════════════════════════════════════
+       PROGRESS STEPS
+       ═══════════════════════════════════════════════════ -->
+  <div class="mb-8 overflow-x-auto pb-2">
+    <div class="flex items-center min-w-max">
+      <template x-for="(step, idx) in steps" :key="step.id">
+        <div class="flex items-center">
+          <button @click="goToStep(idx + 1)" class="flex flex-col items-center w-20">
+            <div class="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-200"
+                 :class="{
+                   'bg-brand-600 border-brand-600 text-white ring-2 ring-brand-200': step.status === 'ok',
+                   'bg-red-500 border-red-500 text-white': step.status === 'error',
+                   'bg-white border-brand-500 text-brand-600 ring-4 ring-brand-50': currentStep === idx+1 && step.status !== 'ok' && step.status !== 'error',
+                   'bg-white border-gray-200 text-gray-400': currentStep !== idx+1 && step.status !== 'ok' && step.status !== 'error',
+                 }">
+              <template x-if="step.status === 'ok'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </template>
+              <template x-if="step.status === 'error'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </template>
+              <template x-if="step.status !== 'ok' && step.status !== 'error'">
+                <span x-text="idx + 1"></span>
+              </template>
+            </div>
+            <span class="mt-1.5 text-xs font-medium text-center leading-tight whitespace-nowrap"
+                  :class="currentStep === idx+1 ? 'text-brand-700' : (step.status === 'ok' ? 'text-brand-600' : 'text-gray-400')"
+                  x-text="step.label"></span>
+          </button>
+          <template x-if="idx < steps.length - 1">
+            <div class="h-0.5 w-8 mx-0.5 mb-4 flex-shrink-0"
+                 :class="step.status === 'ok' ? 'bg-brand-400' : 'bg-gray-200'"></div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 1 — System Check
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 1"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="card space-y-4">
+
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold text-gray-900">Step 1 — System Check</h2>
+        <p class="text-xs text-gray-500">Verifying Python environment, dependencies, and configuration.</p>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <template x-if="steps[0].status === 'loading'">
+      <div class="flex items-center gap-2 text-sm text-gray-500 py-2">
+        <svg class="animate-spin w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        Running checks…
+      </div>
+    </template>
+
+    <!-- Check results -->
+    <template x-if="backendChecks.length > 0">
+      <div class="border border-gray-100 rounded-xl overflow-hidden divide-y divide-gray-50">
+        <template x-for="check in backendChecks" :key="check.name">
+          <div class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors">
+            <span class="text-sm text-gray-700" x-text="check.name"></span>
+            <span class="text-xs font-semibold flex items-center gap-1"
+                  :class="check.ok ? 'text-green-600' : 'text-red-500'">
+              <template x-if="check.ok">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </template>
+              <template x-if="!check.ok">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </template>
+              <span x-text="check.value"></span>
+            </span>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Error hint -->
+    <template x-if="steps[0].status === 'error'">
+      <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs flex items-start gap-2">
+        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
+        </svg>
+        <span>Some required configuration is missing.
+          Go to <a href="/admin/settings" target="_blank" class="underline font-semibold">Settings</a>
+          and fill in the Zoho and Moodle credentials first.
+        </span>
+      </div>
+    </template>
+
+    <div class="flex items-center justify-between pt-1">
+      <button @click="runSystemCheck()" class="btn-secondary text-xs"
+              :disabled="steps[0].status === 'loading'">
+        ↺ Re-check
+      </button>
+      <button @click="nextStep()" :disabled="steps[0].status !== 'ok'"
+              class="btn-primary"
+              :class="steps[0].status !== 'ok' ? 'opacity-40 cursor-not-allowed' : ''">
+        Next: Zoho API →
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 2 — Zoho API
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 2"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="space-y-4">
+
+    <div class="card space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-gray-900">Step 2 — Zoho CRM API</h2>
+          <p class="text-xs text-gray-500">Verify OAuth credentials and test the connection to your Zoho CRM.</p>
+        </div>
+      </div>
+
+      <!-- Current config preview -->
+      <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Current .env Configuration</p>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+          <div class="flex gap-2">
+            <span class="text-gray-400 font-medium w-24 flex-shrink-0">Client ID</span>
+            <code class="text-gray-700">{{ (env.get('ZOHO_CLIENT_ID','')[:16] + '…') if env.get('ZOHO_CLIENT_ID') else '✗ Not set' }}</code>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-400 font-medium w-24 flex-shrink-0">Region</span>
+            <code class="text-gray-700">{{ env.get('ZOHO_REGION', 'com') }}</code>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-400 font-medium w-24 flex-shrink-0">Client Secret</span>
+            <code class="text-gray-700">{{ '✓ Set' if env.get('ZOHO_CLIENT_SECRET') else '✗ Not set' }}</code>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-400 font-medium w-24 flex-shrink-0">Org ID</span>
+            <code class="text-gray-700">{{ env.get('ZOHO_ORGANIZATION_ID') or '— optional —' }}</code>
+          </div>
+          <div class="flex gap-2 col-span-2">
+            <span class="text-gray-400 font-medium w-24 flex-shrink-0">Refresh Token</span>
+            <code class="text-gray-700">{{ '✓ Set (' + env.get('ZOHO_REFRESH_TOKEN','')[:12] + '…)' if env.get('ZOHO_REFRESH_TOKEN') else '✗ Not set' }}</code>
+          </div>
+        </div>
+        <a href="/admin/settings?tab=zoho" target="_blank"
+           class="inline-flex items-center gap-1 mt-3 text-xs text-brand-600 hover:text-brand-700 font-medium">
+          ✎ Edit credentials in Settings
+        </a>
+      </div>
+
+      <!-- Required scopes -->
+      <div>
+        <p class="text-xs font-semibold text-gray-700 mb-2">Required OAuth Scopes</p>
+        <p class="text-xs text-gray-400 mb-2">When generating the Refresh Token via Zoho API Console → Self-Client, include these scopes:</p>
+        <div class="flex flex-wrap gap-1.5">
+          <template x-for="scope in zohoScopes" :key="scope">
+            <span class="badge-info text-xs font-mono px-2 py-0.5" x-text="scope"></span>
+          </template>
+        </div>
+      </div>
+
+      <!-- How to get refresh token (collapsible) -->
+      <details class="group">
+        <summary class="cursor-pointer text-xs font-semibold text-brand-600 hover:text-brand-700 list-none flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+          </svg>
+          How to get a Refresh Token?
+        </summary>
+        <div class="mt-2 text-xs text-gray-600 bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-1.5">
+          <p>1. Go to <a href="https://api-console.zoho.com/" target="_blank" class="text-blue-600 underline">api-console.zoho.com</a></p>
+          <p>2. Create an app → type <strong>Self Client</strong></p>
+          <p>3. Copy Client ID and Client Secret to Settings → Zoho tab</p>
+          <p>4. In Self Client → Generate Code tab, paste the scopes above, set duration <strong>10 minutes</strong>, click Generate</p>
+          <p>5. Run: <code class="bg-blue-100 px-1 rounded">python tools/get_refresh_token.py --code YOUR_CODE</code></p>
+          <p>6. Paste the resulting Refresh Token in Settings → Zoho tab</p>
+        </div>
+      </details>
+
+      <!-- Test result -->
+      <template x-if="zohoResult">
+        <div class="p-3 rounded-xl text-sm border" :class="zohoResult.ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'">
+          <template x-if="zohoResult.ok">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span x-text="zohoResult.message"></span>
+            </div>
+          </template>
+          <template x-if="!zohoResult.ok">
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <span x-text="zohoResult.error"></span>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <div class="flex items-center justify-between pt-1">
+        <div class="flex items-center gap-2">
+          <button @click="prevStep()" class="btn-secondary text-xs">← Back</button>
+          <button @click="testZoho()" class="btn-secondary text-xs flex items-center gap-1.5"
+                  :disabled="steps[1].status === 'loading'">
+            <svg x-show="steps[1].status === 'loading'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            Test Zoho Connection
+          </button>
+        </div>
+        <button @click="nextStep()" :disabled="steps[1].status !== 'ok'"
+                class="btn-primary"
+                :class="steps[1].status !== 'ok' ? 'opacity-40 cursor-not-allowed' : ''">
+          Next: Moodle →
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 3 — Moodle
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 3"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="card space-y-4">
+
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold text-gray-900">Step 3 — Moodle Configuration</h2>
+        <p class="text-xs text-gray-500">Verify Moodle Web Services connection and required function availability.</p>
+      </div>
+    </div>
+
+    <!-- Current config -->
+    <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Current .env Configuration</p>
+      <div class="space-y-1.5 text-xs">
+        <div class="flex gap-2">
+          <span class="text-gray-400 font-medium w-28 flex-shrink-0">Base URL</span>
+          <code class="text-gray-700">{{ env.get('MOODLE_BASE_URL', '✗ Not set') }}</code>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-gray-400 font-medium w-28 flex-shrink-0">WS Token</span>
+          <code class="text-gray-700">{{ ('✓ Set (' + env.get('MOODLE_TOKEN','')[:12] + '…)') if env.get('MOODLE_TOKEN') else '✗ Not set' }}</code>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-gray-400 font-medium w-28 flex-shrink-0">DB URL</span>
+          <code class="text-gray-700 break-all">{{ '✓ Set' if env.get('MOODLE_DB_URL') else '— optional for direct DB —' }}</code>
+        </div>
+      </div>
+      <a href="/admin/settings?tab=moodle" target="_blank"
+         class="inline-flex items-center gap-1 mt-3 text-xs text-brand-600 hover:text-brand-700 font-medium">
+        ✎ Edit in Settings → Moodle tab
+      </a>
+    </div>
+
+    <!-- How to create Web Service token (collapsible) -->
+    <details class="group">
+      <summary class="cursor-pointer text-xs font-semibold text-brand-600 hover:text-brand-700 list-none flex items-center gap-1">
+        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+        </svg>
+        How to create a Moodle Web Service token?
+      </summary>
+      <div class="mt-2 text-xs text-gray-600 bg-purple-50 border border-purple-100 rounded-xl p-4 space-y-1.5">
+        <p>1. Moodle Admin → Site Administration → <strong>Server → Web Services → Overview</strong></p>
+        <p>2. Enable Web Services (step 1 of overview wizard)</p>
+        <p>3. Enable REST protocol (step 2)</p>
+        <p>4. Create an External Service → add all required functions</p>
+        <p>5. Create a token for the service (Admin user or a dedicated WS user)</p>
+        <p>6. Copy token to Settings → Moodle tab → <strong>WS Token</strong></p>
+        <p class="text-purple-700 font-medium">Required functions: core_user_get_users, core_course_create_courses, core_enrol_get_users_courses, mod_assign_get_grades, gradereport_user_get_grades_table, core_webservice_get_site_info</p>
+      </div>
+    </details>
+
+    <!-- Required functions checklist -->
+    <div>
+      <p class="text-xs font-semibold text-gray-700 mb-2">Required Web Service Functions</p>
+      <div class="flex flex-wrap gap-1.5">
+        <template x-for="fn in moodleRequiredFunctions" :key="fn">
+          <span class="text-xs font-mono px-2 py-0.5 rounded-full border"
+                :class="moodleResult && moodleResult.ok && moodleResult.missing_functions && !moodleResult.missing_functions.includes(fn)
+                         ? 'bg-green-50 border-green-200 text-green-700'
+                         : moodleResult && moodleResult.ok && moodleResult.missing_functions && moodleResult.missing_functions.includes(fn)
+                           ? 'bg-red-50 border-red-200 text-red-600'
+                           : 'bg-gray-50 border-gray-200 text-gray-500'"
+                x-text="fn"></span>
+        </template>
+      </div>
+    </div>
+
+    <!-- Test result -->
+    <template x-if="moodleResult">
+      <div class="p-3 rounded-xl text-sm border" :class="moodleResult.ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'">
+        <template x-if="moodleResult.ok">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 font-medium">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span x-text="moodleResult.message"></span>
+            </div>
+            <template x-if="moodleResult.missing_functions && moodleResult.missing_functions.length > 0">
+              <p class="text-amber-600 text-xs mt-1">⚠ Missing functions: <span x-text="moodleResult.missing_functions.join(', ')"></span></p>
+            </template>
+          </div>
+        </template>
+        <template x-if="!moodleResult.ok">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span x-text="moodleResult.error"></span>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <div class="flex items-center justify-between pt-1">
+      <div class="flex items-center gap-2">
+        <button @click="prevStep()" class="btn-secondary text-xs">← Back</button>
+        <button @click="testMoodle()" class="btn-secondary text-xs flex items-center gap-1.5"
+                :disabled="steps[2].status === 'loading'">
+          <svg x-show="steps[2].status === 'loading'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          Test Moodle Connection
+        </button>
+      </div>
+      <button @click="nextStep()" :disabled="steps[2].status !== 'ok'"
+              class="btn-primary"
+              :class="steps[2].status !== 'ok' ? 'opacity-40 cursor-not-allowed' : ''">
+        Next: Database →
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 4 — Database
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 4"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="card space-y-4">
+
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-teal-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold text-gray-900">Step 4 — Database Setup</h2>
+        <p class="text-xs text-gray-500">Verify backend database tables exist. Initialize if needed.</p>
+      </div>
+    </div>
+
+    <!-- DB URL -->
+    <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 text-xs">
+      <span class="text-gray-400 font-medium">Backend DB: </span>
+      <code class="text-gray-700">{{ env.get('DATABASE_URL', '— not configured —')[:60] }}</code>
+      <br>
+      <span class="text-gray-400 font-medium">Moodle DB: </span>
+      <code class="text-gray-700">{{ env.get('MOODLE_DB_URL', '— optional — not configured')[:60] }}</code>
+    </div>
+
+    <!-- Tables status -->
+    <template x-if="dbResult">
+      <div>
+        <template x-if="dbResult.tables">
+          <div class="border border-gray-100 rounded-xl overflow-hidden divide-y divide-gray-50">
+            <template x-for="tbl in dbResult.tables" :key="tbl.name">
+              <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-50">
+                <code class="text-xs text-gray-700" x-text="tbl.name"></code>
+                <span class="text-xs font-semibold flex items-center gap-1"
+                      :class="tbl.exists ? 'text-green-600' : 'text-red-500'">
+                  <template x-if="tbl.exists">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  </template>
+                  <template x-if="!tbl.exists">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </template>
+                  <span x-text="tbl.exists ? 'Exists' : 'Missing'"></span>
+                </span>
+              </div>
+            </template>
+          </div>
+        </template>
+        <!-- Error -->
+        <template x-if="!dbResult.tables && dbResult.error">
+          <div class="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs" x-text="dbResult.error"></div>
+        </template>
+        <!-- Init success -->
+        <template x-if="dbResult.message">
+          <div class="p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span x-text="dbResult.message"></span>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Init DB hint -->
+    <template x-if="dbResult && !dbResult.ok && !dbResult.message">
+      <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs">
+        Some tables are missing. Click <strong>Initialize Database</strong> to create all required tables automatically.
+      </div>
+    </template>
+
+    <div class="flex items-center justify-between pt-1">
+      <div class="flex items-center gap-2">
+        <button @click="prevStep()" class="btn-secondary text-xs">← Back</button>
+        <button @click="checkDb()" class="btn-secondary text-xs flex items-center gap-1.5"
+                :disabled="steps[3].status === 'loading'">
+          <svg x-show="steps[3].status === 'loading'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          Check Tables
+        </button>
+        <template x-if="dbResult && !dbResult.ok">
+          <button @click="initDb()" class="btn-primary text-xs flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700">
+            ⚡ Initialize Database
+          </button>
+        </template>
+      </div>
+      <button @click="nextStep()" :disabled="steps[3].status !== 'ok'"
+              class="btn-primary"
+              :class="steps[3].status !== 'ok' ? 'opacity-40 cursor-not-allowed' : ''">
+        Next: Modules →
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 5 — Field Mapping
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 5"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="space-y-4">
+
+    <div class="card space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-gray-900">Step 5 — Field Mapping</h2>
+          <p class="text-xs text-gray-500">For each service, select the Zoho module and map its fields to local DB columns.</p>
+        </div>
+      </div>
+
+      <!-- Discover modules button -->
+      <div class="flex items-center gap-3">
+        <button @click="loadModules()" class="btn-secondary text-xs flex items-center gap-1.5" :disabled="modulesLoading">
+          <svg x-show="modulesLoading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          🔍 Discover Zoho Modules
+        </button>
+        <template x-if="modulesData && modulesData.ok">
+          <span class="text-xs text-green-600 font-medium">✓ <span x-text="modulesData.modules.length"></span> modules found — select one per service below</span>
+        </template>
+        <template x-if="modulesData && !modulesData.ok">
+          <span class="text-xs text-red-500" x-text="modulesData.error"></span>
+        </template>
+      </div>
+
+      <!-- Service cards -->
+      <div class="space-y-3">
+        <template x-for="(svc, si) in services" :key="svc.id">
+          <div class="border rounded-xl overflow-hidden transition-all"
+               :class="svc.enabled ? 'border-indigo-200' : 'border-gray-200'">
+
+            <!-- Service header row -->
+            <div class="flex items-start gap-3 p-4">
+              <!-- Toggle -->
+              <button @click="svc.enabled = !svc.enabled; svc.fieldsExpanded = false"
+                      class="flex-shrink-0 mt-0.5 w-9 h-5 rounded-full transition-colors relative"
+                      :class="svc.enabled ? 'bg-brand-500' : 'bg-gray-300'">
+                <span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+                      :class="svc.enabled ? 'translate-x-4' : 'translate-x-0.5'"></span>
+              </button>
+
+              <div class="flex-1 min-w-0 space-y-2">
+                <div class="flex items-center gap-2">
+                  <p class="text-sm font-semibold text-gray-900" x-text="svc.label"></p>
+                  <span x-show="!svc.enabled" class="badge-gray text-xs">Disabled</span>
+                  <span x-show="svc.fieldsSaved" class="text-xs text-green-600 font-medium">✓ Mapping saved</span>
+                </div>
+                <p class="text-xs text-gray-500" x-text="svc.description"></p>
+
+                <!-- Module dropdown + Map button (shown only when enabled & modules loaded) -->
+                <div x-show="svc.enabled && modulesData && modulesData.ok" class="flex items-center gap-2 flex-wrap">
+                  <select x-model="svc.zohoModule"
+                          @change="svc.fieldsExpanded = false; svc.zohoFields = []; svc.fieldsSaved = false"
+                          class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 max-w-xs">
+                    <option value="">— Select Zoho Module —</option>
+                    <template x-for="mod in modulesData.modules" :key="mod.api_name">
+                      <option :value="mod.api_name" x-text="mod.label + ' (' + mod.api_name + ')'"></option>
+                    </template>
+                  </select>
+
+                  <button x-show="svc.zohoModule"
+                          @click="loadServiceFields(svc)"
+                          class="btn-secondary text-xs flex items-center gap-1.5"
+                          :disabled="svc.fieldsLoading">
+                    <svg x-show="svc.fieldsLoading" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    🗂 Map Fields
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Field mapping table (expanded) -->
+            <div x-show="svc.fieldsExpanded && svc.enabled" class="border-t border-gray-100 bg-gray-50/50 px-4 pb-4 pt-3">
+              <div x-show="svc.fieldsLoading" class="text-xs text-gray-500 py-2">Loading Zoho fields…</div>
+              <template x-if="!svc.fieldsLoading && svc.zohoFields.length > 0">
+                <div class="space-y-3">
+                  <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Map local fields → Zoho API fields</p>
+                  <div class="bg-white border border-gray-100 rounded-xl overflow-hidden">
+                    <table class="w-full text-xs">
+                      <thead class="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                          <th class="text-left px-3 py-2 text-gray-500 font-medium w-1/3">Local DB Field</th>
+                          <th class="text-left px-3 py-2 text-gray-500 font-medium">Zoho API Field</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-50">
+                        <template x-for="cf in svc.canonicalFields" :key="cf.key">
+                          <tr class="hover:bg-gray-50/50">
+                            <td class="px-3 py-2">
+                              <code class="text-indigo-700 font-medium" x-text="cf.key"></code>
+                              <span class="text-gray-400 ml-1" x-text="'— ' + cf.label"></span>
+                            </td>
+                            <td class="px-3 py-2">
+                              <select x-model="svc.fieldMap[cf.key]"
+                                      class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400">
+                                <option value="">— skip —</option>
+                                <template x-for="zf in svc.zohoFields" :key="zf.api_name">
+                                  <option :value="zf.api_name" x-text="zf.label + ' (' + zf.api_name + ')'"></option>
+                                </template>
+                              </select>
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="flex justify-end">
+                    <button @click="saveServiceFieldMapping(svc)"
+                            class="btn-primary text-xs flex items-center gap-1.5"
+                            :disabled="svc.savingFields">
+                      <svg x-show="svc.savingFields" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      💾 Save This Mapping
+                    </button>
+                  </div>
+                  <template x-if="svc.mappingError">
+                    <p class="text-xs text-red-500" x-text="svc.mappingError"></p>
+                  </template>
+                </div>
+              </template>
+              <template x-if="!svc.fieldsLoading && svc.zohoFields.length === 0 && svc.fieldsExpanded">
+                <p class="text-xs text-red-500 py-2">Could not load fields for this module. Check Zoho connection.</p>
+              </template>
+            </div>
+
+          </div>
+        </template>
+      </div>
+
+      <div class="flex items-center justify-between pt-1">
+        <button @click="prevStep()" class="btn-secondary text-xs">← Back</button>
+        <button @click="saveMappingAndAdvance()" class="btn-primary text-xs">
+          Save & Next: Webhooks →
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 6 — Webhooks
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 6"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="card space-y-4">
+
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-pink-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-pink-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold text-gray-900">Step 6 — Zoho Webhooks</h2>
+        <p class="text-xs text-gray-500">Register this backend as a notification channel in Zoho CRM.</p>
+      </div>
+    </div>
+
+    <!-- Webhook URL config check -->
+    <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-2 text-xs">
+      <p class="font-semibold text-gray-700">Webhook Endpoint Base URL</p>
+      <code class="block text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-2">
+        {{ env.get('WEBHOOK_BASE_URL', '— Not configured —') }}
+      </code>
+      {% if not env.get('WEBHOOK_BASE_URL') %}
+      <div class="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700">
+        ⚠ Set <strong>WEBHOOK_BASE_URL</strong> in <a href="/admin/settings?tab=webhooks" class="underline">Settings → Webhooks</a> first.
+        For local development, use an <strong>ngrok</strong> or similar tunnel URL.
+      </div>
+      {% endif %}
+      <div>
+        <p class="text-gray-500 mb-1">Zoho will POST to these URLs:</p>
+        <div class="space-y-1">
+          <template x-for="wh in webhookList" :key="wh.module">
+            <div class="flex items-center gap-2">
+              <code class="text-gray-600 bg-white border border-gray-100 rounded px-2 py-0.5"
+                    x-text="'{{ env.get('WEBHOOK_BASE_URL', 'http://your-server') }}/api/v1/webhooks/' + wh.path"></code>
+              <span class="badge-info" x-text="wh.module"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Webhook result -->
+    <template x-if="webhookResult">
+      <div class="p-3 rounded-xl text-sm border" :class="webhookResult.ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'">
+        <template x-if="webhookResult.ok">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Webhooks registered successfully.
+          </div>
+        </template>
+        <template x-if="!webhookResult.ok">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span x-text="webhookResult.error"></span>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <div class="flex items-center justify-between pt-1">
+      <div class="flex items-center gap-2">
+        <button @click="prevStep()" class="btn-secondary text-xs">← Back</button>
+        <button @click="createWebhooks()" class="btn-secondary text-xs flex items-center gap-1.5"
+                :disabled="steps[5].status === 'loading'">
+          <svg x-show="steps[5].status === 'loading'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          ⚡ Create Webhooks in Zoho
+        </button>
+        <button @click="skipWebhooks()" class="btn-secondary text-xs text-gray-400">
+          Skip for now
+        </button>
+      </div>
+      <button @click="nextStep()" :disabled="steps[5].status !== 'ok'"
+              class="btn-primary"
+              :class="steps[5].status !== 'ok' ? 'opacity-40 cursor-not-allowed' : ''">
+        Next: Go Live →
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       STEP 7 — Go Live
+       ═══════════════════════════════════════════════════ -->
+  <div x-show="currentStep === 7"
+       x-transition:enter="transition ease-out duration-150"
+       x-transition:enter-start="opacity-0 translate-y-1"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       class="card space-y-5">
+
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-bold text-gray-900">Step 7 — Go Live</h2>
+        <p class="text-xs text-gray-500">Setup complete. Optionally run the first full sync, then open the dashboard.</p>
+      </div>
+    </div>
+
+    <!-- Setup summary -->
+    <div class="grid grid-cols-2 gap-3">
+      <template x-for="(step, idx) in steps.slice(0, 6)" :key="step.id">
+        <div class="flex items-center gap-2 p-3 rounded-lg border"
+             :class="step.status === 'ok' ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'">
+          <div class="h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0"
+               :class="step.status === 'ok' ? 'bg-green-500' : 'bg-gray-300'">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <span class="text-xs font-medium" :class="step.status === 'ok' ? 'text-green-700' : 'text-gray-400'" x-text="step.label"></span>
+        </div>
+      </template>
+    </div>
+
+    <!-- Initial Sync -->
+    <div class="border border-brand-100 rounded-xl p-4 bg-brand-50/40">
+      <p class="text-sm font-semibold text-gray-900 mb-1">Initial Full Sync</p>
+      <p class="text-xs text-gray-500 mb-3">
+        Run a complete sync from Zoho → Moodle for all enabled services.
+        Duration depends on data volume (typically 2–15 minutes).
+      </p>
+      <template x-if="!syncStarted">
+        <button @click="runInitialSync()" class="btn-primary text-xs">
+          🚀 Run Full Sync Now
+        </button>
+      </template>
+      <template x-if="syncStarted && !syncDone">
+        <div class="flex items-center gap-2 text-sm text-brand-700">
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          Full sync running… <a href="/admin/sync" target="_blank" class="underline text-xs">Track progress →</a>
+        </div>
+      </template>
+      <template x-if="syncDone">
+        <p class="text-xs text-green-600 font-medium">✓ Sync started. <a href="/admin/sync" target="_blank" class="underline">Check status →</a></p>
+      </template>
+    </div>
+
+    <div class="flex items-center justify-between pt-1">
+      <button @click="prevStep()" class="btn-secondary text-xs">← Back</button>
+      <a href="/admin/dashboard" @click="markSetupDone()" class="btn-primary">
+        Open Dashboard →
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function setupWizard() {
+  return {
+    currentStep: 1,
+    steps: [
+      { id: 'backend',  label: 'System',    status: 'idle' },
+      { id: 'zoho',     label: 'Zoho API',  status: 'idle' },
+      { id: 'moodle',   label: 'Moodle',    status: 'idle' },
+      { id: 'database', label: 'Database',  status: 'idle' },
+      { id: 'mapping',  label: 'Modules',   status: 'idle' },
+      { id: 'webhooks', label: 'Webhooks',  status: 'idle' },
+      { id: 'golive',   label: 'Go Live',   status: 'idle' },
+    ],
+
+    // Step-specific data
+    backendChecks: [],
+    zohoResult: null,
+    moodleResult: null,
+    dbResult: null,
+    modulesData: null,
+    modulesLoading: false,
+    webhookResult: null,
+    syncStarted: false,
+    syncDone: false,
+
+    zohoScopes: [
+      'ZohoCRM.modules.ALL',
+      'ZohoCRM.settings.ALL',
+      'ZohoCRM.bulk.ALL',
+      'ZohoFiles.files.ALL',
+    ],
+
+    moodleRequiredFunctions: [
+      'core_user_get_users',
+      'core_course_create_courses',
+      'core_enrol_get_users_courses',
+      'mod_assign_get_grades',
+      'core_webservice_get_site_info',
+      'gradereport_user_get_grades_table',
+    ],
+
+    webhookList: [
+      { module: 'BTEC_Students',         path: 'student-dashboard/student' },
+      { module: 'BTEC_Registrations',    path: 'student-dashboard/registration' },
+      { module: 'BTEC_Classes',          path: 'moodle-courses/class' },
+      { module: 'BTEC_Enrollments',      path: 'moodle-enrol/enrollment' },
+      { module: 'BTEC_Grades',           path: 'student-dashboard/grade' },
+      { module: 'BTEC_Payments',         path: 'student-dashboard/payment' },
+      { module: 'BTEC_Student_Requests', path: 'student-dashboard/request' },
+    ],
+
+    services: [
+      {
+        id: 'students', label: 'Students', enabled: true,
+        description: 'Student profile and contact data (Zoho → local DB).',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'student_id',     label: 'Student ID / Name' },
+          { key: 'first_name',     label: 'First Name' },
+          { key: 'last_name',      label: 'Last Name' },
+          { key: 'email',          label: 'Academic Email' },
+          { key: 'phone_number',   label: 'Phone Number' },
+          { key: 'status',         label: 'Status' },
+          { key: 'moodle_user_id', label: 'Moodle User ID' },
+          { key: 'national_id',    label: 'National ID' },
+          { key: 'major',          label: 'Major' },
+          { key: 'gender',         label: 'Gender' },
+          { key: 'nationality',    label: 'Nationality' },
+          { key: 'date_of_birth',  label: 'Date of Birth' },
+          { key: 'display_name',   label: 'Display Name' },
+        ],
+      },
+      {
+        id: 'registrations', label: 'Registrations', enabled: true,
+        description: 'Academic enrollment registrations.',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'registration_number', label: 'Registration Number' },
+          { key: 'registration_date',   label: 'Registration Date' },
+          { key: 'registration_status', label: 'Status' },
+          { key: 'program_name',        label: 'Program Name' },
+          { key: 'total_fees',          label: 'Total Fees' },
+          { key: 'paid_amount',         label: 'Paid Amount' },
+          { key: 'remaining_amount',    label: 'Remaining Amount' },
+          { key: 'study_mode',          label: 'Study Mode' },
+          { key: 'expected_graduation', label: 'Expected Graduation' },
+        ],
+      },
+      {
+        id: 'classes', label: 'Classes', enabled: true,
+        description: 'Zoho classes → Moodle courses.',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'class_name',       label: 'Class Name' },
+          { key: 'class_short_name', label: 'Short Name' },
+          { key: 'program_name',     label: 'Program Name' },
+          { key: 'unit_name',        label: 'Unit Name' },
+          { key: 'teacher_name',     label: 'Teacher Name' },
+          { key: 'moodle_class_id',  label: 'Moodle Course ID' },
+          { key: 'class_status',     label: 'Status' },
+          { key: 'start_date',       label: 'Start Date' },
+        ],
+      },
+      {
+        id: 'enrollments', label: 'Enrollments', enabled: true,
+        description: 'Student → class enrollment records.',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'enrollment_status',  label: 'Enrollment Status' },
+          { key: 'enrollment_date',    label: 'Enrollment Date' },
+          { key: 'final_grade',        label: 'Final Grade' },
+          { key: 'final_grade_letter', label: 'Grade Letter' },
+          { key: 'pass_fail',          label: 'Pass / Fail' },
+        ],
+      },
+      {
+        id: 'grades', label: 'Grades', enabled: true,
+        description: 'Assessment and grade records.',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'unit_name',          label: 'Unit / Assessment Name' },
+          { key: 'final_grade',        label: 'Final Grade (numeric)' },
+          { key: 'final_grade_letter', label: 'Grade Letter' },
+          { key: 'pass_fail',          label: 'Pass / Fail' },
+          { key: 'assessment_date',    label: 'Assessment Date' },
+        ],
+      },
+      {
+        id: 'payments', label: 'Payments', enabled: true,
+        description: 'Fee payment and receipt records.',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'payment_number', label: 'Payment Number' },
+          { key: 'payment_amount', label: 'Amount' },
+          { key: 'payment_date',   label: 'Payment Date' },
+          { key: 'payment_method', label: 'Method' },
+          { key: 'payment_status', label: 'Status' },
+          { key: 'voucher_number', label: 'Voucher Number' },
+          { key: 'receipt_number', label: 'Receipt Number' },
+        ],
+      },
+      {
+        id: 'student_requests', label: 'Student Requests', enabled: true,
+        description: 'Student support and change requests.',
+        zohoModule: '', fieldsExpanded: false, fieldsLoading: false,
+        fieldsSaved: false, savingFields: false, mappingError: null,
+        zohoFields: [], fieldMap: {},
+        canonicalFields: [
+          { key: 'request_type',        label: 'Request Type' },
+          { key: 'request_status',      label: 'Status' },
+          { key: 'request_description', label: 'Description' },
+          { key: 'student_name',        label: 'Student Name' },
+          { key: 'academic_email',      label: 'Academic Email' },
+        ],
+      },
+    ],
+
+    // ── Init ──────────────────────────────────────────────────────
+    init() {
+      const completedSteps = {{ completed_steps | tojson }};
+      const stepIds = ['backend', 'zoho', 'moodle', 'database', 'mapping', 'webhooks', 'golive'];
+      stepIds.forEach((id, idx) => {
+        if (completedSteps.includes(id)) {
+          this.steps[idx].status = 'ok';
+        }
+      });
+      // Find first incomplete step
+      const firstIncomplete = this.steps.findIndex(s => s.status !== 'ok');
+      this.currentStep = firstIncomplete >= 0 ? firstIncomplete + 1 : 7;
+      // Auto-run step 1 if active
+      if (this.currentStep === 1) {
+        this.$nextTick(() => this.runSystemCheck());
+      }
+      // Load any saved field mappings from DB
+      this.$nextTick(() => this.loadExistingMappings());
+    },
+
+    nextStep() {
+      if (this.currentStep < this.steps.length) this.currentStep++;
+    },
+
+    prevStep() {
+      if (this.currentStep > 1) this.currentStep--;
+    },
+
+    goToStep(n) {
+      // Allow click-back to any step; forward only to completed + 1
+      if (n <= this.currentStep || (this.steps[n - 2] && this.steps[n - 2].status === 'ok')) {
+        this.currentStep = n;
+      }
+    },
+
+    // ── Step 1: System Check ──────────────────────────────────────
+    async runSystemCheck() {
+      this.steps[0].status = 'loading';
+      this.backendChecks = [];
+      try {
+        const r = await fetch('/admin/setup/test-backend', { method: 'POST' });
+        const data = await r.json();
+        this.backendChecks = data.checks || [];
+        this.steps[0].status = data.ok ? 'ok' : 'error';
+      } catch (e) {
+        this.steps[0].status = 'error';
+        this.backendChecks = [{ name: 'Network error', value: e.message, ok: false }];
+      }
+    },
+
+    // ── Step 2: Zoho ──────────────────────────────────────────────
+    async testZoho() {
+      this.steps[1].status = 'loading';
+      this.zohoResult = null;
+      try {
+        const r = await fetch('/admin/setup/test-zoho', { method: 'POST' });
+        const data = await r.json();
+        this.zohoResult = data;
+        this.steps[1].status = data.ok ? 'ok' : 'error';
+      } catch (e) {
+        this.zohoResult = { ok: false, error: e.message };
+        this.steps[1].status = 'error';
+      }
+    },
+
+    // ── Step 3: Moodle ────────────────────────────────────────────
+    async testMoodle() {
+      this.steps[2].status = 'loading';
+      this.moodleResult = null;
+      try {
+        const r = await fetch('/admin/setup/test-moodle', { method: 'POST' });
+        const data = await r.json();
+        this.moodleResult = data;
+        this.steps[2].status = data.ok ? 'ok' : 'error';
+      } catch (e) {
+        this.moodleResult = { ok: false, error: e.message };
+        this.steps[2].status = 'error';
+      }
+    },
+
+    // ── Step 4: Database ──────────────────────────────────────────
+    async checkDb() {
+      this.steps[3].status = 'loading';
+      this.dbResult = null;
+      try {
+        const r = await fetch('/admin/setup/db-status');
+        const data = await r.json();
+        this.dbResult = data;
+        this.steps[3].status = data.ok ? 'ok' : 'error';
+      } catch (e) {
+        this.dbResult = { ok: false, error: e.message };
+        this.steps[3].status = 'error';
+      }
+    },
+
+    async initDb() {
+      this.steps[3].status = 'loading';
+      try {
+        const r = await fetch('/admin/setup/init-db', { method: 'POST' });
+        const data = await r.json();
+        if (data.ok) {
+          this.dbResult = data;
+          this.steps[3].status = 'ok';
+        } else {
+          this.dbResult = data;
+          this.steps[3].status = 'error';
+        }
+      } catch (e) {
+        this.dbResult = { ok: false, error: e.message };
+        this.steps[3].status = 'error';
+      }
+    },
+
+    // ── Step 5: Field Mapping ─────────────────────────────────────
+    async loadModules() {
+      this.modulesLoading = true;
+      try {
+        const r = await fetch('/admin/setup/zoho-modules');
+        this.modulesData = await r.json();
+      } catch (e) {
+        this.modulesData = { ok: false, error: e.message };
+      }
+      this.modulesLoading = false;
+    },
+
+    async loadExistingMappings() {
+      try {
+        const r = await fetch('/admin/setup/load-field-mappings');
+        const data = await r.json();
+        if (!data.ok) return;
+        for (const svc of this.services) {
+          const saved = data.data[svc.id];
+          if (saved) {
+            svc.zohoModule = saved.zoho_module || '';
+            svc.fieldMap   = saved.mappings   || {};
+            if (Object.keys(svc.fieldMap).length > 0) svc.fieldsSaved = true;
+          }
+        }
+      } catch (e) {
+        console.warn('loadExistingMappings error:', e);
+      }
+    },
+
+    async loadServiceFields(svc) {
+      if (!svc.zohoModule) return;
+      svc.fieldsLoading = true;
+      svc.fieldsExpanded = true;
+      svc.mappingError = null;
+      try {
+        const r = await fetch(`/admin/setup/zoho-fields?module=${encodeURIComponent(svc.zohoModule)}`);
+        const data = await r.json();
+        if (data.ok) {
+          svc.zohoFields = data.fields;
+          if (data.note) {
+            svc.mappingError = '⚠ ' + data.note;
+          }
+          // Auto-match fields by api_name similarity
+          if (Object.keys(svc.fieldMap).length === 0) {
+            for (const cf of svc.canonicalFields) {
+              const guess = svc.zohoFields.find(zf =>
+                zf.api_name.toLowerCase() === cf.key.toLowerCase() ||
+                zf.api_name.toLowerCase().replace(/_/g,'') === cf.key.toLowerCase().replace(/_/g,'')
+              );
+              if (guess) svc.fieldMap[cf.key] = guess.api_name;
+            }
+          }
+        } else {
+          svc.mappingError = data.error;
+          svc.zohoFields = [];
+        }
+      } catch (e) {
+        svc.mappingError = e.message;
+        svc.zohoFields = [];
+      }
+      svc.fieldsLoading = false;
+    },
+
+    async saveServiceFieldMapping(svc) {
+      svc.savingFields = true;
+      svc.mappingError = null;
+      svc.fieldsSaved = false;
+      try {
+        const r = await fetch('/admin/setup/save-field-mapping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service: svc.id,
+            zoho_module: svc.zohoModule,
+            mappings: svc.fieldMap,
+          }),
+        });
+        const data = await r.json();
+        if (data.ok) {
+          svc.fieldsSaved = true;
+        } else {
+          svc.mappingError = data.error;
+        }
+      } catch (e) {
+        svc.mappingError = e.message;
+      }
+      svc.savingFields = false;
+    },
+
+    async saveMappingAndAdvance() {
+      const enabled = this.services.filter(s => s.enabled).map(s => s.id);
+      await fetch('/admin/setup/save-mapping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ services: enabled }),
+      });
+      this.steps[4].status = 'ok';
+      this.nextStep();
+    },
+
+    // ── Step 6: Webhooks ──────────────────────────────────────────
+    async createWebhooks() {
+      this.steps[5].status = 'loading';
+      this.webhookResult = null;
+      try {
+        const r = await fetch('/admin/setup/create-webhooks', { method: 'POST' });
+        const data = await r.json();
+        this.webhookResult = data;
+        this.steps[5].status = data.ok ? 'ok' : 'error';
+      } catch (e) {
+        this.webhookResult = { ok: false, error: e.message };
+        this.steps[5].status = 'error';
+      }
+    },
+
+    skipWebhooks() {
+      this.steps[5].status = 'ok';
+      this.nextStep();
+    },
+
+    // ── Step 7: Go Live ───────────────────────────────────────────
+    async runInitialSync() {
+      this.syncStarted = true;
+      try {
+        await fetch('/api/v1/admin/full-sync', { method: 'POST' });
+        this.syncDone = true;
+      } catch (e) {
+        console.warn('Sync error:', e);
+        this.syncDone = true; // Still show as started
+      }
+    },
+
+    async markSetupDone() {
+      this.steps[6].status = 'ok';
+      await fetch('/admin/setup/mark-done', { method: 'POST' });
+    },
+  };
+}
+</script>
+{% endblock %}

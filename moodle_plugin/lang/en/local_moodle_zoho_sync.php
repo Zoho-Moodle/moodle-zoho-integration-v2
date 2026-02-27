@@ -70,10 +70,11 @@ $string['connection_timeout'] = 'Connection Timeout (seconds)';
 $string['connection_timeout_desc'] = 'HTTP connection timeout in seconds (default: 10)';
 
 // Navigation.
-$string['student_dashboard'] = 'My Dashboard';
+$string['mystudentarea'] = 'My Student Area';
 $string['studentprofile'] = 'Profile';
 $string['myprograms'] = 'My Programs';
 $string['myclasses'] = 'My Classes';
+$string['mygrades'] = 'My Grades';
 $string['myrequests'] = 'My Requests';
 $string['studentcard'] = 'Student Card';
 $string['sync_management'] = 'Zoho Sync Management';
@@ -122,7 +123,6 @@ $string['dashboard_welcome'] = 'Welcome, {$a}';
 $string['dashboard_subtitle'] = 'Here\'s a snapshot of your learning journey';
 $string['quick_summary'] = 'Your information is synced with our system';
 $string['quick_summary_help'] = 'All your data is up-to-date and available across tabs below';
-$string['student_dashboard'] = 'My Dashboard';
 $string['profile_tab'] = 'Profile';
 $string['academics_tab'] = 'Academics';
 $string['finance_tab'] = 'Finance';

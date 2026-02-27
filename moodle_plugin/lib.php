@@ -37,16 +37,16 @@ function local_moodle_zoho_sync_extend_navigation(global_navigation $navigation)
         return;
     }
 
-    // Add Student Dashboard link for students.
+    // Add Student Area navigation for students.
     if (has_capability('local/moodle_zoho_sync:viewdashboard', context_system::instance())) {
-        // Add main Student Dashboard container node.
+        // Add main Student Area container node.
         $studentnode = $navigation->add(
-            get_string('student_dashboard', 'local_moodle_zoho_sync'),
+            get_string('mystudentarea', 'local_moodle_zoho_sync'),
             null,
             navigation_node::TYPE_CONTAINER,
             null,
-            'moodle_zoho_dashboard',
-            new pix_icon('i/dashboard', '')
+            'moodle_zoho_student',
+            new pix_icon('i/user', '')
         );
         $studentnode->showinflatnavigation = true;
 
@@ -80,6 +80,16 @@ function local_moodle_zoho_sync_extend_navigation(global_navigation $navigation)
             new pix_icon('i/course', '')
         );
         
+        // Add My Grades page.
+        $gradesnode = $studentnode->add(
+            get_string('mygrades', 'local_moodle_zoho_sync'),
+            new moodle_url('/local/moodle_zoho_sync/ui/student/grades.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'student_grades',
+            new pix_icon('i/scales', '')
+        );
+
         // Add My Requests page.
         $requestsnode = $studentnode->add(
             get_string('myrequests', 'local_moodle_zoho_sync'),
@@ -123,8 +133,7 @@ function local_moodle_zoho_sync_extend_settings_navigation(settings_navigation $
 
     // Add sync management link to course administration.
     if ($settingnode = $settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) {
-        $url = new moodle_url('/local/moodle_zoho_sync/ui/admin/sync_management.php', 
-            array('courseid' => $PAGE->course->id));
+        $url = new moodle_url('/local/moodle_zoho_sync/ui/admin2/overview.php');
         
         $node = navigation_node::create(
             get_string('sync_management', 'local_moodle_zoho_sync'),

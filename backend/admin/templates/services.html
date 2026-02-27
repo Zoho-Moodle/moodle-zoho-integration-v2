@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}All Services{% endblock %}
+{% block page_title %}All Integration Services{% endblock %}
+{% block page_subtitle_text %}Complete list of Zoho ↔ Moodle integration endpoints{% endblock %}
+
+{% block content %}
+
+<!-- Group services -->
+{% set groups = {} %}
+{% for svc in services %}
+  {% if svc.group not in groups %}{% set _ = groups.update({svc.group: []}) %}{% endif %}
+{% endfor %}
+
+{% set direction_colors = {
+  'Zoho → Moodle':    'badge-info',
+  'Moodle → Zoho':    'badge-warn',
+  'Backend Internal': 'badge-gray',
+} %}
+
+<!-- Summary stats -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+  {% set z2m_count = services | selectattr('direction', 'equalto', 'Zoho → Moodle') | list | length %}
+  {% set m2z_count = services | selectattr('direction', 'equalto', 'Moodle → Zoho') | list | length %}
+  {% set int_count = services | selectattr('direction', 'equalto', 'Backend Internal') | list | length %}
+
+  <div class="card flex items-center gap-3">
+    <div class="h-9 w-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-700 font-bold">{{ z2m_count }}</div>
+    <div><p class="text-xs text-gray-400">Zoho → Moodle</p><p class="font-semibold text-gray-800">{{ z2m_count }} services</p></div>
+  </div>
+  <div class="card flex items-center gap-3">
+    <div class="h-9 w-9 bg-yellow-50 rounded-lg flex items-center justify-center text-yellow-700 font-bold">{{ m2z_count }}</div>
+    <div><p class="text-xs text-gray-400">Moodle → Zoho</p><p class="font-semibold text-gray-800">{{ m2z_count }} services</p></div>
+  </div>
+  <div class="card flex items-center gap-3">
+    <div class="h-9 w-9 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 font-bold">{{ int_count }}</div>
+    <div><p class="text-xs text-gray-400">Internal</p><p class="font-semibold text-gray-800">{{ int_count }} services</p></div>
+  </div>
+  <div class="card flex items-center gap-3">
+    <div class="h-9 w-9 bg-brand-50 rounded-lg flex items-center justify-center text-brand-700 font-bold">{{ services|length }}</div>
+    <div><p class="text-xs text-gray-400">Total</p><p class="font-semibold text-gray-800">{{ services|length }} services</p></div>
+  </div>
+</div>
+
+<!-- Group by group name -->
+{% set all_groups = services | map(attribute='group') | unique | list %}
+{% for group_name in all_groups %}
+  {% set group_services = services | selectattr('group', 'equalto', group_name) | list %}
+
+  <div class="mb-6">
+    <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+      <span class="h-px flex-1 bg-gray-200"></span>{{ group_name }}<span class="h-px flex-1 bg-gray-200"></span>
+    </h2>
+
+    <div class="card p-0 overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="table-th w-28">Direction</th>
+            <th class="table-th">Service Name</th>
+            <th class="table-th">Endpoint</th>
+            <th class="table-th">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for svc in group_services %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="table-td">
+              <span class="{{ direction_colors.get(svc.direction, 'badge-gray') }} text-xs whitespace-nowrap">
+                {{ svc.direction }}
+              </span>
+            </td>
+            <td class="table-td font-medium text-sm text-gray-800">{{ svc.name }}</td>
+            <td class="table-td">
+              <code class="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700 whitespace-nowrap">{{ svc.endpoint }}</code>
+            </td>
+            <td class="table-td text-xs text-gray-500">{{ svc.description }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endfor %}
+
+<!-- API Docs link -->
+<div class="card flex items-center justify-between">
+  <div>
+    <p class="text-sm font-semibold text-gray-800">Interactive API Documentation</p>
+    <p class="text-xs text-gray-500 mt-0.5">Test all endpoints directly in your browser using Swagger UI</p>
+  </div>
+  <a href="/docs" target="_blank" class="btn-primary shrink-0">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+    </svg>
+    Open Swagger UI
+  </a>
+</div>
+
+{% endblock %}

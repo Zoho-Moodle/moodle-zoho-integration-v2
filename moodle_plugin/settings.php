@@ -20,13 +20,13 @@ if ($hassiteconfig) {
     // QUICK ACCESS NAVIGATION - Links to all plugin pages
     // ══════════════════════════════════════════════════════════
     $quick_links_html = '<ul style="margin:0;padding-left:20px;line-height:2;">
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/dashboard.php'))->out(false) . '">Dashboard - System overview & KPIs</a></li>
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/student_dashboard_management.php'))->out(false) . '">Student Dashboard Management - Manage student portal</a></li>
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/grade_queue_monitor.php'))->out(false) . '">Grade Monitor - Grade operations tracking</a></li>
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/event_logs.php'))->out(false) . '">Event Logs - Webhook & sync events</a></li>
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/health_check.php'))->out(false) . '">Health Check - System health status</a></li>
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/statistics.php'))->out(false) . '">Statistics - Analytics & reports</a></li>
-        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin/sync_management.php'))->out(false) . '">Sync Management - Manage sync operations</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/overview.php'))->out(false) . '" style="color:#007bff;font-weight:600;">&#9733; Overview (v2)</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/student_manager.php'))->out(false) . '">&#9733; Student Manager (v2)</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/event_logs.php'))->out(false) . '">&#9733; Event Logs (v2)</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/health.php'))->out(false) . '">&#9733; Health (v2)</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/grade_queue.php'))->out(false) . '">&#9733; Grade Queue (v2)</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/btec.php'))->out(false) . '">&#9733; BTEC Templates (v2)</a></li>
+        <li><a href="' . (new moodle_url('/local/moodle_zoho_sync/ui/admin2/settings.php'))->out(false) . '">&#9733; Settings (v2)</a></li>
     </ul>';
     
     $settings->add(new admin_setting_heading(
@@ -42,64 +42,53 @@ if ($hassiteconfig) {
     // Add settings page.
     $ADMIN->add('local_moodle_zoho_sync_category', $settings);
     
-    // Add Dashboard (first in list).
+    // ── Admin Dashboard v2 (new) ──────────────────────────────
     $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_dashboard',
-        get_string('admin_dashboard', 'local_moodle_zoho_sync'),
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/dashboard.php'),
+        'local_moodle_zoho_sync_overview',
+        '★ Admin Dashboard v2',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/overview.php'),
         'local/moodle_zoho_sync:manage'
     ));
-    
-    // Add Student Dashboard Management (NEW)
+
     $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_student_dashboard',
-        get_string('student_dashboard_management', 'local_moodle_zoho_sync'),
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/student_dashboard_management.php'),
+        'local_moodle_zoho_sync_students',
+        '★ Student Manager (v2)',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/student_manager.php'),
         'local/moodle_zoho_sync:manage'
     ));
-    
-    // Add management pages.
+
     $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_logs',
-        get_string('event_logs', 'local_moodle_zoho_sync'),
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/event_logs.php'),
-        'local/moodle_zoho_sync:viewlogs'
-    ));
-    
-    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_statistics',
-        get_string('statistics', 'local_moodle_zoho_sync'),
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/statistics.php'),
-        'local/moodle_zoho_sync:viewlogs'
-    ));
-    
-    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_health',
-        get_string('health_check', 'local_moodle_zoho_sync'),
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/health_check.php'),
+        'local_moodle_zoho_sync_event_logs',
+        '★ Event Logs (v2)',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/event_logs.php'),
         'local/moodle_zoho_sync:manage'
     ));
-    
+
     $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_btec_templates',
-        'BTEC Templates',
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/btec_templates.php'),
+        'local_moodle_zoho_sync_health_v2',
+        '★ Health (v2)',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/health.php'),
         'local/moodle_zoho_sync:manage'
     ));
-    
-    // Add Grade Queue Monitor (NEW - Hybrid Grading System)
+
     $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_grade_queue',
-        get_string('gradequeue_monitor', 'local_moodle_zoho_sync'),
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/grade_queue_monitor.php'),
+        'local_moodle_zoho_sync_grade_v2',
+        '★ Grade Queue (v2)',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/grade_queue.php'),
         'local/moodle_zoho_sync:manage'
     ));
-    
-    // Add Sync Management
+
     $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
-        'local_moodle_zoho_sync_management',
-        'Sync Management',
-        new moodle_url('/local/moodle_zoho_sync/ui/admin/sync_management.php'),
+        'local_moodle_zoho_sync_btec_v2',
+        '★ BTEC Templates (v2)',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/btec.php'),
+        'local/moodle_zoho_sync:manage'
+    ));
+
+    $ADMIN->add('local_moodle_zoho_sync_category', new admin_externalpage(
+        'local_moodle_zoho_sync_settings_v2',
+        '★ Settings (v2)',
+        new moodle_url('/local/moodle_zoho_sync/ui/admin2/settings.php'),
         'local/moodle_zoho_sync:manage'
     ));
 

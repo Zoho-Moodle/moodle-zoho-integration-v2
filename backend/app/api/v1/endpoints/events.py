@@ -1,7 +1,21 @@
 """
-Event Router Endpoints
+Event Router Endpoints — AUDIT / MONITORING ONLY
 
-Webhook endpoints for receiving events from Zoho CRM and Moodle.
+This router receives Zoho and Moodle webhook events and writes them to the
+PostgreSQL `integration_log` (EventLog) table for observability, alerting
+and debugging.
+
+ARCHITECTURE RULE (DO NOT VIOLATE):
+  - This router MUST NOT write to Moodle (no Moodle WS calls, no local_mzi_* writes).
+  - The authoritative Zoho → Moodle write path is:
+        Zoho webhook → /api/v1/student_dashboard_webhooks/* → Moodle WS → local_mzi_*
+  - dashboard.js reads data ONLY from local_mzi_* via get_student_data.php.
+  - The middleware MUST NOT serve dashboard data.
+
+Zoho should be configured to send ONE webhook per event:
+  - Data-sync webhooks  → /api/v1/student_dashboard_webhooks/*
+  - (Optional) Audit    → /api/v1/events/zoho/* can be set as a secondary notification
+                          URL for monitoring, but MUST NOT duplicate the sync.
 """
 
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks, Depends, Header
@@ -348,29 +362,21 @@ async def handle_moodle_enrollment_event(
 
 async def process_zoho_event_task(event: ZohoWebhookEvent, db: Session):
     """
-    Background task to process Zoho event.
-    
-    Args:
-        event: ZohoWebhookEvent instance
-        db: Database session
+    Background task: log Zoho event to PostgreSQL (audit only).
+
+    IMPORTANT: This function writes to integration_log (EventLog) for
+    monitoring purposes ONLY.  It MUST NOT call Moodle WS or write to
+    local_mzi_* tables.  The Moodle sync is handled exclusively by
+    student_dashboard_webhooks.py via EventHandlerService.
     """
-    try:
-        logger.info(f"Processing Zoho event in background: {event.event_id}")
-        
-        # Create event handler (not async)
-        zoho_client = create_zoho_client()
-        event_handler = EventHandlerService(db=db, zoho_client=zoho_client)
-        
-        # Process event
-        result: EventProcessingResult = await event_handler.handle_zoho_event(event)
-        
-        logger.info(
-            f"Zoho event processed: {event.event_id}, "
-            f"status={result.status}, action={result.action_taken}"
-        )
-        
-    except Exception as e:
-        logger.error(f"Error in Zoho event background task: {e}", exc_info=True)
+    # AUDIT ONLY — do NOT call event_handler.handle_zoho_event().
+    # That would duplicate the sync already done by student_dashboard_webhooks.py
+    # if Zoho fires both webhook URLs.
+    logger.warning(
+        f"⚠️ [events.py] Received Zoho event {event.event_id} on legacy audit endpoint "
+        f"(module={event.module}). No Moodle WS call made — sync is handled by "
+        f"student_dashboard_webhooks.py."
+    )
 
 
 async def process_moodle_event_task(event: MoodleWebhookEvent, db: Session):

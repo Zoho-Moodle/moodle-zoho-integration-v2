@@ -11,6 +11,15 @@ defined('MOODLE_INTERNAL') || die();
 
 $functions = [
     // BTEC Template Creation
+    'local_mzi_create_btec_definition' => [
+        'classname'   => 'local_moodle_zoho_sync\external\create_btec_definition',
+        'methodname'  => 'execute',
+        'classpath'   => '',
+        'description' => 'Create BTEC grading definition from Zoho template',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+
     'local_moodle_zoho_sync_create_btec_definition' => [
         'classname'   => 'local_moodle_zoho_sync\external\create_btec_definition',
         'methodname'  => 'execute',
@@ -22,6 +31,16 @@ $functions = [
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
     
+    // BTEC Teachers (synced before Classes)
+    'local_mzi_sync_teacher' => [
+        'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
+        'methodname'  => 'sync_teacher',
+        'classpath'   => '',
+        'description' => 'Create or update teacher record from Zoho BTEC_Teachers, resolving Moodle user by academic_email',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+
     // Student Dashboard External Functions
     'local_mzi_update_student' => [
         'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
@@ -49,7 +68,16 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
-    
+
+    'local_mzi_sync_installments' => [
+        'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
+        'methodname'  => 'sync_installments',
+        'classpath'   => '',
+        'description' => 'Replace installment schedule for a registration (from Zoho Payment_Schedule subform)',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+
     'local_mzi_create_class' => [
         'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
         'methodname'  => 'create_class',
@@ -85,7 +113,37 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+
+    'local_mzi_approve_photo' => [
+        'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
+        'methodname'  => 'approve_photo',
+        'classpath'   => '',
+        'description' => 'Approve or reject a pending student photo (called by Zoho approval webhook)',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
     
+    // Helper: Enrol a list of users into a Moodle course (internal API, no WS enrol permission needed)
+    'local_mzi_enrol_users' => [
+        'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
+        'methodname'  => 'enrol_users_to_course',
+        'classpath'   => '',
+        'description' => 'Enrol users into a Moodle course via enrol_get_plugin (no WS enrol permission needed)',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+
+    // Helper: Get Moodle IDs for enrollment
+    'local_mzi_get_moodle_ids' => [
+        'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
+        'methodname'  => 'get_moodle_ids',
+        'classpath'   => '',
+        'description' => 'Return moodle_user_id and moodle_course_id for a given student/class Zoho pair',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities'=> 'moodle/site:config',
+    ],
+
     // DELETE Functions
     'local_mzi_delete_student' => [
         'classname'   => 'local_moodle_zoho_sync\external\student_dashboard',
@@ -149,19 +207,36 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+
+    // BTEC Definition Delete
+    'local_mzi_delete_btec_definition' => [
+        'classname'   => 'local_moodle_zoho_sync\external\create_btec_definition',
+        'methodname'  => 'delete',
+        'classpath'   => '',
+        'description' => 'Delete a BTEC grading definition by Zoho unit ID',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
 ];
 
 $services = [
     'Moodle-Zoho Integration Service' => [
         'functions' => [
+            'local_mzi_create_btec_definition',
             'local_moodle_zoho_sync_create_btec_definition',
+            'local_mzi_enrol_users',
+            'local_mzi_get_moodle_ids',
+            'core_user_get_users_by_field',
+            'local_mzi_sync_teacher',
             'local_mzi_update_student',
             'local_mzi_create_registration',
             'local_mzi_record_payment',
+            'local_mzi_sync_installments',
             'local_mzi_create_class',
             'local_mzi_update_enrollment',
             'local_mzi_submit_grade',
             'local_mzi_update_request_status',
+            'local_mzi_approve_photo',
             'local_mzi_delete_student',
             'local_mzi_delete_registration',
             'local_mzi_delete_payment',
@@ -169,6 +244,7 @@ $services = [
             'local_mzi_delete_enrollment',
             'local_mzi_delete_grade',
             'local_mzi_delete_request',
+            'local_mzi_delete_btec_definition',
         ],
         'restrictedusers' => 0,
         'enabled' => 1,

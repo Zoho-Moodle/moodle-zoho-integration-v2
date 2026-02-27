@@ -1,0 +1,89 @@
+<!-- HTMX partial: Logs table -->
+
+<div class="card p-0 overflow-hidden">
+  <!-- Stats bar -->
+  <div class="px-4 py-3 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center">
+    <p class="text-sm text-gray-600"><span class="font-semibold text-gray-800">{{ total }}</span> events total</p>
+    <p class="text-xs text-gray-400">Page {{ page }} of {{ total_pages }}</p>
+  </div>
+
+  {% if logs %}
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr>
+          <th class="table-th">Source</th>
+          <th class="table-th">Module</th>
+          <th class="table-th">Event Type</th>
+          <th class="table-th">Record ID</th>
+          <th class="table-th">Status</th>
+          <th class="table-th">Time</th>
+          <th class="table-th">Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="table-td">
+            {% if log.source == 'zoho' %}
+              <span class="badge-info">Zoho</span>
+            {% elif log.source == 'moodle' %}
+              <span class="badge-gray">Moodle</span>
+            {% else %}
+              <span class="badge-gray">{{ log.source }}</span>
+            {% endif %}
+          </td>
+          <td class="table-td font-mono text-xs">{{ log.module }}</td>
+          <td class="table-td text-xs">{{ log.event_type }}</td>
+          <td class="table-td font-mono text-xs max-w-xs truncate" title="{{ log.record_id }}">{{ log.record_id }}</td>
+          <td class="table-td">
+            {% if log.status == 'completed' %}
+              <span class="badge-success">✓ done</span>
+            {% elif log.status == 'failed' %}
+              <span class="badge-error">✗ failed</span>
+            {% elif log.status in ['pending', 'processing'] %}
+              <span class="badge-warn animate-pulse">⟳ {{ log.status }}</span>
+            {% elif log.status == 'duplicate' %}
+              <span class="badge-gray">dup</span>
+            {% else %}
+              <span class="badge-gray">{{ log.status }}</span>
+            {% endif %}
+          </td>
+          <td class="table-td text-xs text-gray-400 whitespace-nowrap">{{ ts(log.created_at) }}</td>
+          <td class="table-td text-xs text-red-600 max-w-xs">
+            {% if log.error_message %}
+            <span class="truncate block max-w-xs" title="{{ log.error_message }}">{{ log.error_message[:100] }}{% if log.error_message|length > 100 %}…{% endif %}</span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+    <p class="text-xs text-gray-500">Showing {{ (page-1)*50 + 1 }}–{{ [page*50, total]|min }} of {{ total }}</p>
+    <div class="flex gap-2">
+      {% if page > 1 %}
+      <a href="/admin/logs?source={{ source }}&status={{ status }}&search={{ search }}&page={{ page-1 }}"
+         class="btn-secondary text-xs py-1 px-3">← Prev</a>
+      {% endif %}
+      {% if page < total_pages %}
+      <a href="/admin/logs?source={{ source }}&status={{ status }}&search={{ search }}&page={{ page+1 }}"
+         class="btn-secondary text-xs py-1 px-3">Next →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-16 text-gray-400">
+    <svg class="w-10 h-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <p class="text-sm">No logs found.</p>
+  </div>
+  {% endif %}
+</div>
