@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 07 — Production Deployment | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 07</div>
+      <div class="lesson-number">Lesson 07</div>
+      <div class="lesson-title-en">Production Deployment</div>
+      <div class="lesson-title-ar">النشر على بيئة الإنتاج</div>
+      <div class="lesson-meta">
+        <span>🕐 ~60 minutes</span>
+        <span>🎯 Advanced</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Deploy the FastAPI backend on a Linux server with Gunicorn + Nginx</li>
+          <li>Create a <code>systemd</code> service for auto-start on reboot</li>
+          <li>Switch from SQLite to PostgreSQL for production</li>
+          <li>Secure the application with HTTPS using Let's Encrypt / Certbot</li>
+          <li>Install the Moodle plugin via the web interface or CLI</li>
+          <li>Configure Zoho webhooks to point to the production URL</li>
+        </ul>
+      </div>
+
+      <!-- PRODUCTION ARCHITECTURE -->
+      <div class="section">
+        <div class="section-title">1. Production Architecture Overview</div>
+        <div class="section-title-ar">نظرة عامة على معمارية الإنتاج</div>
+        <div class="section-divider"></div>
+
+        <div class="arch-diagram">
+          <div class="arch-title">Linux VPS — Production Stack</div>
+          <div class="arch-item level-0">Internet Request → HTTPS :443</div>
+          <div class="arch-item level-1">↓</div>
+          <div class="arch-item level-1">Nginx (Reverse Proxy)</div>
+          <div class="arch-item level-2">→ Static files served directly</div>
+          <div class="arch-item level-2">→ /api/* proxied to Gunicorn :8001</div>
+          <div class="arch-item level-1">↓</div>
+          <div class="arch-item level-1">Gunicorn (WSGI/ASGI Server)</div>
+          <div class="arch-item level-2">→ 4 Uvicorn workers</div>
+          <div class="arch-item level-2">→ Managed by systemd</div>
+          <div class="arch-item level-1">↓</div>
+          <div class="arch-item level-1">FastAPI Application</div>
+          <div class="arch-item level-2">→ Reads .env config</div>
+          <div class="arch-item level-2">→ Connects to PostgreSQL</div>
+          <div class="arch-item level-1">↓</div>
+          <div class="arch-item level-1">PostgreSQL :5432</div>
+          <div class="arch-item level-2">→ Persistent data storage</div>
+        </div>
+      </div>
+
+      <!-- GUNICORN + SYSTEMD -->
+      <div class="section">
+        <div class="section-title">2. Gunicorn + systemd Service</div>
+        <div class="section-title-ar">خدمة Gunicorn مع systemd</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Install Gunicorn</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash">cd /opt/moodle-zoho-integration/backend
+source .venv-1/bin/activate
+pip install gunicorn uvicorn[standard]
+
+# Test gunicorn manually first
+gunicorn app.main:app \
+  --workers 4 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:8001 \
+  --timeout 120 \
+  --keepalive 5</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">ini</span>
+            <span class="code-filename">/etc/systemd/system/zoho-sync.service</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-ini">[Unit]
+Description=Zoho-Moodle FastAPI Integration Server
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=exec
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/moodle-zoho-integration/backend
+
+# Load environment variables from .env file
+EnvironmentFile=/opt/moodle-zoho-integration/backend/.env
+
+# The actual command: Gunicorn with Uvicorn workers
+# الأمر الفعلي: Gunicorn مع عمال Uvicorn
+ExecStart=/opt/moodle-zoho-integration/backend/.venv-1/bin/gunicorn app.main:app \
+    --workers 4 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --bind 0.0.0.0:8001 \
+    --timeout 120 \
+    --keepalive 5 \
+    --access-logfile /var/log/zoho-sync/access.log \
+    --error-logfile /var/log/zoho-sync/error.log
+
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/zoho-sync/output.log
+StandardError=append:/var/log/zoho-sync/error.log
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Enable and start the service</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash"># Create log directory
+mkdir -p /var/log/zoho-sync
+chown www-data:www-data /var/log/zoho-sync
+
+# Reload systemd, enable + start
+systemctl daemon-reload
+systemctl enable zoho-sync           # Auto-start on boot / تشغيل تلقائي عند الإقلاع
+systemctl start zoho-sync
+
+# Verify it's running
+systemctl status zoho-sync
+
+# View live logs
+journalctl -u zoho-sync -f</code></pre>
+        </div>
+      </div>
+
+      <!-- NGINX CONFIG -->
+      <div class="section">
+        <div class="section-title">3. Nginx Reverse Proxy Configuration</div>
+        <div class="section-title-ar">إعداد Nginx كـ Reverse Proxy</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">nginx</span>
+            <span class="code-filename">/etc/nginx/sites-available/zoho-sync</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-nginx">server {
+    listen 80;
+    server_name api.yourschool.com;
+
+    # Redirect all HTTP to HTTPS
+    # توجيه كل HTTP إلى HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name api.yourschool.com;
+
+    # SSL certificate (installed by Certbot)
+    ssl_certificate     /etc/letsencrypt/live/api.yourschool.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.yourschool.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    # Increase body size limit for webhook payloads
+    # خفّف حد حجم الجسم لدعم payload كبير من Zoho
+    client_max_body_size 10M;
+
+    # Timeouts for long-running sync operations
+    proxy_connect_timeout 60s;
+    proxy_read_timeout    120s;
+    proxy_send_timeout    60s;
+
+    # Security headers
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+
+    location / {
+        proxy_pass         http://127.0.0.1:8001;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection "upgrade";
+
+        # Pass real client IP through
+        proxy_set_header   Host            $host;
+        proxy_set_header   X-Real-IP       $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto https;
+    }
+}
+</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Enable site and install SSL with Certbot</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash"># Enable the site
+ln -s /etc/nginx/sites-available/zoho-sync /etc/nginx/sites-enabled/
+nginx -t       # Test config for syntax errors
+systemctl reload nginx
+
+# Install Certbot and get a free SSL certificate from Let's Encrypt
+# تثبيت Certbot والحصول على شهادة SSL مجانية
+apt install certbot python3-certbot-nginx
+certbot --nginx -d api.yourschool.com --email admin@yourschool.com --agree-tos
+
+# Certbot auto-renews — verify the renewal timer exists
+systemctl status certbot.timer</code></pre>
+        </div>
+      </div>
+
+      <!-- POSTGRESQL -->
+      <div class="section">
+        <div class="section-title">4. Switch to PostgreSQL</div>
+        <div class="section-title-ar">التحويل إلى PostgreSQL</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">PostgreSQL setup</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash">apt install postgresql postgresql-contrib
+
+# Create DB and user
+sudo -u postgres psql
+
+# Inside psql:
+CREATE USER zoho_user WITH PASSWORD 'strong-password-here';
+CREATE DATABASE zoho_sync OWNER zoho_user;
+GRANT ALL PRIVILEGES ON DATABASE zoho_sync TO zoho_user;
+\q</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Update .env for PostgreSQL</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash"># /opt/moodle-zoho-integration/backend/.env
+
+# Development (SQLite)
+# DATABASE_URL=sqlite:///./moodle_zoho_local.db
+
+# Production (PostgreSQL) — update this line:
+DATABASE_URL=postgresql://zoho_user:strong-password-here@localhost:5432/zoho_sync
+
+# The rest of the .env stays the same
+ZOHO_CLIENT_ID=...
+ZOHO_CLIENT_SECRET=...
+ZOHO_REFRESH_TOKEN=...
+MOODLE_URL=https://yourmoodle.com
+MOODLE_TOKEN=...</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Install psycopg2 and recreate tables</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash">pip install psycopg2-binary
+
+# Tables are auto-created by main.py lifespan on startup
+# الجداول تُنشأ تلقائياً عند بدء تشغيل التطبيق
+systemctl restart zoho-sync
+journalctl -u zoho-sync -n 50  # Check startup logs</code></pre>
+        </div>
+      </div>
+
+      <!-- MOODLE PLUGIN INSTALL -->
+      <div class="section">
+        <div class="section-title">5. Installing the Moodle Plugin</div>
+        <div class="section-title-ar">تثبيت المكوّن الإضافي في Moodle</div>
+        <div class="section-divider"></div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <strong>Copy the plugin folder</strong> to your Moodle server:
+              <pre style="background:#f8fafc;padding:8px;border-radius:5px;margin-top:6px;font-size:.82rem;">cp -r moodle_plugin/zoho_sync /var/www/moodle/local/</pre>
+              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">الغرض: نسخ مجلد المكوّن إلى مسار local في Moodle | <em>Place the plugin inside: moodle/local/</em></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <strong>Set permissions</strong>:
+              <pre style="background:#f8fafc;padding:8px;border-radius:5px;margin-top:6px;font-size:.82rem;">chown -R www-data:www-data /var/www/moodle/local/zoho_sync</pre>
+              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">تعيين صلاحيات الملفات بشكل صحيح</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <strong>Run the upgrade</strong> — visit Moodle as admin:
+              <code class="inline">https://yourmoodle.com/admin/index.php</code>
+              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">Moodle will detect the new plugin and run the installation wizard. Click "Upgrade Moodle database now".</div>
+              <div style="color:#64748b;font-size:.85rem;">Moodle سيكتشف المكوّن الجديد وسيطلب تشغيل معالج التثبيت. انقر "Upgrade Moodle database now".</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <strong>Create a Web Service token</strong>:
+              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">Site Admin → Plugins → Web Services → Manage Tokens → Add Token → Select the "Zoho Sync Service" → Copy the generated token → paste it into <code>.env</code> as <code>MOODLE_TOKEN</code>.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+              <strong>Configure Zoho Webhooks</strong>:
+              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">Zoho CRM → Setup → Automation → Workflow Rules → Create Rule for each module → Webhook Action → URL: <code>https://api.yourschool.com/api/v1/webhooks/students</code> (etc. for each entity).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 07 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">Why do we use Gunicorn with Uvicorn workers instead of running <code>uvicorn app.main:app</code> directly?</div>
+          <div class="quiz-question-ar">لماذا نستخدم Gunicorn مع عمال Uvicorn بدلاً من تشغيل <code>uvicorn</code> مباشرة؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Uvicorn doesn't support async endpoints</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Gunicorn is a process manager that runs multiple Uvicorn worker processes, providing multi-core utilisation and automatic worker restart on crash</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Uvicorn doesn't work with HTTPS</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Gunicorn is faster than Uvicorn</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Uvicorn is single-process by default. Gunicorn spawns multiple Uvicorn worker processes that each handle requests independently, using all CPU cores. It also restarts crashed workers automatically.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">What is the role of Nginx in the production stack?</div>
+          <div class="quiz-question-ar">ما دور Nginx في بيئة الإنتاج؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It runs the FastAPI application</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It manages the database connections</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> It acts as a reverse proxy: handles HTTPS/SSL, serves static files, and forwards API requests to Gunicorn on the internal port</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It is the WSGI server that runs Python code</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Nginx sits in front and handles public internet traffic. It terminates SSL (decrypts HTTPS), serves any static files directly, and forwards API requests to Gunicorn which runs on an internal port (8001) not accessible from outside.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">To switch from SQLite to PostgreSQL, what is the only change needed in <code>.env</code>?</div>
+          <div class="quiz-question-ar">للتحويل من SQLite إلى PostgreSQL، ما التغيير الوحيد المطلوب في <code>.env</code>؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Change <code>DB_TYPE=postgresql</code></li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Update <code>DATABASE_URL</code> to use <code>postgresql://user:password@host/dbname</code></li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Add <code>POSTGRES_HOST</code> and <code>POSTGRES_PORT</code> variables</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Rewrite all SQLAlchemy model classes</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Because we use SQLAlchemy with a single <code>DATABASE_URL</code>, switching databases is just changing the connection string in <code>.env</code>. SQLAlchemy handles both SQLite and PostgreSQL with the same Python code.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+      </div>
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(7);</script>
+</body>
+</html>

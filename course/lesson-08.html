@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 08 — CI/CD Pipeline | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 08</div>
+      <div class="lesson-number">Lesson 08</div>
+      <div class="lesson-title-en">CI/CD Pipeline & Docker</div>
+      <div class="lesson-title-ar">خط أنابيب CI/CD وـ Docker</div>
+      <div class="lesson-meta">
+        <span>🕐 ~50 minutes</span>
+        <span>🎯 Advanced</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Containerise the FastAPI app with Docker and Docker Compose</li>
+          <li>Write a GitHub Actions workflow for automated testing and deployment</li>
+          <li>Use GitHub Secrets to protect sensitive credentials</li>
+          <li>Implement zero-downtime deployments with Gunicorn worker rotation</li>
+          <li>Set up basic monitoring and alerting</li>
+        </ul>
+      </div>
+
+      <!-- DOCKERFILE -->
+      <div class="section">
+        <div class="section-title">1. Dockerfile — Containerising the App</div>
+        <div class="section-title-ar">ملف Dockerfile — تعبئة التطبيق في حاوية</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">dockerfile</span>
+            <span class="code-filename">backend/Dockerfile</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-dockerfile"># ── Stage 1: Builder ──────────────────────────────────────────────────────────
+# Install dependencies in a separate stage to keep final image small.
+# نثبّت المكتبات في مرحلة منفصلة للحفاظ على حجم الصورة النهائية صغيراً.
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Copy requirements first (leverages Docker layer caching)
+# نسخ requirements أولاً للاستفادة من تخزين الطبقات المؤقتة
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+
+# ── Stage 2: Production Image ─────────────────────────────────────────────────
+FROM python:3.11-slim AS production
+
+# Security: Don't run as root
+# الأمان: لا تشغّل كـ root
+RUN addgroup --system appgroup && adduser --system --group appuser
+
+WORKDIR /app
+
+# Copy installed packages from builder stage
+COPY --from=builder /root/.local /home/appuser/.local
+
+# Copy application code
+COPY . .
+
+# Make sure scripts in .local are executable
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+# Switch to non-root user
+USER appuser
+
+# Expose the application port
+EXPOSE 8001
+
+# Health check — Nginx/orchestrators use this to verify the app is alive
+# فحص الصحة — تستخدمه بيئات التنسيق للتحقق من أن التطبيق يعمل
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:8001/health || exit 1
+
+# Start with Gunicorn + Uvicorn workers
+CMD ["gunicorn", "app.main:app",
+     "--workers", "4",
+     "--worker-class", "uvicorn.workers.UvicornWorker",
+     "--bind", "0.0.0.0:8001",
+     "--timeout", "120",
+     "--access-logfile", "-",
+     "--error-logfile", "-"]</code></pre>
+        </div>
+      </div>
+
+      <!-- DOCKER COMPOSE -->
+      <div class="section">
+        <div class="section-title">2. Docker Compose — Full Stack</div>
+        <div class="section-title-ar">Docker Compose — المكدس الكامل</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">yaml</span>
+            <span class="code-filename">docker-compose.yml</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-yaml">version: "3.9"
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER:     zoho_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}   # From .env file
+      POSTGRES_DB:       zoho_sync
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persistent storage
+    ports:
+      - "127.0.0.1:5432:5432"   # Only accessible on localhost, not public
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zoho_user -d zoho_sync"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Application ──────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    restart: always
+    env_file: ./backend/.env
+    environment:
+      # Override DATABASE_URL to use the Docker service name "db"
+      # نتجاوز DATABASE_URL لاستخدام اسم الخدمة "db" في Docker
+      DATABASE_URL: postgresql://zoho_user:${DB_PASSWORD}@db:5432/zoho_sync
+    ports:
+      - "127.0.0.1:8001:8001"   # Internal only — Nginx proxies externally
+    depends_on:
+      db:
+        condition: service_healthy   # Wait for DB to be ready
+    volumes:
+      - ./logs:/app/logs   # Mount logs directory
+
+  # ── Nginx ────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro   # SSL certificates
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:   # Named volume — persists data between container restarts</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Docker Compose commands</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash"># Build and start everything
+docker compose up -d --build
+
+# View logs
+docker compose logs -f api
+
+# Stop everything
+docker compose down
+
+# Rebuild only the api service (after code change)
+docker compose up -d --build api
+
+# Run tests inside the container
+docker compose exec api pytest /app/tests/ -v</code></pre>
+        </div>
+      </div>
+
+      <!-- GITHUB ACTIONS -->
+      <div class="section">
+        <div class="section-title">3. GitHub Actions CI/CD Workflow</div>
+        <div class="section-title-ar">سير عمل CI/CD باستخدام GitHub Actions</div>
+        <div class="section-divider"></div>
+
+        <div class="callout info">
+          <div class="callout-icon">🔑</div>
+          <div class="callout-content">
+            <div class="callout-title">GitHub Secrets — Protect Your Credentials</div>
+            <p>Before adding the workflow, go to your GitHub repo → Settings → Secrets and Variables → Actions → New Repository Secret. Add: <code>PROD_HOST</code>, <code>PROD_SSH_KEY</code>, <code>ZOHO_CLIENT_ID</code>, <code>ZOHO_CLIENT_SECRET</code>, etc. These are referenced as <code>${{ secrets.PROD_HOST }}</code> in the YAML.</p>
+            <div class="callout-ar">قبل إضافة سير العمل، أضف الأسرار في إعدادات المستودع. لا تضع بيانات حساسة في ملفات YAML مباشرة.</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">yaml</span>
+            <span class="code-filename">.github/workflows/deploy.yml</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-yaml">name: Test and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ── Job 1: Run Tests ────────────────────────────────────────────────────
+  test:
+    name: Run pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests with coverage
+        run: |
+          cd backend
+          PYTHONPATH=. pytest tests/ -v --cov=app --cov-report=xml
+        env:
+          DATABASE_URL:         sqlite:///./test.db
+          ZOHO_CLIENT_ID:       test-client-id
+          ZOHO_CLIENT_SECRET:   test-secret
+          ZOHO_REFRESH_TOKEN:   test-token
+          MOODLE_URL:           http://localhost
+          MOODLE_TOKEN:         test-moodle-token
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+
+  # ── Job 2: Deploy to Production (only on main branch) ──────────────────
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: test   # Only runs if test job passes
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.PROD_HOST }}
+          username: deploy
+          key:      ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            set -e    # Exit on any error
+
+            echo "=== Pulling latest code ==="
+            cd /opt/moodle-zoho-integration
+            git pull origin main
+
+            echo "=== Updating dependencies ==="
+            source backend/.venv-1/bin/activate
+            pip install -r backend/requirements.txt --quiet
+
+            echo "=== Reloading Gunicorn (zero-downtime) ==="
+            # Sends SIGHUP to Gunicorn — gracefully restarts workers
+            # one by one without dropping in-flight requests.
+            # يُرسل SIGHUP لـ Gunicorn لإعادة تشغيل العمال بشكل متدحرج
+            systemctl reload zoho-sync
+
+            echo "=== Deployment complete ==="
+            systemctl status zoho-sync --no-pager</code></pre>
+        </div>
+      </div>
+
+      <!-- MONITORING -->
+      <div class="section">
+        <div class="section-title">4. Monitoring & Alerting Basics</div>
+        <div class="section-title-ar">المراقبة والتنبيه — الأساسيات</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/health.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.infra.db.session import get_db
+from app.integrations.zoho.auth_client import zoho_auth
+import httpx
+
+router = APIRouter()
+
+
+@router.get("/health")
+async def health_check(db: Session = Depends(get_db)):
+    """
+    Comprehensive health check endpoint.
+    Used by Docker healthcheck, load balancers, and monitoring tools.
+
+    نقطة فحص الصحة الشاملة — تُستخدم من Docker وأنظمة المراقبة.
+    """
+    status = {"status": "ok", "checks": {}}
+
+    # Check 1: Database connectivity
+    # فحص قاعدة البيانات
+    try:
+        db.execute("SELECT 1")
+        status["checks"]["database"] = "ok"
+    except Exception as e:
+        status["checks"]["database"] = f"error: {str(e)[:100]}"
+        status["status"] = "degraded"
+
+    # Check 2: Zoho token (just check it's not expired, don't make API call)
+    # فحص توكن Zoho
+    try:
+        token = zoho_auth.get_token()
+        status["checks"]["zoho_auth"] = "ok" if token else "no_token"
+    except Exception as e:
+        status["checks"]["zoho_auth"] = f"error: {str(e)[:100]}"
+        status["status"] = "degraded"
+
+    # Check 3: Moodle reachability
+    # فحص إمكانية الوصول إلى Moodle
+    try:
+        from app.core.config import settings
+        r = httpx.get(f"{settings.MOODLE_URL}/login/index.php", timeout=5)
+        status["checks"]["moodle"] = "ok" if r.status_code < 500 else f"http_{r.status_code}"
+    except Exception as e:
+        status["checks"]["moodle"] = f"unreachable: {str(e)[:80]}"
+        status["status"] = "degraded"
+
+    return status</code></pre>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 08 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">In the GitHub Actions workflow, why does the <code>deploy</code> job include <code>needs: test</code>?</div>
+          <div class="quiz-question-ar">في workflow الـ GitHub Actions، لماذا يتضمن job الـ <code>deploy</code> الخاصية <code>needs: test</code>؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To share environment variables between jobs</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> To ensure deployment only happens when all tests pass, preventing broken code from reaching production</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To run both jobs in parallel</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It is required syntax when using SSH actions</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>needs: test</code> creates a dependency. The deploy job only starts if the test job completed successfully. This is the core CI/CD safety gate.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">In <code>docker-compose.yml</code>, the <code>db</code> port is mapped as <code>127.0.0.1:5432:5432</code>. Why the <code>127.0.0.1</code> prefix?</div>
+          <div class="quiz-question-ar">في <code>docker-compose.yml</code>، يُعيَّن المنفذ كـ <code>127.0.0.1:5432:5432</code>. لماذا الاستخدام <code>127.0.0.1</code>؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To allow the database to connect to the internet</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> To bind the port only to localhost, making the database inaccessible from outside the server</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Docker requires this for PostgreSQL containers</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To enable IPv6 connectivity</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Without the <code>127.0.0.1:</code> prefix, Docker binds to <code>0.0.0.0</code> (all interfaces), exposing the database publicly. By binding to <code>127.0.0.1</code>, only processes on the same server can connect — a critical security measure.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">We send <code>SIGHUP</code> to Gunicorn for deployment instead of restarting the service. What is the benefit?</div>
+          <div class="quiz-question-ar">نرسل <code>SIGHUP</code> إلى Gunicorn بدلاً من إعادة تشغيل الخدمة. ما الفائدة؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It's faster than a full restart</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It flushes the application caches</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Gunicorn gracefully restarts workers one-by-one, so active requests are never dropped — zero-downtime deployment</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It rotates log files</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>SIGHUP</code> (graceful reload) tells Gunicorn to spawn new workers with the new code while keeping old workers alive for in-flight requests. Only after old workers finish handling their requests are they killed. This achieves zero-downtime deployments.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+      </div>
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(8);</script>
+</body>
+</html>

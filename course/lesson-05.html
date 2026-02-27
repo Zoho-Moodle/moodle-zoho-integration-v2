@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 05 — Data Flow & Field Mapping | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 05</div>
+      <div class="lesson-number">Lesson 05</div>
+      <div class="lesson-title-en">Data Flow & Field Mapping</div>
+      <div class="lesson-title-ar">تدفق البيانات وتعيين الحقول</div>
+      <div class="lesson-meta">
+        <span>🕐 ~45 minutes</span>
+        <span>🎯 Intermediate</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Understand the complete data pipeline from Zoho → DB → Moodle</li>
+          <li>Read and modify the <code>FIELD_MAPPINGS</code> dictionary</li>
+          <li>Understand how <code>transform_zoho_to_moodle()</code> works</li>
+          <li>Implement idempotency with data hashing</li>
+          <li>Trace a real webhook event through the entire system</li>
+        </ul>
+      </div>
+
+      <!-- COMPLETE PIPELINE -->
+      <div class="section">
+        <div class="section-title">1. The Complete Integration Pipeline</div>
+        <div class="section-title-ar">خط الأنابيب الكامل للتكامل</div>
+        <div class="section-divider"></div>
+
+        <div class="arch-diagram">
+          <div class="arch-title">End-to-End Data Flow</div>
+          <div class="arch-item level-0">① Zoho CRM — Record changes (Student, Registration, Grade, ...)</div>
+          <div class="arch-item level-1">↓ HTTP POST webhook to our FastAPI server</div>
+          <div class="arch-item level-1">② FastAPI — <code>POST /api/v1/webhooks/students</code></div>
+          <div class="arch-item level-2">→ <code>read_zoho_body(request)</code> — parse raw body</div>
+          <div class="arch-item level-2">→ <code>resolve_zoho_payload(raw, module)</code> — normalize format</div>
+          <div class="arch-item level-2">→ <code>fetch_zoho_full_record(module, zoho_id)</code> — get complete record</div>
+          <div class="arch-item level-2">→ <code>transform_zoho_to_moodle(record, mappings)</code> — map fields</div>
+          <div class="arch-item level-1">③ SQLite / PostgreSQL — <code>db.merge()</code> upsert</div>
+          <div class="arch-item level-1">↓ sync_status = "pending_moodle"</div>
+          <div class="arch-item level-1">④ <code>call_moodle_ws("local_zoho_sync_update_user", ...)</code></div>
+          <div class="arch-item level-1">⑤ Moodle PHP — <code>update_user::execute()</code></div>
+          <div class="arch-item level-2">→ <code>user_update_user($update)</code> in Moodle DB</div>
+          <div class="arch-item level-1">↓ HTTP 200 JSON response back to FastAPI</div>
+          <div class="arch-item level-1">⑥ FastAPI — <code>sync_status = "synced"</code>, commit DB</div>
+        </div>
+      </div>
+
+      <!-- FIELD MAPPINGS -->
+      <div class="section">
+        <div class="section-title">2. The FIELD_MAPPINGS Dictionary</div>
+        <div class="section-title-ar">قاموس <code class="inline">FIELD_MAPPINGS</code></div>
+        <div class="section-divider"></div>
+
+        <div class="bilingual">
+          <div class="lang-en">
+            <span class="lang-badge en">English</span>
+            <p>The <code>FIELD_MAPPINGS</code> dictionary tells the system how to rename Zoho field names to our database column names. Keys are Zoho API field names. Values are our database/Moodle column names.</p>
+          </div>
+          <div class="lang-ar">
+            <span class="lang-badge ar">عربي</span>
+            <p>قاموس <code>FIELD_MAPPINGS</code> يُخبر النظام كيفية تسمية الحقول من Zoho إلى أسماء الأعمدة في قاعدة بياناتنا. المفاتيح = أسماء حقول Zoho. القيم = أسماء أعمدتنا.</p>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_shared.py — FIELD_MAPPINGS</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python"># ── FIELD_MAPPINGS: Zoho field name → Our DB column name ──────────────────────
+# Structure:
+#   FIELD_MAPPINGS[entity][zoho_api_field_name] = our_db_column_name
+#
+# هيكل القاموس:
+#   الكيان → {اسم حقل Zoho → اسم عمود قاعدة بياناتنا}
+
+FIELD_MAPPINGS = {
+
+    "students": {
+        # Zoho field name       : Our DB column name
+        "id"                    : "zoho_id",
+        "Name"                  : "display_name",
+        "Email"                 : "academic_email",
+        "Mobile"                : "phone",
+        "Date_of_Birth"         : "birth_date",
+        "Mailing_City"          : "city",
+        "Mailing_Country"       : "country",
+        "Record_Image"          : "record_image",
+        "Student_Status"        : "status",
+        "Moodle_User_ID"        : "moodle_user_id",
+    },
+
+    "registrations": {
+        "id"                    : "zoho_id",
+        "Name"                  : "registration_name",
+        "Student_Name"          : "student_zoho_id",    # Lookup → ID
+        "Program_Name"          : "program_zoho_id",    # Lookup → ID
+        "Enrollment_Status"     : "enrollment_status",
+        "Registration_Date"     : "registration_date",
+        "Completion_Date"       : "completion_date",
+        "Total_Fees"            : "total_fees",
+    },
+
+    "grades": {
+        "id"                    : "zoho_id",
+        "Student_Name"          : "student_zoho_id",
+        "Unit_Name"             : "unit_zoho_id",
+        "Grade"                 : "grade_value",
+        "Grade_Date"            : "grade_date",
+        "Pass_Fail"             : "pass_fail",
+        "Attempt_Number"        : "attempt_number",
+    },
+
+    "payments": {
+        "id"                    : "zoho_id",
+        "Student_Name"          : "student_zoho_id",
+        "Registration_Name"     : "registration_zoho_id",
+        "Payment_Amount"        : "amount",
+        "Payment_Date"          : "payment_date",
+        "Payment_Status"        : "payment_status",
+        "Payment_Method"        : "payment_method",
+    },
+
+    # ... enrollments, classes, programs, units
+}</code></pre>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <div class="callout-title">Finding Zoho Field API Names</div>
+            <p>In Zoho CRM → Settings → Modules → [Module] → Fields, each field shows its "API Name". This is what the webhook and REST API use. It's different from the display label. For example, a field labeled "Student Name" might have the API name <code>Student_Name</code> or <code>Name</code>.</p>
+            <div class="callout-ar">في Zoho CRM → الإعدادات → الوحدات → الحقول، كل حقل يُظهر "API Name". هذا هو ما تستخدمه الـ webhook وAPI. يختلف عن الاسم المعروض.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSFORM FUNCTION -->
+      <div class="section">
+        <div class="section-title">3. The transform_zoho_to_moodle() Function</div>
+        <div class="section-title-ar">دالة <code class="inline">transform_zoho_to_moodle()</code></div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_shared.py — transform function</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">def transform_zoho_to_moodle(zoho_record: dict, mappings: dict) -> dict:
+    """
+    Apply field name mappings to convert a Zoho record dict
+    into a dict of our DB column names.
+
+    تطبيق تعيينات الحقول لتحويل سجل Zoho إلى أسماء أعمدتنا.
+
+    Args:
+        zoho_record: Raw dict from Zoho API e.g. {"Name": "Ahmed", "Email": "a@x.com"}
+        mappings:    FIELD_MAPPINGS[entity] e.g. {"Name": "display_name", "Email": "academic_email"}
+
+    Returns:
+        Mapped dict e.g. {"display_name": "Ahmed", "academic_email": "a@x.com"}
+
+    Example:
+        zoho = {"Name": "Ahmed Ali", "Email": "ahmed@school.com", "Mobile": "0599123456"}
+        maps = {"Name": "display_name", "Email": "academic_email", "Mobile": "phone"}
+        result = transform_zoho_to_moodle(zoho, maps)
+        # → {"display_name": "Ahmed Ali", "academic_email": "ahmed@school.com", "phone": "0599123456"}
+    """
+    result = {}
+    for zoho_field, db_column in mappings.items():
+        value = zoho_record.get(zoho_field)
+
+        # Handle Zoho "lookup" fields — they return a dict with id + name
+        # مثال: {"Student_Name": {"id": "123", "name": "Ahmed"}}
+        # نحتاج فقط الـ id للربط
+        if isinstance(value, dict) and "id" in value:
+            value = value["id"]   # Store the foreign key ID, not the display name
+
+        # Skip None values to avoid overwriting existing data with nulls
+        # تجاهل القيم الفارغة لتجنب الكتابة فوق البيانات بـ null
+        if value is not None:
+            result[db_column] = value
+
+    return result</code></pre>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-icon">✨</div>
+          <div class="callout-content">
+            <div class="callout-title">Handling Zoho Lookup Fields</div>
+            <p>When a Zoho field references another module (like "Student Name" on a Registration record referencing a Student), the webhook sends it as a dict: <code>{"id": "student-zoho-id-123", "name": "Ahmed Ali"}</code>. We extract just the <code>"id"</code> because we use it as a foreign key in our DB.</p>
+            <div class="callout-ar">عندما يُشير حقل Zoho إلى وحدة أخرى (كاسم الطالب على سجل تسجيل)، يُرسله الـ webhook كـ dict. نستخرج فقط الـ <code>"id"</code> لاستخدامه كمفتاح خارجي.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IDEMPOTENCY -->
+      <div class="section">
+        <div class="section-title">4. Idempotency — Avoiding Duplicate Work</div>
+        <div class="section-title-ar">الأمان من التكرار — تجنب العمل المكرر</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">Idempotency with data hashing</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">import hashlib
+import json
+
+
+def compute_data_hash(data: dict) -> str:
+    """
+    Compute a stable MD5 hash of a dict for idempotency checks.
+    Used to skip re-syncing data that hasn't actually changed.
+
+    حساب hash مستقر لقاموس للتحقق من إمكانية تجاهل إعادة المزامنة.
+    """
+    # Sort keys to ensure same dict always produces same hash
+    serialised = json.dumps(data, sort_keys=True, ensure_ascii=False)
+    return hashlib.md5(serialised.encode()).hexdigest()
+
+
+def should_sync(existing_record, new_data: dict) -> bool:
+    """
+    Return True if the record needs to be synced (data has changed).
+    Return False if the incoming data is identical to what we already have.
+
+    يُعيد True إذا كانت البيانات قد تغيّرت ويجب مزامنتها.
+    يُعيد False إذا كانت البيانات مطابقة لما لدينا بالفعل.
+    """
+    if existing_record is None:
+        return True   # New record, always sync
+
+    new_hash = compute_data_hash(new_data)
+
+    if existing_record.data_hash == new_hash:
+        return False  # Data hasn't changed, skip sync
+        # البيانات لم تتغير، لا داعي للمزامنة
+
+    return True
+
+
+# ── Usage in webhook handler ──────────────────────────────────────────────────
+# الاستخدام في معالج الـ webhook
+
+def process_student_webhook(db, zoho_id: str, mapped_data: dict):
+    existing = db.query(Student).filter(Student.zoho_id == zoho_id).first()
+
+    if not should_sync(existing, mapped_data):
+        # Identical data — no update needed. This is common when Zoho
+        # re-sends webhooks on any field change, even unrelated ones.
+        # بيانات مطابقة — ألغِ العملية. شائع عندما يُعيد Zoho إرسال
+        # الـ webhook عند تغيير أي حقل، حتى الحقول غير المعنية.
+        return {"status": "skipped", "reason": "no_change"}
+
+    new_hash = compute_data_hash(mapped_data)
+    mapped_data["data_hash"] = new_hash
+
+    if existing:
+        for k, v in mapped_data.items():
+            setattr(existing, k, v)
+    else:
+        student = Student(zoho_id=zoho_id, **mapped_data)
+        db.add(student)
+
+    db.commit()
+    return {"status": "updated"}</code></pre>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 05 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">In <code>FIELD_MAPPINGS</code>, what is the key and what is the value?</div>
+          <div class="quiz-question-ar">في <code>FIELD_MAPPINGS</code>، ما هو المفتاح وما هي القيمة؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Key = our DB column name, Value = Zoho API field name</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Key = Zoho API field name, Value = our DB column name</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Key = Moodle WS parameter name, Value = Zoho API field name</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Key = display label, Value = API name</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! The mapping goes from Zoho → our DB. Key = Zoho's API field name (what arrives in the webhook). Value = our database column name (where we store it).</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">When <code>transform_zoho_to_moodle()</code> encounters a value like <code>{"id": "abc123", "name": "Ahmed"}</code>, what does it store?</div>
+          <div class="quiz-question-ar">عندما تُصادف <code>transform_zoho_to_moodle()</code> قيمة مثل <code>{"id": "abc123", "name": "Ahmed"}</code>، ماذا تُخزّن؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> The entire dict: <code>{"id": "abc123", "name": "Ahmed"}</code></li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> The "name" string: <code>"Ahmed"</code></li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> The "id" string: <code>"abc123"</code></li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Nothing — lookup fields are ignored</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Zoho sends lookup fields as dicts with both "id" and "name". We only store the "id" because that's the foreign key we use in our DB to link records.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">What is the purpose of <code>data_hash</code> stored on each DB record?</div>
+          <div class="quiz-question-ar">ما الغرض من <code>data_hash</code> المخزّن على كل سجل في قاعدة البيانات؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To encrypt sensitive data before storing it</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To verify the webhook signature is from Zoho</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> To detect if incoming data is identical to what's already stored and skip redundant syncs</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To generate a unique ID for each record</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! The hash is an MD5 fingerprint of the mapped data. If the incoming webhook produces the same hash as what's already stored, we skip the DB update and Moodle call entirely — no unnecessary work.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+      </div>
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(5);</script>
+</body>
+</html>

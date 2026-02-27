@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 04 — Moodle Plugin | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 04</div>
+      <div class="lesson-number">Lesson 04</div>
+      <div class="lesson-title-en">The Moodle PHP Plugin</div>
+      <div class="lesson-title-ar">المكوّن الإضافي لـ Moodle بلغة PHP</div>
+      <div class="lesson-meta">
+        <span>🕐 ~55 minutes</span>
+        <span>🎯 Advanced</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Understand Moodle plugin architecture and required files</li>
+          <li>Declare Web Service functions in <code>db/services.php</code> and <code>db/functions.php</code></li>
+          <li>Implement the external PHP class with parameter definitions and execution logic</li>
+          <li>Call Moodle Web Service functions from Python using token authentication</li>
+          <li>Handle errors and debug plugin issues</li>
+        </ul>
+      </div>
+
+      <!-- PLUGIN STRUCTURE -->
+      <div class="section">
+        <div class="section-title">1. Plugin Directory Structure</div>
+        <div class="section-title-ar">هيكل مجلدات المكوّن الإضافي</div>
+        <div class="section-divider"></div>
+
+        <div class="arch-diagram">
+          <div class="arch-title">moodle/local/zoho_sync/ — Plugin Root</div>
+          <div class="arch-item level-0">local/zoho_sync/</div>
+          <div class="arch-item level-1">version.php          <span style="color:#94a3b8;font-size:.8rem;">← Plugin version + metadata (REQUIRED)</span></div>
+          <div class="arch-item level-1">lang/</div>
+          <div class="arch-item level-2">en/</div>
+          <div class="arch-item level-3">local_zoho_sync.php  <span style="color:#94a3b8;font-size:.8rem;">← English language strings</span></div>
+          <div class="arch-item level-1">db/</div>
+          <div class="arch-item level-2">services.php         <span style="color:#94a3b8;font-size:.8rem;">← Declares web service and its functions</span></div>
+          <div class="arch-item level-2">functions.php        <span style="color:#94a3b8;font-size:.8rem;">← Maps function names to PHP classes</span></div>
+          <div class="arch-item level-2">upgrade.php          <span style="color:#94a3b8;font-size:.8rem;">← DB migration steps per version</span></div>
+          <div class="arch-item level-1">classes/</div>
+          <div class="arch-item level-2">external/</div>
+          <div class="arch-item level-3">update_user.php      <span style="color:#94a3b8;font-size:.8rem;">← PHP external function class</span></div>
+          <div class="arch-item level-3">get_user_info.php    <span style="color:#94a3b8;font-size:.8rem;">← Another external function class</span></div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <div class="callout-title">Plugin Name Convention</div>
+            <p>Our plugin is named <strong>local_zoho_sync</strong>. "local" = its type (local plugin, vs block, mod, auth, etc). "zoho_sync" = our unique identifier. This name is used everywhere: folder name, function prefixes, language strings, database tables.</p>
+            <div class="callout-ar">اسم المكوّن <strong>local_zoho_sync</strong>. "local" = نوعه (مكوّن محلي). "zoho_sync" = معرّفنا الفريد. يُستخدم هذا الاسم في كل مكان: اسم المجلد، بادئات الدوال، السلاسل النصية، جداول قاعدة البيانات.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VERSION.PHP -->
+      <div class="section">
+        <div class="section-title">2. version.php — Plugin Identity</div>
+        <div class="section-title-ar">ملف <code class="inline">version.php</code> — هوية المكوّن</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">php</span>
+            <span class="code-filename">local/zoho_sync/version.php</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-php">&lt;?php
+/**
+ * Version details for local_zoho_sync plugin.
+ * Moodle reads this file to know the plugin's version and upgrade needs.
+ *
+ * Moodle يقرأ هذا الملف لمعرفة إصدار المكوّن ومتطلبات الترقية.
+ */
+
+defined('MOODLE_INTERNAL') || die();
+// The line above prevents direct access to this file.
+// Moodle must set MOODLE_INTERNAL constant first.
+// يمنع الوصول المباشر لهذا الملف
+
+$plugin->component  = 'local_zoho_sync'; // Must match folder name exactly!
+$plugin->version    = 2024120100;         // YYYYMMDD + 2-digit serial (today's date)
+$plugin->requires   = 2022041900;         // Moodle 4.0+ required
+$plugin->maturity   = MATURITY_STABLE;    // MATURITY_ALPHA | MATURITY_BETA | MATURITY_STABLE
+$plugin->release    = '1.0.0';
+$plugin->dependencies = [];               // Other plugins this depends on</code></pre>
+        </div>
+      </div>
+
+      <!-- DB/SERVICES.PHP -->
+      <div class="section">
+        <div class="section-title">3. db/services.php — Declare Web Services</div>
+        <div class="section-title-ar">ملف <code class="inline">db/services.php</code> — إعلان خدمات الويب</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">php</span>
+            <span class="code-filename">local/zoho_sync/db/services.php</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-php">&lt;?php
+/**
+ * Declares the web service and which functions belong to it.
+ * يعلن عن خدمة الويب والدوال المنتمية إليها
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+/*
+ * $functions: Register each individual web service function.
+ * Each key is the function name used in API calls.
+ * المفتاح = اسم الدالة المستخدم في استدعاءات API
+ */
+$functions = [
+    'local_zoho_sync_update_user' => [
+        'classname'     => 'local_zoho_sync\\external\\update_user',
+        'methodname'    => 'execute',
+        'description'   => 'Update a Moodle user profile with data from Zoho.',
+        'type'          => 'write',    // 'read' or 'write'
+        'ajax'          => true,       // Callable from JavaScript (AJAX)
+        'loginrequired' => true,       // Requires authenticated token
+    ],
+    'local_zoho_sync_get_user_info' => [
+        'classname'     => 'local_zoho_sync\\external\\get_user_info',
+        'methodname'    => 'execute',
+        'description'   => 'Get Moodle user info by Zoho ID.',
+        'type'          => 'read',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ],
+    'local_zoho_sync_enroll_user' => [
+        'classname'     => 'local_zoho_sync\\external\\enroll_user',
+        'methodname'    => 'execute',
+        'description'   => 'Enroll/unenroll a user in a Moodle course.',
+        'type'          => 'write',
+        'ajax'          => true,
+        'loginrequired' => true,
+    ],
+];
+
+/*
+ * $services: Create a named API service that groups the functions above.
+ * Clients authenticate with a TOKEN issued to this service.
+ * العملاء يصادقون بتوكن صادر لهذه الخدمة
+ */
+$services = [
+    'Zoho Sync Service' => [
+        'functions'       => array_keys($functions),  // Include all functions
+        'restrictedusers' => 0,       // 0 = any authorised user can use
+        'enabled'         => 1,       // Enabled immediately on install
+        'shortname'       => 'zoho_sync_ws',
+    ],
+];</code></pre>
+        </div>
+      </div>
+
+      <!-- EXTERNAL CLASS -->
+      <div class="section">
+        <div class="section-title">4. The External Function PHP Class</div>
+        <div class="section-title-ar">كلاس الدالة الخارجية PHP</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">php</span>
+            <span class="code-filename">local/zoho_sync/classes/external/update_user.php</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-php">&lt;?php
+namespace local_zoho_sync\external;
+
+use core_external\external_function_parameters;
+use core_external\external_single_structure;
+use core_external\external_value;
+use core_external\external_api;
+use PARAM_INT;
+use PARAM_TEXT;
+use PARAM_ALPHA;
+
+/**
+ * Update a Moodle user profile with data from Zoho.
+ * تحديث ملف مستخدم Moodle ببيانات من Zoho
+ */
+class update_user extends external_api {
+
+    /**
+     * Declare what parameters this function accepts.
+     * Moodle validates + sanitises input automatically.
+     *
+     * إعلان المعاملات المقبولة — Moodle يتحقق منها ويُعقّمها تلقائياً
+     */
+    public static function execute_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'userid'      => new external_value(PARAM_INT,  'Moodle User ID'),
+            'firstname'   => new external_value(PARAM_TEXT, 'First name',   VALUE_OPTIONAL, null),
+            'lastname'    => new external_value(PARAM_TEXT, 'Last name',    VALUE_OPTIONAL, null),
+            'email'       => new external_value(PARAM_TEXT, 'Email',        VALUE_OPTIONAL, null),
+            'phone'       => new external_value(PARAM_TEXT, 'Phone number', VALUE_OPTIONAL, null),
+            'city'        => new external_value(PARAM_TEXT, 'City',         VALUE_OPTIONAL, null),
+            'country'     => new external_value(PARAM_ALPHA,'Country code', VALUE_OPTIONAL, null),
+            'profileimageurl' => new external_value(PARAM_TEXT, 'Photo URL', VALUE_OPTIONAL, null),
+        ]);
+    }
+
+    /**
+     * The actual function that runs when the WS is called.
+     * الدالة الفعلية التي تُنفَّذ عند استدعاء خدمة الويب
+     */
+    public static function execute(
+        int    $userid,
+        ?string $firstname = null,
+        ?string $lastname  = null,
+        ?string $email     = null,
+        ?string $phone     = null,
+        ?string $city      = null,
+        ?string $country   = null,
+        ?string $profileimageurl = null
+    ): array {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/user/lib.php');
+
+        // Validate parameters (Moodle's requirement)
+        self::validate_parameters(self::execute_parameters(), [
+            'userid'      => $userid,
+            'firstname'   => $firstname,
+            'lastname'    => $lastname,
+            'email'       => $email,
+            'phone'       => $phone,
+            'city'        => $city,
+            'country'     => $country,
+            'profileimageurl' => $profileimageurl,
+        ]);
+
+        // Check user exists
+        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
+
+        // Build update object — only update provided fields
+        $update = (object)['id' => $userid];
+        if ($firstname !== null) $update->firstname = $firstname;
+        if ($lastname  !== null) $update->lastname  = $lastname;
+        if ($email     !== null) $update->email     = $email;
+        if ($phone     !== null) $update->phone1    = $phone;
+        if ($city      !== null) $update->city      = $city;
+        if ($country   !== null) $update->country   = $country;
+
+        user_update_user($update, false, false);
+
+        // Handle profile photo upload
+        if ($profileimageurl) {
+            // Download and set as profile image
+            require_once($CFG->dirroot . '/lib/filelib.php');
+            $userid_context = \context_user::instance($userid);
+            $imagecontent   = file_get_contents($profileimageurl);
+            if ($imagecontent !== false) {
+                $tempfile = tempnam(sys_get_temp_dir(), 'zoho_photo_');
+                file_put_contents($tempfile, $imagecontent);
+                process_new_icon($userid_context, 'user', 'icon', 0, $tempfile);
+                @unlink($tempfile);
+            }
+        }
+
+        return [
+            'success' => true,
+            'userid'  => $userid,
+            'message' => 'User updated successfully',
+        ];
+    }
+
+    /**
+     * Declare what the function returns.
+     * إعلان ما تُعيده الدالة
+     */
+    public static function execute_returns(): external_single_structure {
+        return new external_single_structure([
+            'success' => new external_value(PARAM_BOOL, 'Was update successful?'),
+            'userid'  => new external_value(PARAM_INT,  'Updated user ID'),
+            'message' => new external_value(PARAM_TEXT, 'Status message'),
+        ]);
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- CALLING FROM PYTHON -->
+      <div class="section">
+        <div class="section-title">5. Calling Moodle WS from Python</div>
+        <div class="section-title-ar">استدعاء خدمة Moodle من Python</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/integrations/moodle/client.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">import httpx
+from app.core.config import settings
+
+
+def call_moodle_ws(function_name: str, params: dict) -> dict:
+    """
+    Call any Moodle Web Service function.
+
+    استدعاء أي دالة من خدمات الويب في Moodle.
+
+    Args:
+        function_name: e.g. "local_zoho_sync_update_user"
+        params:        Dict of parameters matching the PHP execute() signature
+
+    Returns:
+        Parsed JSON response from Moodle
+    """
+    url = f"{settings.MOODLE_URL}/webservice/rest/server.php"
+
+    payload = {
+        "wstoken":       settings.MOODLE_TOKEN,       # Auth token from Moodle admin
+        "wsfunction":    function_name,                # PHP function name
+        "moodlewsrestformat": "json",                  # Always use JSON format
+        **params,                                       # All function parameters
+    }
+
+    response = httpx.post(url, data=payload, timeout=30)
+    response.raise_for_status()
+
+    result = response.json()
+
+    # Moodle returns errors inside the JSON, not via HTTP status codes!
+    # Moodle يُعيد الأخطاء داخل JSON وليس عبر رموز حالة HTTP
+    if isinstance(result, dict) and "exception" in result:
+        raise RuntimeError(
+            f"Moodle WS error for {function_name}: "
+            f"{result.get('message', 'Unknown error')} "
+            f"(errorcode: {result.get('errorcode', 'N/A')})"
+        )
+
+    return result
+
+
+# ── Helper wrappers for common operations ─────────────────────────────────────
+
+def moodle_update_user(userid: int, **fields) -> dict:
+    return call_moodle_ws("local_zoho_sync_update_user",
+                          {"userid": userid, **fields})
+
+
+def moodle_enroll_user(userid: int, courseid: int, roleid: int = 5) -> dict:
+    """roleid=5 is the default 'student' role in most Moodle installations."""
+    return call_moodle_ws("local_zoho_sync_enroll_user", {
+        "userid":   userid,
+        "courseid": courseid,
+        "roleid":   roleid,
+    })
+
+
+def moodle_get_user(userid: int) -> dict:
+    return call_moodle_ws("local_zoho_sync_get_user_info", {"userid": userid})</code></pre>
+        </div>
+
+        <div class="callout warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <div class="callout-title">Moodle Errors Are Hidden in 200 OK Responses</div>
+            <p>Even when a Moodle WS call fails (wrong token, wrong parameter, missing capability), Moodle returns HTTP 200. The error is inside the JSON body as an <code>"exception"</code> key. Always check for it — don't assume a 200 OK means success.</p>
+            <div class="callout-ar">حتى عند فشل الاستدعاء، يُعيد Moodle HTTP 200. الخطأ يكون داخل JSON كمفتاح <code>"exception"</code>. تحقق منه دائماً.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 04 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">In a Moodle plugin, what is the purpose of <code>db/services.php</code>?</div>
+          <div class="quiz-question-ar">ما الغرض من ملف <code>db/services.php</code> في مكوّن Moodle؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It stores SQL queries used by the plugin</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It defines database table schemas</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> It declares web service functions and creates named API services</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It is the PHP class that handles the actual logic</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>db/services.php</code> tells Moodle: "these are my web service functions and this is the named service that groups them". Without it, Moodle doesn't know the functions exist.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">Why must <code>self::validate_parameters()</code> be called at the start of every external function's <code>execute()</code> method?</div>
+          <div class="quiz-question-ar">لماذا يجب استدعاء <code>self::validate_parameters()</code> في بداية كل دالة <code>execute()</code>؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To log the function call to the Moodle event log</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> Moodle requires it to sanitise inputs and enforce the declared parameter types and constraints</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It automatically checks user permissions</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It converts parameters to the correct PHP types</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Moodle enforces a strict contract: parameters must be validated against the <code>execute_parameters()</code> declaration. This provides automatic input sanitisation (using PARAM_* constants) and type enforcement.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">Our Python <code>call_moodle_ws()</code> function checks for an <code>"exception"</code> key in the response even when the HTTP status is 200. Why?</div>
+          <div class="quiz-question-ar">لماذا يتحقق <code>call_moodle_ws()</code> من مفتاح <code>"exception"</code> حتى عند HTTP 200؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Moodle returns 200 only for partial successes</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It's a bug in Moodle's API implementation</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Moodle always returns HTTP 200; actual errors are reported in the JSON body via the <code>"exception"</code> key</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To handle Moodle maintenance mode responses</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Moodle's Web Service REST API always returns HTTP 200. Errors like wrong token, missing capability, or invalid data are returned as <code>{"exception": "...", "errorcode": "...", "message": "..."}</code> inside the response body.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+      </div>
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(4);</script>
+</body>
+</html>

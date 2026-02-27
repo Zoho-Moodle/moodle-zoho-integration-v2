@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 03 — Zoho API & Webhooks | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 03</div>
+      <div class="lesson-number">Lesson 03</div>
+      <div class="lesson-title-en">Zoho API, OAuth2 & Webhooks</div>
+      <div class="lesson-title-ar">واجهة Zoho API، بروتوكول OAuth2 والـ Webhooks</div>
+      <div class="lesson-meta">
+        <span>🕐 ~50 minutes</span>
+        <span>🎯 Advanced</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Understand OAuth2 Client Credentials flow used by Zoho</li>
+          <li>Manage access tokens and automatic refresh without manual intervention</li>
+          <li>Fetch records from any Zoho module using the REST API</li>
+          <li>Handle incoming webhook payloads from Zoho</li>
+          <li>Parse the 3 different Zoho payload formats your system receives</li>
+          <li>Store and dispatch webhook events to the correct endpoint handler</li>
+        </ul>
+      </div>
+
+      <!-- OAUTH2 FLOW -->
+      <div class="section">
+        <div class="section-title">1. OAuth2 — How Zoho Authentication Works</div>
+        <div class="section-title-ar">كيف يعمل بروتوكول OAuth2 مع Zoho</div>
+        <div class="section-divider"></div>
+
+        <div class="bilingual">
+          <div class="lang-en">
+            <span class="lang-badge en">English</span>
+            <p>Our system uses <strong>OAuth2 Client Credentials</strong> flow. There is no user login. The backend authenticates directly with Zoho using a Client ID and Client Secret. The flow:</p>
+            <ol style="margin-top:10px;padding-left:1.2rem;">
+              <li>Send POST to <code class="inline">https://accounts.zoho.com/oauth/v2/token</code></li>
+              <li>Include <code class="inline">client_id</code>, <code class="inline">client_secret</code>, <code class="inline">refresh_token</code>, <code class="inline">grant_type=refresh_token</code></li>
+              <li>Receive <code class="inline">access_token</code> (valid ~1 hour)</li>
+              <li>Use <code class="inline">Authorization: Zoho-oauthtoken &lt;token&gt;</code> on every API call</li>
+              <li>When token expires, repeat from step 1 automatically</li>
+            </ol>
+          </div>
+          <div class="lang-ar">
+            <span class="lang-badge ar">عربي</span>
+            <p>نظامنا يستخدم تدفق <strong>OAuth2 Client Credentials</strong> — لا يوجد تسجيل دخول مستخدم. الـ backend يُصادق مباشرة مع Zoho باستخدام Client ID و Client Secret. الخطوات:</p>
+            <ol style="margin-top:10px;padding-right:1.2rem;">
+              <li>أرسل POST إلى خادم حسابات Zoho</li>
+              <li>أدرج <code class="inline">client_id</code> و <code class="inline">refresh_token</code> وغيرها</li>
+              <li>استلم <code class="inline">access_token</code> صالح لمدة ساعة تقريباً</li>
+              <li>استخدم التوكن في كل مكالمة API</li>
+              <li>عند انتهاء صلاحية التوكن، كرر الخطوات تلقائياً</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/integrations/zoho/auth_client.py (core logic)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">import httpx
+import time
+from app.core.config import settings
+
+
+class ZohoAuthClient:
+    """
+    Smart token manager for Zoho API.
+    Caches the access token and refreshes automatically when it expires.
+
+    مدير توكن ذكي — يخزن التوكن ويجدده تلقائياً عند انتهاء صلاحيته.
+    """
+
+    TOKEN_URL = "https://accounts.zoho.com/oauth/v2/token"
+    SAFETY_MARGIN = 300   # Refresh 5 minutes early (seconds) / تجديد قبل 5 دقائق
+
+    def __init__(self):
+        self._access_token: str | None = None
+        self._expires_at: float = 0.0   # Unix timestamp when token expires
+
+    def _is_expired(self) -> bool:
+        """True if token is missing or about to expire."""
+        return time.time() >= (self._expires_at - self.SAFETY_MARGIN)
+
+    def _fetch_new_token(self) -> None:
+        """Call Zoho token endpoint and store result."""
+        response = httpx.post(
+            self.TOKEN_URL,
+            data={
+                "grant_type":    "refresh_token",
+                "client_id":     settings.ZOHO_CLIENT_ID,
+                "client_secret": settings.ZOHO_CLIENT_SECRET,
+                "refresh_token": settings.ZOHO_REFRESH_TOKEN,
+            },
+            timeout=15,
+        )
+        response.raise_for_status()
+        payload = response.json()
+
+        if "access_token" not in payload:
+            raise RuntimeError(f"Zoho token error: {payload}")
+
+        self._access_token = payload["access_token"]
+        # expires_in is in seconds (usually 3600 = 1 hour)
+        self._expires_at   = time.time() + payload.get("expires_in", 3600)
+
+    def get_token(self) -> str:
+        """Return a valid access token, refreshing first if needed."""
+        if self._is_expired():
+            self._fetch_new_token()
+        return self._access_token   # type: ignore
+
+    def get_headers(self) -> dict:
+        """Return ready-to-use Authorization headers for Zoho API calls."""
+        return {
+            "Authorization": f"Zoho-oauthtoken {self.get_token()}",
+            "Content-Type":  "application/json",
+        }
+
+
+# Singleton instance — one client for the whole app
+# كائن واحد لجميع أرجاء التطبيق
+zoho_auth = ZohoAuthClient()</code></pre>
+        </div>
+      </div>
+
+      <!-- FETCH RECORDS -->
+      <div class="section">
+        <div class="section-title">2. Fetching Records from Zoho Modules</div>
+        <div class="section-title-ar">جلب السجلات من وحدات Zoho</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/integrations/zoho/client.py (fetch functions)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">import httpx
+from app.integrations.zoho.auth_client import zoho_auth
+
+
+ZOHO_API_BASE = "https://www.zohoapis.com/crm/v6"
+
+
+def fetch_zoho_records(module: str, page: int = 1, per_page: int = 200) -> list[dict]:
+    """
+    Fetch a page of records from a Zoho CRM module.
+
+    جلب صفحة من سجلات وحدة Zoho.
+
+    Args:
+        module:   Zoho module API name e.g. "BTEC_Students", "BTEC_Registrations"
+        page:     Page number (1-based)
+        per_page: Records per page (max 200 allowed by Zoho)
+
+    Returns:
+        List of record dicts, or empty list if no records found
+    """
+    url = f"{ZOHO_API_BASE}/{module}"
+    params = {"page": page, "per_page": per_page}
+
+    response = httpx.get(url, headers=zoho_auth.get_headers(),
+                         params=params, timeout=30)
+    response.raise_for_status()
+
+    data = response.json()
+    return data.get("data", [])   # Zoho wraps records in a "data" key
+
+
+def fetch_zoho_full_record(module: str, zoho_id: str) -> dict | None:
+    """
+    Fetch a single complete record from Zoho by its ID.
+    Useful when a webhook sends minimal data and you need the full record.
+
+    جلب سجل كامل من Zoho باستخدام معرّف Zoho.
+    مفيد عندما يرسل الـ webhook بيانات ناقصة وتحتاج للسجل الكامل.
+    """
+    url = f"{ZOHO_API_BASE}/{module}/{zoho_id}"
+
+    response = httpx.get(url, headers=zoho_auth.get_headers(), timeout=30)
+
+    if response.status_code == 404:
+        return None   # Record deleted in Zoho / السجل محذوف في Zoho
+
+    response.raise_for_status()
+    data = response.json()
+
+    records = data.get("data", [])
+    return records[0] if records else None
+
+
+def fetch_all_zoho_records(module: str, per_page: int = 200) -> list[dict]:
+    """
+    Fetch ALL records from a Zoho module, handling pagination automatically.
+    Zoho paginates at 200 records/page max.
+
+    جلب جميع سجلات وحدة Zoho مع التعامل مع الصفحات تلقائياً.
+    """
+    all_records = []
+    page = 1
+
+    while True:
+        records = fetch_zoho_records(module, page=page, per_page=per_page)
+        if not records:
+            break   # No more pages / لا مزيد من الصفحات
+
+        all_records.extend(records)
+        page += 1
+
+        # Safety: Zoho won't return more than 200 per page
+        # if we got fewer than per_page, we've hit the last page
+        if len(records) < per_page:
+            break
+
+    return all_records</code></pre>
+        </div>
+      </div>
+
+      <!-- WEBHOOKS -->
+      <div class="section">
+        <div class="section-title">3. Receiving Webhooks from Zoho</div>
+        <div class="section-title-ar">استقبال الـ Webhooks من Zoho</div>
+        <div class="section-divider"></div>
+
+        <div class="bilingual">
+          <div class="lang-en">
+            <span class="lang-badge en">English</span>
+            <p>Zoho sends HTTP POST requests to your server when records change. The payload format depends on how the webhook was configured in Zoho. Our system handles <strong>3 different payload structures</strong>:</p>
+            <ol style="margin-top:10px;padding-left:1.2rem;">
+              <li><strong>Wrapped format</strong>: <code class="inline">{"BTEC_Students": [{"id": ..., "Name": ...}]}</code></li>
+              <li><strong>Flat format</strong>: <code class="inline">{"id": "123", "Name": "Ahmed", ...}</code></li>
+              <li><strong>Deluge format</strong>: <code class="inline">{"entityId": "123", "module": "BTEC_Students", ...}</code></li>
+            </ol>
+          </div>
+          <div class="lang-ar">
+            <span class="lang-badge ar">عربي</span>
+            <p>Zoho يرسل طلبات HTTP POST إلى خادمك عند تغيير السجلات. يعتمد شكل البيانات على كيفية إعداد الـ webhook في Zoho. نظامنا يتعامل مع <strong>3 أشكال مختلفة</strong>:</p>
+            <ol style="margin-top:10px;padding-right:1.2rem;">
+              <li><strong>الشكل المُغلَّف</strong>: البيانات داخل مفتاح باسم الوحدة</li>
+              <li><strong>الشكل المسطّح</strong>: البيانات مباشرة في الجذر</li>
+              <li><strong>شكل Deluge</strong>: يُرسل من دوال Zoho البرمجية</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_shared.py — payload resolution</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">import json
+from fastapi import Request
+
+
+async def read_zoho_body(request: Request) -> dict:
+    """
+    Read the raw request body and parse it as JSON.
+    Zoho sometimes sends form-encoded data, sometimes JSON.
+    Handles both transparently.
+
+    قراءة جسم الطلب الخام وتحليله كـ JSON.
+    Zoho يرسل أحياناً JSON وأحياناً form-encoded data.
+    """
+    content_type = request.headers.get("Content-Type", "")
+    raw = await request.body()
+
+    if not raw:
+        return {}
+
+    # Try pure JSON first
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    # Zoho sometimes sends application/x-www-form-urlencoded
+    if "form" in content_type:
+        from urllib.parse import parse_qs
+        parsed = parse_qs(raw.decode("utf-8"))
+        # parse_qs returns {"key": ["value"]} — flatten to {"key": "value"}
+        return {k: v[0] if len(v) == 1 else v for k, v in parsed.items()}
+
+    return {}
+
+
+def resolve_zoho_payload(raw: dict, module: str) -> tuple[str, dict]:
+    """
+    Normalise any of the 3 Zoho payload formats into (zoho_id, data_dict).
+
+    دالة لتوحيد أي من أشكال الـ payload الـ 3 إلى (zoho_id, بيانات).
+
+    Returns:
+        (zoho_id, fields_dict) — zoho_id is the Zoho record ID
+                                 fields_dict contains all field values
+    """
+    # ── Format 1: Wrapped {"BTEC_Students": [{"id": ..., "Name": ...}]}
+    if module in raw:
+        records = raw[module]
+        if isinstance(records, list) and records:
+            record = records[0]
+            return record.get("id", ""), record
+
+    # ── Format 2: Flat {"id": "123", "Name": "Ahmed", ...}
+    if "id" in raw:
+        return raw["id"], raw
+
+    # ── Format 3: Deluge {"entityId": "123", "module": "BTEC_Students", ...}
+    if "entityId" in raw:
+        entity_id = raw["entityId"]
+        return entity_id, raw
+
+    # Unknown format — log and return empty
+    return "", raw</code></pre>
+        </div>
+
+        <div class="callout warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <div class="callout-title">Defensive Parsing is Critical</div>
+            <p>Zoho's webhook documentation doesn't guarantee a single fixed format. Different trigger configurations (Workflow Rules vs. Custom Functions vs. Blueprints) produce different payload structures. Always verify both the outer wrapper AND the inner fields before accessing them. Never assume a key exists.</p>
+            <div class="callout-ar">توثيق Zoho لا يضمن شكلاً ثابتاً واحداً. إعدادات مختلفة تنتج هياكل مختلفة. تحقق دائماً من وجود المفاتيح قبل الوصول إليها.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEBHOOK ENDPOINT -->
+      <div class="section">
+        <div class="section-title">4. Webhook Endpoint — Full Request Handler</div>
+        <div class="section-title-ar">نقطة نهاية الـ Webhook — معالج الطلب الكامل</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_students.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from fastapi import APIRouter, Depends, Request, HTTPException
+from sqlalchemy.orm import Session
+from app.infra.db.session import get_db
+from app.infra.db.models.student import Student
+from app.api.v1.endpoints.webhooks_shared import (
+    read_zoho_body,
+    resolve_zoho_payload,
+    FIELD_MAPPINGS,
+    transform_zoho_to_moodle,
+)
+from app.integrations.zoho.client import fetch_zoho_full_record
+from app.integrations.moodle.client import call_moodle_ws
+import logging
+
+router = APIRouter()
+logger = logging.getLogger(__name__)
+MODULE = "BTEC_Students"
+
+
+@router.post("/students")
+async def webhook_students(request: Request, db: Session = Depends(get_db)):
+    """
+    Receive a Zoho webhook for Student record changes.
+    Pipeline:
+      1. Parse raw body → resolve payload format
+      2. Fetch full record from Zoho (webhook data is often incomplete)
+      3. Map Zoho fields to Moodle fields using FIELD_MAPPINGS
+      4. Upsert DB record
+      5. Call Moodle WS to update the user
+
+    استقبال webhook للطالب.
+    خط الأنابيب:
+      1. تحليل الجسم → معرفة الشكل
+      2. جلب السجل الكامل من Zoho (البيانات الواردة ناقصة عادة)
+      3. تحويل الحقول
+      4. تحديث قاعدة البيانات
+      5. استدعاء Moodle WS
+    """
+    # Step 1: Parse body
+    raw = await read_zoho_body(request)
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty payload")
+
+    # Step 2: Resolve into (zoho_id, data)
+    zoho_id, zoho_data = resolve_zoho_payload(raw, MODULE)
+    if not zoho_id:
+        logger.warning("Could not extract zoho_id from payload: %s", raw)
+        raise HTTPException(status_code=422, detail="Could not resolve zoho_id")
+
+    # Step 3: Fetch the full record (webhook may only contain changed fields)
+    full_record = fetch_zoho_full_record(MODULE, zoho_id) or zoho_data
+
+    # Step 4: Map to our student schema
+    mappings = FIELD_MAPPINGS.get("students", {})
+    moodle_data = transform_zoho_to_moodle(full_record, mappings)
+
+    # Step 5: Upsert into DB
+    db_student = db.query(Student).filter(Student.zoho_id == zoho_id).first()
+    if db_student:
+        for k, v in moodle_data.items():
+            setattr(db_student, k, v)
+        db_student.sync_status = "pending_moodle"
+    else:
+        db_student = Student(zoho_id=zoho_id, **moodle_data,
+                              sync_status="pending_moodle")
+        db.add(db_student)
+    db.commit()
+    db.refresh(db_student)
+
+    # Step 6: Call Moodle to sync the user
+    if db_student.moodle_userid:
+        result = call_moodle_ws(
+            "local_zoho_sync_update_user",
+            {"userid": db_student.moodle_userid, **moodle_data}
+        )
+        if result.get("success"):
+            db_student.sync_status = "synced"
+            db.commit()
+
+    return {"status": "ok", "zoho_id": zoho_id}</code></pre>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 03 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">Why do we call <code>fetch_zoho_full_record()</code> <em>after</em> receiving the webhook, instead of just using the webhook payload directly?</div>
+          <div class="quiz-question-ar">لماذا نستدعي <code>fetch_zoho_full_record()</code> <em>بعد</em> استقبال الـ webhook بدلاً من استخدام البيانات الواردة مباشرة؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Webhooks don't include field data, only the record ID</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Webhook payloads often only contain <em>changed</em> fields, not the full record</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> The Zoho API is faster than the webhook delivery</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To validate that the record hasn't been deleted</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Zoho webhook triggers (especially Workflow Rules) often only send the fields that triggered the rule, not all record fields. Fetching the full record with the REST API ensures we have complete data before transforming and syncing.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">What HTTP header does the Zoho API require for authentication on every API call?</div>
+          <div class="quiz-question-ar">ما ترويسة HTTP التي يتطلبها Zoho API للمصادقة في كل استدعاء؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> <code>Bearer &lt;access_token&gt;</code></li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> <code>Zoho-oauthtoken &lt;access_token&gt;</code></li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> <code>Token &lt;access_token&gt;</code></li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> <code>X-Zoho-Auth: &lt;access_token&gt;</code></li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Zoho uses a custom scheme: <code>Authorization: Zoho-oauthtoken &lt;token&gt;</code>. This is different from the standard Bearer scheme used by most OAuth2 APIs. Forgetting this results in a 401 Unauthorized error.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">Our <code>ZohoAuthClient</code> uses a <code>SAFETY_MARGIN</code> of 300 seconds. What is this for?</div>
+          <div class="quiz-question-ar">يستخدم <code>ZohoAuthClient</code> هامش أمان 300 ثانية — ما الغرض منه؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To add a delay between API calls to avoid rate limiting</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To retry failed requests 5 minutes later</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> To refresh the token 5 minutes <em>before</em> it expires, avoiding mid-request failures</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To cache the token for exactly 5 minutes before making a new request</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! If we wait until the token actually expires, any in-flight API call at expiry time will fail. By refreshing 5 minutes early, we ensure the token is always fresh for real requests.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+      </div>
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(3);</script>
+</body>
+</html>

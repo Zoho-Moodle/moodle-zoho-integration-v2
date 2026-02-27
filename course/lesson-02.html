@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 02 — Database Design | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 02</div>
+      <div class="lesson-number">Lesson 02</div>
+      <div class="lesson-title-en">Database Design with SQLAlchemy</div>
+      <div class="lesson-title-ar">تصميم قاعدة البيانات باستخدام SQLAlchemy</div>
+      <div class="lesson-meta">
+        <span>🕐 ~45 minutes</span>
+        <span>🎯 Intermediate</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Understand what an ORM is and why we use SQLAlchemy</li>
+          <li>Create model classes for all 8 entities: Students, Registrations, Classes, Enrollments, Grades, Payments, Programs, Units</li>
+          <li>Configure the database engine and session factory</li>
+          <li>Use SQLite for development and PostgreSQL for production</li>
+          <li>Query the database inside FastAPI endpoints</li>
+          <li>Understand foreign keys and indexes</li>
+        </ul>
+      </div>
+
+      <!-- WHAT IS ORM -->
+      <div class="section">
+        <div class="section-title">1. What is an ORM?</div>
+        <div class="section-title-ar">ما هو الـ ORM؟</div>
+        <div class="section-divider"></div>
+
+        <div class="bilingual">
+          <div class="lang-en">
+            <span class="lang-badge en">English</span>
+            <p>ORM = <strong>Object-Relational Mapper</strong>. It lets you work with database tables as Python classes, instead of writing raw SQL. Each class = one table. Each attribute = one column.</p>
+            <p style="margin-top:10px;"><strong>Without ORM (raw SQL):</strong></p>
+            <pre style="background:#f1f5f9;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">SELECT * FROM students WHERE zoho_id = '12345'</pre>
+            <p style="margin-top:10px;"><strong>With SQLAlchemy ORM:</strong></p>
+            <pre style="background:#f1f5f9;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">db.query(Student).filter(Student.zoho_id == '12345').first()</pre>
+          </div>
+          <div class="lang-ar">
+            <span class="lang-badge ar">عربي</span>
+            <p>ORM = Object-Relational Mapper. يسمح لك بالتعامل مع جداول قاعدة البيانات ككلاسات Python بدلاً من كتابة SQL مباشرة. كل كلاس = جدول. كل خاصية = عمود.</p>
+            <p style="margin-top:10px;"><strong>بدون ORM (SQL مباشر):</strong></p>
+            <pre style="background:#fef3c7;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">SELECT * FROM students WHERE zoho_id = '12345'</pre>
+            <p style="margin-top:10px;"><strong>مع SQLAlchemy ORM:</strong></p>
+            <pre style="background:#fef3c7;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">db.query(Student).filter(Student.zoho_id == '12345').first()</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- BASE SETUP -->
+      <div class="section">
+        <div class="section-title">2. Database Engine and Base Setup</div>
+        <div class="section-title-ar">إعداد المحرك والقاعدة</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/infra/db/base.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase
+from app.core.config import settings
+
+
+# ── ENGINE: one connection pool for the whole app ─────────────────────────────
+engine = create_engine(
+    settings.DATABASE_URL,
+
+    # SQLite-specific: required to allow multi-threaded access.
+    # For PostgreSQL, remove this line.
+    # ضروري لـ SQLite فقط — لا تستخدمه مع PostgreSQL
+    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {},
+
+    # Pool settings (useful for PostgreSQL in production):
+    # pool_size=10,    Max connections in pool
+    # max_overflow=20, Extra connections when pool is full
+    # pool_pre_ping=True,  Test connections before using them
+)
+
+
+# ── BASE: parent class for all our models ─────────────────────────────────────
+# فئة أساسية لجميع الموديلز
+class Base(DeclarativeBase):
+    pass
+    # All models that inherit from Base will be picked up by
+    # Base.metadata.create_all(bind=engine) called in main.py lifespan
+    # كل الموديلز التي ترث من Base ستُنشأ جداولها تلقائياً</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/infra/db/session.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from sqlalchemy.orm import sessionmaker, Session
+from app.infra.db.base import engine
+from typing import Generator
+
+
+# Session factory — creates new Session objects
+# مصنع الجلسات — ينشئ كائنات Session جديدة
+SessionLocal = sessionmaker(
+    autocommit=False,   # We commit manually with db.commit()
+    autoflush=False,    # We flush manually if needed
+    bind=engine
+)
+
+
+def get_db() -> Generator[Session, None, None]:
+    """
+    FastAPI Dependency: yields one DB session per request.
+
+    Usage:
+        @router.get("/something")
+        def endpoint(db: Session = Depends(get_db)):
+            ...
+
+    Timeline:
+        1. Request starts      → SessionLocal() creates a session
+        2. yield db            → endpoint receives the session
+        3. Request finishes    → finally: db.close() is called
+        4. Even if an error   → finally block still runs
+
+    دورة الحياة:
+        1. بدء الطلب     → إنشاء جلسة
+        2. yield db       → الـ endpoint يستخدم الجلسة
+        3. نهاية الطلب   → إغلاق الجلسة تلقائياً
+        4. حتى عند الخطأ → بلوك finally يعمل دائماً
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()</code></pre>
+        </div>
+      </div>
+
+      <!-- STUDENT MODEL -->
+      <div class="section">
+        <div class="section-title">3. Student Model — Actual Production Code</div>
+        <div class="section-title-ar">موديل الطالب — الكود الفعلي من المشروع</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/infra/db/models/student.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from sqlalchemy import Column, String, Integer, DateTime, Text
+from uuid import uuid4
+from datetime import datetime
+from app.infra.db.base import Base
+
+
+class Student(Base):
+    __tablename__ = "students"    # Table name in DB / اسم الجدول في قاعدة البيانات
+
+    # ── Primary Key ──────────────────────────────────────────────────────────
+    # We use UUID strings (not integer IDs) to avoid ID conflicts
+    # when syncing from multiple sources.
+    # نستخدم UUID بدلاً من أرقام لتجنب تعارض المعرفات عند المزامنة
+    id = Column(String, primary_key=True,
+                default=lambda: str(uuid4()),  # Auto-generate UUID
+                index=True)
+
+    # ── Source/Tenant ─────────────────────────────────────────────────────────
+    tenant_id = Column(String, default="default", nullable=False)
+    source    = Column(String, default="zoho", nullable=True)
+    # Future: multi-tenancy support
+
+    # ── Identifiers (we keep BOTH Zoho ID and Moodle ID) ─────────────────────
+    zoho_id       = Column(String, unique=True, index=True, nullable=True)
+    moodle_user_id= Column(String, nullable=True)
+    moodle_userid = Column(Integer, nullable=True, index=True)
+    username      = Column(String, unique=True, index=True, nullable=True)
+
+    # ── Student Information ───────────────────────────────────────────────────
+    display_name   = Column(String, nullable=True)
+    academic_email = Column(String, nullable=False)  # Required!
+    birth_date     = Column(String, nullable=True)   # "YYYY-MM-DD" string
+    phone          = Column(String, nullable=True)
+    address        = Column(String, nullable=True)
+    city           = Column(String, nullable=True)
+    country        = Column(String, nullable=True)
+    record_image   = Column(String, nullable=True)   # URL to profile photo
+    status         = Column(String, nullable=True)   # Active, Inactive, etc.
+
+    # ── Sync Tracking ─────────────────────────────────────────────────────────
+    # These fields help us avoid redundant syncs
+    # هذه الحقول تساعدنا على تجنب المزامنة المكررة
+    sync_status = Column(String, default="pending", nullable=True)
+    last_sync   = Column(Integer, nullable=True)    # Unix timestamp of last sync
+    data_hash   = Column(String, nullable=True)     # MD5 of last synced payload
+    fingerprint = Column(String, nullable=True)     # Alternative dedup key
+
+    # ── Timestamps ────────────────────────────────────────────────────────────
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime,
+                        default=datetime.utcnow,
+                        onupdate=datetime.utcnow,  # Auto-updated on every change
+                        nullable=False)</code></pre>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <div class="callout-title">Why keep both zoho_id and moodle_user_id?</div>
+            <p>Students exist in <strong>both systems</strong>. <code class="inline">zoho_id</code> is used to match incoming Zoho webhook data. <code class="inline">moodle_userid</code> is used to call Moodle Web Services for that student. Without keeping both, we couldn't link a Zoho record update to the right Moodle user.</p>
+            <div class="callout-ar">الطلاب موجودون في <strong>كلا النظامين</strong>. <code class="inline">zoho_id</code> يُستخدم لمطابقة بيانات Zoho. <code class="inline">moodle_userid</code> يُستخدم لاستدعاء خدمات Moodle. بدون الاثنين لا يمكننا ربط سجل Zoho بالمستخدم الصحيح في Moodle.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTHER MODELS -->
+      <div class="section">
+        <div class="section-title">4. Other Core Models — Summary</div>
+        <div class="section-title-ar">الموديلز الأخرى — ملخص</div>
+        <div class="section-divider"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Model Class</th>
+                <th>DB Table</th>
+                <th>Zoho Module</th>
+                <th>Key Relationships</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>Student</code></td><td>students</td><td>BTEC_Students</td><td>Has many Registrations, Payments, Grades</td></tr>
+              <tr><td><code>Program</code></td><td>programs</td><td>BTEC_Programs</td><td>Has many Registrations, Classes</td></tr>
+              <tr><td><code>Registration</code></td><td>registrations</td><td>BTEC_Registrations</td><td>student_zoho_id → Student, program_zoho_id → Program</td></tr>
+              <tr><td><code>Class_</code></td><td>classes</td><td>BTEC_Classes</td><td>program_zoho_id → Program, Has many Enrollments</td></tr>
+              <tr><td><code>Enrollment</code></td><td>enrollments</td><td>BTEC_Enrollments</td><td>student_zoho_id → Student, class_zoho_id → Class</td></tr>
+              <tr><td><code>Grade</code></td><td>grades</td><td>BTEC_Grades</td><td>student_zoho_id → Student, unit_zoho_id → Unit</td></tr>
+              <tr><td><code>Payment</code></td><td>payments</td><td>BTEC_Payments</td><td>student_zoho_id → Student, registration_zoho_id → Registration</td></tr>
+              <tr><td><code>Unit</code></td><td>units</td><td>BTEC (units)</td><td>class_zoho_id → Class</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/infra/db/models/registration.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from sqlalchemy import Column, String, DateTime, ForeignKey, Index
+from uuid import uuid4
+from datetime import datetime
+from app.infra.db.base import Base
+
+
+class Registration(Base):
+    __tablename__ = "registrations"
+
+    id        = Column(String, primary_key=True, default=lambda: str(uuid4()))
+    tenant_id = Column(String, default="default", nullable=False)
+    source    = Column(String, default="zoho", nullable=True)
+    zoho_id   = Column(String, nullable=False, index=True)
+
+    # ── Foreign Keys ──────────────────────────────────────────────────────────
+    # These reference the zoho_id column in parent tables, not their primary key.
+    # This is because Zoho events give us zoho_id, not the internal UUID.
+    # نستخدم zoho_id كمفتاح خارجي لأن أحداث Zoho تعطينا zoho_id
+    student_zoho_id = Column(String,
+                             ForeignKey("students.zoho_id"),
+                             nullable=False, index=True)
+    program_zoho_id = Column(String,
+                             ForeignKey("programs.zoho_id"),
+                             nullable=False, index=True)
+
+    # ── Registration Details ──────────────────────────────────────────────────
+    enrollment_status = Column(String, nullable=False)
+    registration_date = Column(String, nullable=True)   # "YYYY-MM-DD"
+    completion_date   = Column(String, nullable=True)
+    total_fees        = Column(String, nullable=True)
+
+    # ── Sync Tracking ─────────────────────────────────────────────────────────
+    sync_status = Column(String, default="pending", nullable=True)
+    data_hash   = Column(String, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow, nullable=False)
+
+    # ── Composite Indexes: speed up common queries ────────────────────────────
+    # فهارس مركّبة: تسريع الاستعلامات الشائعة
+    __table_args__ = (
+        Index("ix_reg_tenant_student", "tenant_id", "student_zoho_id"),
+        Index("ix_reg_tenant_zoho",    "tenant_id", "zoho_id"),
+    )</code></pre>
+        </div>
+      </div>
+
+      <!-- COMMON QUERIES -->
+      <div class="section">
+        <div class="section-title">5. Common SQLAlchemy Query Patterns</div>
+        <div class="section-title-ar">أنماط الاستعلام الشائعة في SQLAlchemy</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">Query patterns reference</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from app.infra.db.models.student import Student
+from app.infra.db.models.registration import Registration
+
+# ── SELECT ────────────────────────────────────────────────────────────────────
+# Get one by primary key / جلب واحد بالمفتاح الأساسي
+student = db.get(Student, "some-uuid-here")
+
+# Get one by condition / جلب واحد بشرط
+student = db.query(Student).filter(Student.zoho_id == "12345").first()
+
+# Get all matching / جلب جميع المطابقين
+students = db.query(Student).filter(Student.status == "Active").all()
+
+# Multiple filters / شروط متعددة
+students = db.query(Student)\
+             .filter(Student.status == "Active")\
+             .filter(Student.tenant_id == "default")\
+             .order_by(Student.created_at.desc())\
+             .limit(20)\
+             .all()
+
+# Count / عدّ
+count = db.query(Student).count()
+
+# ── INSERT ────────────────────────────────────────────────────────────────────
+new_student = Student(
+    zoho_id="123",
+    academic_email="ahmed@school.com",
+    display_name="Ahmed Ali"
+)
+db.add(new_student)
+db.commit()           # Write to DB / الكتابة إلى قاعدة البيانات
+db.refresh(new_student)  # Reload from DB to get auto-generated fields
+
+# ── UPSERT (INSERT or UPDATE) ─────────────────────────────────────────────────
+# db.merge() = insert if not exists, otherwise update
+# db.merge() = يُدرج إذا لم يكن موجوداً، وإلا يُحدّث
+existing = Student(id="known-uuid", zoho_id="123", academic_email="new@email.com")
+db.merge(existing)
+db.commit()
+
+# ── UPDATE ────────────────────────────────────────────────────────────────────
+student = db.query(Student).filter(Student.zoho_id == "123").first()
+if student:
+    student.status = "Inactive"
+    student.sync_status = "synced"
+    db.commit()
+
+# ── DELETE ────────────────────────────────────────────────────────────────────
+student = db.query(Student).filter(Student.zoho_id == "123").first()
+if student:
+    db.delete(student)
+    db.commit()</code></pre>
+        </div>
+      </div>
+
+      <!-- INIT MODELS FILE -->
+      <div class="section">
+        <div class="section-title">6. The models/__init__.py — Why It Matters</div>
+        <div class="section-title-ar">لماذا <code class="inline">models/__init__.py</code> مهم</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/infra/db/models/__init__.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">"""
+Import all models here so that Base.metadata.create_all() knows about them.
+
+When main.py does: import app.infra.db.models
+Python executes this __init__.py, which imports all model classes.
+SQLAlchemy then knows about all tables and can CREATE them.
+
+إذا لم تستورد الموديلز هنا، فإن Base.metadata.create_all() لن يعرف
+عنها ولن ينشئ جداولها في قاعدة البيانات.
+"""
+from app.infra.db.models.student import Student          # noqa
+from app.infra.db.models.program import Program          # noqa
+from app.infra.db.models.registration import Registration  # noqa
+from app.infra.db.models.class_ import Class_            # noqa
+from app.infra.db.models.enrollment import Enrollment    # noqa
+from app.infra.db.models.grade import Grade              # noqa
+from app.infra.db.models.payment import Payment          # noqa
+from app.infra.db.models.unit import Unit                # noqa
+from app.infra.db.models.event_log import EventLog       # noqa</code></pre>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 02 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">What does <code>db.merge(obj)</code> do in SQLAlchemy?</div>
+          <div class="quiz-question-ar">ماذا يفعل <code>db.merge(obj)</code> في SQLAlchemy؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Always inserts a new row, regardless of duplicates</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Inserts if the primary key doesn't exist, updates if it does</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Deletes and re-inserts the row</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Only works on relationships, not single rows</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>db.merge()</code> is the UPSERT operation — it checks the primary key and either INSERTs or UPDATEs. This is perfect for sync operations where we receive data from Zoho that may or may not already be in the DB.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">Why do we import all model files in <code>models/__init__.py</code>?</div>
+          <div class="quiz-question-ar">لماذا نستورد جميع الموديلز في <code>models/__init__.py</code>؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To make the models available in templates</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> So that <code>Base.metadata.create_all()</code> knows about all tables before creating them</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To enable lazy loading of models</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To reduce import time</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! SQLAlchemy's <code>Base.metadata</code> only knows about a model after the class has been imported. If we don't import a model file, <code>create_all()</code> won't create that table.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">What SQLAlchemy parameter automatically updates a <code>DateTime</code> column every time a row is updated?</div>
+          <div class="quiz-question-ar">ما المعامل في SQLAlchemy الذي يُحدّث حقل <code>DateTime</code> تلقائياً عند كل تعديل؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> <code>auto_update=True</code></li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> <code>default=datetime.utcnow</code></li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> <code>onupdate=datetime.utcnow</code></li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> <code>trigger=datetime.utcnow</code></li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>onupdate=datetime.utcnow</code> tells SQLAlchemy to call <code>datetime.utcnow</code> and store the result in the column every time the row is updated. This is how we track when a record was last modified.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+      </div>
+
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(2);</script>
+</body>
+</html>

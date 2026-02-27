@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 01 — FastAPI Backend | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 01</div>
+      <div class="lesson-number">Lesson 01</div>
+      <div class="lesson-title-en">FastAPI Backend Development</div>
+      <div class="lesson-title-ar">بناء الـ Backend باستخدام FastAPI</div>
+      <div class="lesson-meta">
+        <span>🕐 ~45 minutes</span>
+        <span>🎯 Intermediate</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Understand how FastAPI handles HTTP methods: GET, POST, PUT, DELETE</li>
+          <li>Use path parameters, query parameters, and request bodies</li>
+          <li>Implement Pydantic models for request/response validation</li>
+          <li>Apply Dependency Injection with <code class="inline">Depends()</code></li>
+          <li>Organize endpoints into routers with prefixes</li>
+          <li>Understand the full <code class="inline">main.py</code> of this project</li>
+        </ul>
+      </div>
+
+      <!-- HTTP METHODS -->
+      <div class="section">
+        <div class="section-title">1. HTTP Methods in FastAPI</div>
+        <div class="section-title-ar">أنواع طلبات HTTP في FastAPI</div>
+        <div class="section-divider"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Decorator</th><th>HTTP Method</th><th>Use Case</th><th>الاستخدام</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">@router.get()</code></td><td>GET</td><td>Read data</td><td>قراءة البيانات</td></tr>
+              <tr><td><code class="inline">@router.post()</code></td><td>POST</td><td>Create data / receive webhook</td><td>إنشاء بيانات / استقبال webhook</td></tr>
+              <tr><td><code class="inline">@router.put()</code></td><td>PUT</td><td>Update (replace entirely)</td><td>تحديث كامل</td></tr>
+              <tr><td><code class="inline">@router.patch()</code></td><td>PATCH</td><td>Update (partial)</td><td>تحديث جزئي</td></tr>
+              <tr><td><code class="inline">@router.delete()</code></td><td>DELETE</td><td>Delete data</td><td>حذف البيانات</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/students_example.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+
+router = APIRouter(prefix="/students", tags=["students"])
+
+# ── Pydantic model for request body ──────────────────────────────────────────
+class StudentCreate(BaseModel):
+    """
+    Schema for creating a student.
+    FastAPI uses this for auto-validation AND auto-documentation.
+    Pydantic يتحقق تلقائياً من كل الحقول المدخلة
+    """
+    first_name: str
+    last_name: str
+    email: str
+    phone: Optional[str] = None       # Optional field, defaults to None
+
+
+class StudentResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+
+    class Config:
+        from_attributes = True  # أي orm_mode=True في Pydantic v1
+
+
+# ── GET /students/{student_id} ────────────────────────────────────────────────
+@router.get("/{student_id}", response_model=StudentResponse)
+def get_student(student_id: int):
+    """
+    Get a single student by ID.
+
+    Path parameter: student_id is automatically extracted from the URL
+    and validated as an integer. If the URL is /students/abc, FastAPI
+    returns a 422 error automatically.
+
+    معامل المسار: student_id يُستخرج تلقائياً من الرابط
+    ويُتحقق منه كعدد صحيح. إذا كان abc مثلاً → خطأ 422 تلقائي
+    """
+    # Simulate DB lookup
+    if student_id == 1:
+        return {"id": 1, "first_name": "Ahmed", "last_name": "Ali", "email": "ahmed@example.com"}
+    raise HTTPException(status_code=404, detail=f"Student {student_id} not found")
+
+
+# ── GET /students/?search=ahmed&limit=10 ─────────────────────────────────────
+@router.get("/")
+def list_students(search: Optional[str] = None, limit: int = 20, offset: int = 0):
+    """
+    List students with optional query parameters.
+
+    Query parameters are defined as function arguments with defaults.
+    GET /students/?search=ahmed&limit=5&offset=0
+
+    معاملات الاستعلام (query params) تُعرَّف كـ arguments مع قيم افتراضية
+    """
+    return {
+        "results": [],
+        "search": search,
+        "limit": limit,
+        "offset": offset
+    }
+
+
+# ── POST /students/ ───────────────────────────────────────────────────────────
+@router.post("/", status_code=201)
+def create_student(student: StudentCreate):
+    """
+    Create a new student.
+
+    FastAPI automatically:
+    1. Parses the JSON request body
+    2. Validates all fields against StudentCreate
+    3. Returns 422 Validation Error if any field is wrong
+    4. Shows this schema in Swagger /docs
+
+    FastAPI تلقائياً:
+    1. يحلل الـ JSON body
+    2. يتحقق من كل الحقول
+    3. يُرجع 422 إذا كان هناك خطأ في البيانات
+    """
+    return {
+        "status": "created",
+        "student": student.dict()
+    }</code></pre>
+        </div>
+      </div>
+
+      <!-- MAIN.PY EXPLAINED -->
+      <div class="section">
+        <div class="section-title">2. The Real main.py — Explained Line by Line</div>
+        <div class="section-title-ar">شرح main.py الفعلي من المشروع سطراً بسطر</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/main.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from contextlib import asynccontextmanager          # (1) For lifespan
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # (2) Cross-origin requests
+from app.api.v1.router import router as api_router  # (3) Our main router
+from app.core.config import settings                # (4) .env settings
+from admin.router import router as admin_router     # (5) Admin panel
+from app.infra.db.base import Base, engine          # (6) SQLAlchemy engine
+import app.infra.db.models  # noqa — (7) IMPORTANT: registers all models
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────────────────────
+# (8) LIFESPAN — runs ONCE when server starts/stops
+# يُنفَّذ مرة واحدة عند بدء الخادم وإيقافه
+# ─────────────────────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # STARTUP: Create all DB tables if they don't exist
+    # البدء: إنشاء جداول DB إذا لم تكن موجودة
+    Base.metadata.create_all(bind=engine)
+    logger.info("✅ Database tables created/verified.")
+    yield  # ← Application runs here / التطبيق يعمل هنا
+    # SHUTDOWN: Clean up resources here (optional)
+    # الإيقاف: تنظيف الموارد (اختياري)
+
+
+# ─────────────────────────────────────────────────────────────
+# (9) CREATE THE FASTAPI APP
+# ─────────────────────────────────────────────────────────────
+app = FastAPI(
+    title=settings.APP_NAME,   # Shown in Swagger UI
+    lifespan=lifespan          # Register our startup/shutdown hook
+)
+
+
+# ─────────────────────────────────────────────────────────────
+# (10) CORS MIDDLEWARE
+# Allows Moodle (on port 443) to call Backend (on port 8001).
+# Without this, browsers block cross-origin requests.
+# يسمح لـ Moodle بالاتصال بالـ Backend
+# ─────────────────────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],       # In prod: use your Moodle domain only
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ─────────────────────────────────────────────────────────────
+# (11) REGISTER ROUTERS
+# All API endpoints live under /api/v1/...
+# All admin HTML pages live under /admin/...
+# ─────────────────────────────────────────────────────────────
+app.include_router(api_router, prefix="/api/v1")
+app.include_router(admin_router)
+
+# A simple health check directly on the app (not in any sub-router)
+@app.get("/health")
+async def root_health():
+    return {"status": "healthy", "service": settings.APP_NAME}</code></pre>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <div class="callout-title">Why import app.infra.db.models? (Line 7)</div>
+            <p>SQLAlchemy's <code class="inline">Base.metadata.create_all()</code> only knows about models that have been <strong>imported</strong> before it's called. If we don't import the models, the tables won't get created — even though the model files exist. This single import line pulls in all model classes.</p>
+            <div class="callout-ar">SQLAlchemy لا يعرف عن الموديلز إلا إذا تم <strong>استيرادها</strong> قبل استدعاء <code class="inline">create_all()</code>. هذا السطر يضمن استيراد جميع الموديلز قبل إنشاء الجداول.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUTERS -->
+      <div class="section">
+        <div class="section-title">3. Organizing Endpoints with Routers</div>
+        <div class="section-title-ar">تنظيم الـ Endpoints باستخدام Routers</div>
+        <div class="section-divider"></div>
+
+        <p>Instead of registering all endpoints in <code class="inline">main.py</code>, we use <strong>APIRouter</strong> to split them into logical files, then include them all in <code class="inline">router.py</code>:</p>
+        <p style="font-family:'Tajawal',sans-serif;direction:rtl;margin:4px 0 16px;color:var(--gray-600);">بدلاً من وضع كل الـ endpoints في ملف واحد، نستخدم APIRouter لتقسيمها في ملفات منطقية:</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/router.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from fastapi import APIRouter
+
+# Import each endpoint file's router
+from app.api.v1.endpoints.health import router as health_router
+from app.api.v1.endpoints.sync_students import router as sync_students_router
+from app.api.v1.endpoints.sync_registrations import router as sync_registrations_router
+from app.api.v1.endpoints.student_dashboard_webhooks import router as dashboard_router
+from app.api.v1.endpoints.debug_enhanced import router as debug_router
+
+# The main router — all endpoints in this project live here
+router = APIRouter()
+
+# ── Register each sub-router ──────────────────────────────────────────────────
+# tags = group label shown in Swagger /docs
+router.include_router(health_router,           tags=["health"])
+router.include_router(sync_students_router,    tags=["sync"])
+router.include_router(sync_registrations_router, tags=["sync"])
+
+# Webhook handlers: prefix is set inside the endpoint file itself
+router.include_router(dashboard_router, prefix="/webhooks/student-dashboard")
+
+router.include_router(debug_router,            tags=["debug"])
+
+
+# ── Final URL paths are stacked ───────────────────────────────────────────────
+# main.py:       app.include_router(api_router, prefix="/api/v1")
+# router.py:     router.include_router(sync_students_router)
+# endpoint file: APIRouter(prefix="/sync")
+#                @router.post("/students")
+#
+# Result:   POST /api/v1/sync/students  ✅</code></pre>
+        </div>
+      </div>
+
+      <!-- DEPENDENCY INJECTION -->
+      <div class="section">
+        <div class="section-title">4. Dependency Injection — <code class="inline">Depends()</code></div>
+        <div class="section-title-ar">حقن التبعيات — <code class="inline">Depends()</code></div>
+        <div class="section-divider"></div>
+
+        <div class="bilingual">
+          <div class="lang-en">
+            <span class="lang-badge en">English</span>
+            <p><code class="inline">Depends()</code> is FastAPI's dependency injection system. It lets you declare <strong>shared dependencies</strong> (like a database session, or an auth check) once, and inject it into many endpoints cleanly.</p>
+            <p style="margin-top:8px;">The most important use in this project: <strong>injecting a DB session into every endpoint that needs it.</strong></p>
+          </div>
+          <div class="lang-ar">
+            <span class="lang-badge ar">عربي</span>
+            <p><code class="inline">Depends()</code> هو نظام حقن التبعيات في FastAPI. يسمح لك بتعريف <strong>تبعيات مشتركة</strong> (مثل جلسة DB أو التحقق من الهوية) مرة واحدة، وحقنها في عدة endpoints بشكل نظيف.</p>
+            <p style="margin-top:8px;">أهم استخدام في مشروعنا: <strong>حقن جلسة DB في كل endpoint يحتاجها.</strong></p>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/api/v1/endpoints/sync_students.py — Actual project code</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from fastapi import APIRouter, Depends, Request, HTTPException
+from sqlalchemy.orm import Session
+import logging
+
+from app.infra.db.session import get_db   # Our DB session factory
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/sync")
+
+
+@router.post("/students", summary="Sync Students from Zoho")
+async def sync_students(
+    request: Request,
+    db: Session = Depends(get_db)   # ← FastAPI injects a DB session automatically!
+    #                   ^^^^^^^^^^
+    # On every request: creates a new session, yields it, then closes it.
+    # في كل طلب: ينشئ جلسة، يمرّرها، ثم يُغلقها تلقائياً.
+):
+    """
+    Sync all BTEC_Students from Zoho CRM into the local database.
+    POST /api/v1/sync/students
+    """
+    try:
+        body = await request.json()
+
+        # db is now a live SQLAlchemy Session
+        # db الآن جلسة SQLAlchemy حية
+        students_data = body.get("data", [])
+        count = 0
+        for s in students_data:
+            # db.merge() = INSERT or UPDATE based on primary key
+            # db.merge() = إدخال أو تحديث بناءً على المفتاح الأساسي
+            from app.infra.db.models.student import Student
+            student = Student(
+                zoho_id=s.get("id"),
+                display_name=s.get("Full_Name"),
+                academic_email=s.get("Email"),
+            )
+            db.merge(student)
+            count += 1
+
+        db.commit()   # Save all changes / حفظ جميع التغييرات
+        return {"status": "success", "synced": count}
+
+    except Exception as e:
+        db.rollback()  # Undo on error / تراجع عن التغييرات عند الخطأ
+        logger.error(f"sync_students error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))</code></pre>
+        </div>
+      </div>
+
+      <!-- PYDANTIC SETTINGS -->
+      <div class="section">
+        <div class="section-title">5. Configuration with pydantic-settings</div>
+        <div class="section-title-ar">تحميل الإعدادات من <code class="inline">.env</code></div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/app/core/config.py — Actual project code</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
+import os
+
+# Resolve .env path relative to this file
+# نحدد مسار .env بالنسبة لموقع هذا الملف
+_ENV_FILE = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", ".env")
+    #           backend/app/core/config.py  →  backend/.env
+)
+
+class Settings(BaseSettings):
+    # All attributes are automatically loaded from .env
+    # جميع الخصائص تُحمَّل تلقائياً من .env
+
+    DATABASE_URL: str = "sqlite:///./moodle_zoho_local.db"
+    APP_NAME: str = "Moodle Zoho Integration"
+    ENV: str = "development"
+
+    # Moodle
+    MOODLE_BASE_URL: Optional[str] = None
+    MOODLE_TOKEN: Optional[str] = None
+    MOODLE_ENABLED: bool = False
+
+    # Zoho
+    ZOHO_CLIENT_ID: Optional[str] = None
+    ZOHO_CLIENT_SECRET: Optional[str] = None
+    ZOHO_REFRESH_TOKEN: Optional[str] = None
+    ZOHO_REGION: str = "com"
+
+    # Webhook
+    WEBHOOK_BASE_URL: Optional[str] = None
+
+    # model_config tells pydantic-settings where to find .env
+    model_config = SettingsConfigDict(env_file=_ENV_FILE, extra="ignore")
+
+
+# Create a single instance — imported everywhere in the project
+# instance واحدة تُستخدم في كل مكان في المشروع
+settings = Settings()</code></pre>
+        </div>
+
+        <p style="margin-top:16px;">Usage anywhere in the project:</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">from app.core.config import settings
+
+print(settings.MOODLE_BASE_URL)  # → https://your-moodle.com
+print(settings.MOODLE_ENABLED)   # → True (bool, auto-converted from "true")
+print(settings.ENV)              # → "development"</code></pre>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 01 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">What is the purpose of <code>Depends(get_db)</code> in a FastAPI endpoint?</div>
+          <div class="quiz-question-ar">ما الغرض من <code>Depends(get_db)</code> في FastAPI endpoint؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It creates a new database every request</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> It injects a database session that is automatically closed after the request</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It connects to the database only once at startup</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It locks the database during the request</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>Depends(get_db)</code> calls the <code>get_db</code> generator function, which creates a new Session, yields it to the endpoint, and then closes it in the <code>finally</code> block — even if an exception occurred.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">Given <code>app.include_router(api_router, prefix="/api/v1")</code> and <code>APIRouter(prefix="/sync")</code> and <code>@router.post("/students")</code>, what is the full URL?</div>
+          <div class="quiz-question-ar">إذا كان لدينا prefix="/api/v1" ثم prefix="/sync" ثم @router.post("/students")، ما هو الرابط النهائي؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> /students</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> /sync/students</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> /api/v1/sync/students</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> /api/sync/v1/students</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! URL prefixes stack: /api/v1 (from main.py include_router) + /sync (from APIRouter) + /students (from decorator) = /api/v1/sync/students</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">What is the purpose of the <code>lifespan</code> function in the FastAPI app?</div>
+          <div class="quiz-question-ar">ما الغرض من دالة <code>lifespan</code> في تطبيق FastAPI؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It defines the API's response schema</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It handles the lifespan of each HTTP request</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> It runs code at app startup (before yield) and app shutdown (after yield)</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It sets the timeout for all requests</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Code before <code>yield</code> runs at startup (e.g., create DB tables). Code after <code>yield</code> runs at shutdown (cleanup). This replaces the old <code>@app.on_event("startup")</code> pattern.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+      </div>
+
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(1);</script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 06 — Testing & Debugging | Zoho+Moodle Course</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
+      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="lesson-header">
+      <div class="lesson-breadcrumb">Course Home → Lesson 06</div>
+      <div class="lesson-number">Lesson 06</div>
+      <div class="lesson-title-en">Testing & Debugging</div>
+      <div class="lesson-title-ar">الاختبار والتحقيق في الأخطاء</div>
+      <div class="lesson-meta">
+        <span>🕐 ~40 minutes</span>
+        <span>🎯 Intermediate</span>
+        <span>🧩 3 Quiz Questions</span>
+      </div>
+    </header>
+
+    <div class="lesson-body">
+
+      <div class="objectives">
+        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+        <ul>
+          <li>Write unit and integration tests for webhook endpoints with <code>pytest</code></li>
+          <li>Use FastAPI's <code>TestClient</code> to simulate HTTP requests</li>
+          <li>Simulate incoming Zoho webhooks manually using <code>curl</code> or REST Client</li>
+          <li>Use the built-in debug endpoints to inspect the system state</li>
+          <li>Diagnose and fix the 10 most common integration errors</li>
+        </ul>
+      </div>
+
+      <!-- PYTEST SETUP -->
+      <div class="section">
+        <div class="section-title">1. Setting Up pytest</div>
+        <div class="section-title-ar">إعداد pytest</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Install test dependencies</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash">pip install pytest pytest-asyncio httpx
+
+# Run all tests
+pytest backend/tests/ -v
+
+# Run with coverage report
+pip install pytest-cov
+pytest backend/tests/ -v --cov=backend/app --cov-report=term-missing</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/tests/conftest.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">"""
+Shared pytest fixtures.
+الـ fixtures المشتركة بين الاختبارات.
+"""
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.main import app
+from app.infra.db.base import Base
+from app.infra.db.session import get_db
+
+
+# ── Use a temporary in-memory SQLite DB for tests ────────────────────────────
+# نستخدم قاعدة بيانات SQLite مؤقتة في الذاكرة للاختبارات
+TEST_DATABASE_URL = "sqlite:///./test_temp.db"
+
+test_engine = create_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+TestSessionLocal = sessionmaker(bind=test_engine, autocommit=False, autoflush=False)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_tables():
+    """Create all tables before tests run, drop after."""
+    # Import all models so Base.metadata knows about them
+    import app.infra.db.models  # noqa
+    Base.metadata.create_all(bind=test_engine)
+    yield
+    Base.metadata.drop_all(bind=test_engine)
+
+
+@pytest.fixture
+def db_session():
+    """Provide a clean DB session per test, rolled back after each test."""
+    connection = test_engine.connect()
+    transaction = connection.begin()
+    session = TestSessionLocal(bind=connection)
+
+    yield session
+
+    # Roll back everything done in this test to keep tests isolated
+    # إلغاء كل ما تم في هذا الاختبار للحفاظ على عزل الاختبارات
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture
+def client(db_session):
+    """FastAPI TestClient with the test DB injected."""
+    def override_get_db():
+        yield db_session
+
+    # Override the real DB dependency with our test DB
+    app.dependency_overrides[get_db] = override_get_db
+
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()</code></pre>
+        </div>
+      </div>
+
+      <!-- WEBHOOK TESTS -->
+      <div class="section">
+        <div class="section-title">2. Testing Webhook Endpoints</div>
+        <div class="section-title-ar">اختبار نقاط نهاية الـ Webhooks</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">python</span>
+            <span class="code-filename">backend/tests/test_webhooks_students.py</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-python">import pytest
+from unittest.mock import patch
+
+
+# ── Sample Zoho webhook payloads for testing ─────────────────────────────────
+FLAT_PAYLOAD = {
+    "id": "zoho-student-001",
+    "Name": "Ahmed Ali",
+    "Email": "ahmed@school.com",
+    "Mobile": "0599123456",
+    "Student_Status": "Active",
+}
+
+WRAPPED_PAYLOAD = {
+    "BTEC_Students": [{
+        "id": "zoho-student-002",
+        "Name": "Sara Hassan",
+        "Email": "sara@school.com",
+        "Mobile": "0598765432",
+        "Student_Status": "Active",
+    }]
+}
+
+
+class TestStudentWebhook:
+
+    def test_flat_payload_creates_student(self, client, db_session):
+        """
+        Verify that a flat-format Zoho payload creates a Student record.
+        التحقق من أن payload المسطّح ينشئ سجل طالب.
+        """
+        # Mock the Zoho and Moodle API calls so no real HTTP happens
+        # محاكاة استدعاءات Zoho و Moodle حتى لا تحدث طلبات HTTP حقيقية
+        with patch("app.api.v1.endpoints.webhooks_students.fetch_zoho_full_record",
+                   return_value=FLAT_PAYLOAD), \
+             patch("app.api.v1.endpoints.webhooks_students.call_moodle_ws",
+                   return_value={"success": True}):
+
+            response = client.post(
+                "/api/v1/webhooks/students",
+                json=FLAT_PAYLOAD
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ok"
+        assert data["zoho_id"] == "zoho-student-001"
+
+        # Verify DB record was created
+        from app.infra.db.models.student import Student
+        student = db_session.query(Student)\
+                             .filter(Student.zoho_id == "zoho-student-001")\
+                             .first()
+        assert student is not None
+        assert student.display_name == "Ahmed Ali"
+        assert student.academic_email == "ahmed@school.com"
+
+    def test_wrapped_payload_creates_student(self, client, db_session):
+        """Test wrapped Zoho format is also handled correctly."""
+        with patch("app.api.v1.endpoints.webhooks_students.fetch_zoho_full_record",
+                   return_value=WRAPPED_PAYLOAD["BTEC_Students"][0]), \
+             patch("app.api.v1.endpoints.webhooks_students.call_moodle_ws",
+                   return_value={"success": True}):
+
+            response = client.post(
+                "/api/v1/webhooks/students",
+                json=WRAPPED_PAYLOAD
+            )
+
+        assert response.status_code == 200
+
+    def test_empty_payload_returns_400(self, client):
+        """Empty payload should return HTTP 400."""
+        response = client.post("/api/v1/webhooks/students", json={})
+        assert response.status_code in (400, 422)
+
+    def test_duplicate_webhook_is_idempotent(self, client, db_session):
+        """Sending the same webhook twice should not create duplicate records."""
+        with patch("app.api.v1.endpoints.webhooks_students.fetch_zoho_full_record",
+                   return_value=FLAT_PAYLOAD), \
+             patch("app.api.v1.endpoints.webhooks_students.call_moodle_ws",
+                   return_value={"success": True}):
+
+            client.post("/api/v1/webhooks/students", json=FLAT_PAYLOAD)
+            client.post("/api/v1/webhooks/students", json=FLAT_PAYLOAD)  # duplicate
+
+        from app.infra.db.models.student import Student
+        count = db_session.query(Student)\
+                          .filter(Student.zoho_id == "zoho-student-001")\
+                          .count()
+        assert count == 1, "Duplicate webhook should not create 2 records"</code></pre>
+        </div>
+      </div>
+
+      <!-- MANUAL TESTING WITH CURL -->
+      <div class="section">
+        <div class="section-title">3. Manual Webhook Testing with curl</div>
+        <div class="section-title-ar">اختبار الـ Webhook يدوياً باستخدام curl</div>
+        <div class="section-divider"></div>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <span class="code-filename">Simulate a Zoho student webhook (flat format)</span>
+            <button class="copy-btn">Copy</button>
+          </div>
+          <pre><code class="language-bash"># Send a fake student webhook to your local server
+# إرسال webhook اختباري لخادمك المحلي
+curl -X POST http://localhost:8001/api/v1/webhooks/students \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "TEST-001",
+    "Name": "Test Student",
+    "Email": "test@example.com",
+    "Mobile": "0501234567",
+    "Student_Status": "Active"
+  }'
+
+# Expected response:
+# {"status": "ok", "zoho_id": "TEST-001"}
+
+# Test the registration webhook (wrapped format)
+curl -X POST http://localhost:8001/api/v1/webhooks/registrations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "BTEC_Registrations": [{
+      "id": "REG-001",
+      "Enrollment_Status": "Active",
+      "Student_Name": {"id": "TEST-001", "name": "Test Student"},
+      "Program_Name": {"id": "PROG-001", "name": "BTEC Level 3"}
+    }]
+  }'
+
+# Check the DB via the debug endpoint
+curl http://localhost:8001/api/v1/debug/students | python -m json.tool</code></pre>
+        </div>
+      </div>
+
+      <!-- COMMON ERRORS -->
+      <div class="section">
+        <div class="section-title">4. The 10 Most Common Errors & Fixes</div>
+        <div class="section-title-ar">أكثر 10 أخطاء شيوعاً وكيفية إصلاحها</div>
+        <div class="section-divider"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Error</th>
+                <th>Cause</th>
+                <th>Fix</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><code>ModuleNotFoundError: app</code></td>
+                <td>Running without <code>PYTHONPATH</code></td>
+                <td>Run from <code>backend/</code> folder or set <code>PYTHONPATH=backend</code></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><code>KeyError: 'access_token'</code></td>
+                <td>Wrong Zoho credentials in <code>.env</code></td>
+                <td>Verify <code>ZOHO_CLIENT_ID</code>, <code>ZOHO_REFRESH_TOKEN</code> in <code>.env</code></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Moodle returns <code>{"exception": "webservice_access_exception"}</code></td>
+                <td>Token not enabled for the WS, or service not enabled</td>
+                <td>Enable service in Moodle → Site Admin → Plugins → Web Services</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><code>sqlite3.OperationalError: no such table</code></td>
+                <td>Model not imported before <code>create_all()</code></td>
+                <td>Import model in <code>models/__init__.py</code></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>DB <code>UNIQUE constraint failed</code></td>
+                <td>Inserting instead of upserting duplicate</td>
+                <td>Use <code>db.merge()</code> or check existence before <code>db.add()</code></td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Webhook receives data but Moodle user doesn't update</td>
+                <td><code>moodle_userid</code> is NULL in DB</td>
+                <td>Ensure the Moodle user ID sync step ran before other syncs</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><code>422 Unprocessable Entity</code> on webhook</td>
+                <td>Zoho payload keys don't match expected format</td>
+                <td>Check <code>resolve_zoho_payload()</code> logic; log raw body to inspect</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>Token expires mid-sync</td>
+                <td><code>SAFETY_MARGIN</code> not set or too small</td>
+                <td>Set <code>SAFETY_MARGIN = 300</code> in <code>ZohoAuthClient</code></td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>Sync runs but data_hash unchanged → no updates</td>
+                <td>Hash check too aggressive</td>
+                <td>Pass <code>force=True</code> param or clear <code>data_hash</code> in DB</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>FastAPI won't start: <code>Address already in use</code></td>
+                <td>Another process on port 8001</td>
+                <td>Run <code>lsof -i :8001</code> (Linux/Mac) or <code>netstat -ano | findstr 8001</code> (Windows) to find and kill the process</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="section">
+        <div class="section-title">🧪 Lesson 06 Quiz</div>
+        <div class="section-divider"></div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 1</div>
+          <div class="quiz-question">In the test fixtures, why do we use <code>transaction.rollback()</code> after each test?</div>
+          <div class="quiz-question-ar">في الـ fixtures، لماذا نستخدم <code>transaction.rollback()</code> بعد كل اختبار؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To check that the database was actually written to</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> To undo all DB changes so each test starts with a clean database state</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To test error handling in the application</li>
+            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Because SQLite doesn't support DELETE</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Rolling back after each test ensures test isolation — each test starts with a clean DB state and doesn't depend on data created by a previous test. This prevents flaky tests.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 2</div>
+          <div class="quiz-question">Why do we use <code>unittest.mock.patch</code> on <code>fetch_zoho_full_record</code> and <code>call_moodle_ws</code> in the webhook tests?</div>
+          <div class="quiz-question-ar">لماذا نستخدم <code>patch</code> على دالتي Zoho و Moodle في اختبارات الـ webhook؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To make the tests run faster</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> To prevent real HTTP calls to external APIs during tests, keeping tests fast, free, and offline</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because the test DB doesn't support external connections</li>
+            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To simulate error responses from Zoho</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! Mocking external API calls in unit tests prevents slow network requests, costly API usage, and test failures due to network issues. We control exactly what the mock returns so we can test our logic independently.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-title">❓ Question 3</div>
+          <div class="quiz-question">Moodle returns <code>{"exception": "webservice_access_exception"}</code>. What is the most likely cause?</div>
+          <div class="quiz-question-ar">Moodle يُعيد <code>{"exception": "webservice_access_exception"}</code>. ما السبب الأرجح؟</div>
+          <ul class="quiz-options">
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> The database is down</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> The PHP function has a syntax error</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> The token is not enabled for the web service, or the service is disabled in Moodle admin</li>
+            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Wrong Python version</li>
+          </ul>
+          <div class="quiz-feedback">✅ Correct! <code>webservice_access_exception</code> almost always means the token doesn't have permission to call that function. Fix it in Moodle: Site Admin → Plugins → Web Services → Manage Tokens and ensure the token is linked to the correct service.</div>
+          <button class="quiz-submit">Submit Answer</button>
+        </div>
+
+      </div>
+    </div>
+    <nav class="lesson-nav" id="lesson-nav"></nav>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="course.js"></script>
+<script>initLesson(6);</script>
+</body>
+</html>
