@@ -1,272 +1,260 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 09 — Conclusion & Next Steps | Zoho+Moodle Course</title>
+  <title>Lesson 09 — Deployment to Linux Server | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a><a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a><a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html" class="active">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
+<main class="lesson-container">
+  <div class="lesson-header">
+    <span class="lesson-tag">Lesson 09</span>
+    <h1>Deployment to a Linux Server</h1>
+    <h2 class="ar">النشر على سيرفر Linux</h2>
+    <p>This lesson walks through the complete process of deploying the FastAPI backend from your development machine to a Linux production server — transferring files, setting up Python, configuring systemd, and setting up Nginx as a reverse proxy.</p>
+    <p class="ar">يستعرض هذا الدرس العملية الكاملة لنشر الباك-إند FastAPI من جهازك إلى سيرفر Linux للإنتاج — نقل الملفات، إعداد Python، ضبط systemd، وإعداد Nginx كـ reverse proxy.</p>
+  </div>
 
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 09</div>
-      <div class="lesson-number">Lesson 09</div>
-      <div class="lesson-title-en">Conclusion & Next Steps</div>
-      <div class="lesson-title-ar">الخاتمة والخطوات القادمة</div>
-      <div class="lesson-meta">
-        <span>🕐 ~20 minutes</span>
-        <span>🎓 Summary</span>
-        <span>🧩 3 Final Challenges</span>
-      </div>
-    </header>
+  <div class="card">
+    <h2>1. What Does "Deployment" Mean?</h2>
+    <h2 class="ar">١. ماذا يعني "النشر"؟</h2>
+    <p>During development you run the server on your own laptop (<code>localhost:8001</code>). Only you can access it. Deployment means moving the code to a server that is connected to the internet 24/7 so Zoho and Moodle can reach it, and so users can access the Admin Panel from anywhere.</p>
+    <p class="ar">أثناء التطوير تُشغّل السيرفر على لابتوبك (<code>localhost:8001</code>). أنت وحدك تصل إليه. النشر يعني نقل الكود إلى سيرفر متصل بالإنترنت 24/7 حتى يستطيع Zoho و Moodle الوصول إليه، وليتمكن المستخدمون من الوصول للوحة التحكم من أي مكان.</p>
+    <div class="diagram-box"><pre>
+Development:                    Production:
+  Your laptop                     Linux VPS (Ubuntu 22.04)
+  localhost:8001  ──────►         your-server.com:80/443
+  only YOU can access             The internet can access
+  you START/STOP it               Runs 24/7 via systemd service
+  changes break things            Stable, tested code only
+    </pre></div>
+  </div>
 
-    <div class="lesson-body">
+  <div class="card">
+    <h2>2. Prerequisites — What You Need</h2>
+    <h2 class="ar">٢. المتطلبات المسبقة</h2>
+    <ul>
+      <li>A Linux VPS (Virtual Private Server) — Ubuntu 22.04 recommended. Providers: DigitalOcean, Hetzner, Linode (budget: $6-12/month)</li>
+      <li>A domain name pointing to your server's IP (e.g., <code>sync.mycollege.com</code>)</li>
+      <li>SSH access to the server (username + password or SSH key)</li>
+      <li>Git installed on your local machine</li>
+    </ul>
+    <p class="ar">تحتاج: سيرفر VPS بنظام Ubuntu 22.04 (من DigitalOcean أو Hetzner أو Linode، بحوالي 6-12 دولار شهرياً)، اسم نطاق يشير لـ IP السيرفر، صلاحية SSH للوصول، وGit على جهازك.</p>
+  </div>
 
-      <!-- CONGRATULATIONS -->
-      <div class="section">
-        <div style="text-align:center;padding:2rem 0;">
-          <div style="font-size:4rem;margin-bottom:1rem;">🎓</div>
-          <h2 style="font-size:1.8rem;font-weight:700;color:var(--color-primary);margin-bottom:.5rem;">
-            Course Complete!
-          </h2>
-          <p style="font-size:1.1rem;color:var(--color-text-secondary);margin-bottom:.5rem;">
-            You've completed all 10 lessons of the Zoho + Moodle Integration Course.
-          </p>
-          <p style="font-size:1rem;color:var(--color-text-secondary);font-family:'Tajawal',sans-serif;">
-            لقد أتممت جميع الدروس العشرة في دورة تكامل Zoho + Moodle. أحسنت!
-          </p>
-        </div>
-      </div>
+  <div class="card">
+    <h2>3. Step 1 — Transfer Files to the Server</h2>
+    <h2 class="ar">٣. الخطوة الأولى — نقل الملفات إلى السيرفر</h2>
+    <p>Use <code>rsync</code> (or <code>scp</code>) to copy the project to the server. We exclude the virtual environment (too large), the <code>.env</code> file (create it fresh on the server), and the SQLite database (a new one will be created).</p>
+    <p class="ar">استخدم <code>rsync</code> لنسخ المشروع إلى السيرفر. نستثني البيئة الافتراضية (حجمها كبير)، ملف <code>.env</code> (سننشئه من جديد على السيرفر)، وقاعدة البيانات (ستُنشأ تلقائياً).</p>
+    <pre><code class="language-bash"># Run this on your LOCAL machine (Windows: use Git Bash or WSL)
+rsync -avz \
+  --exclude=".venv-2" \
+  --exclude=".env" \
+  --exclude="*.db" \
+  --exclude="__pycache__" \
+  --exclude=".git" \
+  ./backend/ \
+  ubuntu@your-server-ip:/home/ubuntu/moodle-zoho-backend/
 
-      <!-- WHAT YOU BUILT -->
-      <div class="section">
-        <div class="section-title">1. What You Built — ما الذي بنيته</div>
-        <div class="section-divider"></div>
+# Verify the transfer
+ssh ubuntu@your-server-ip "ls /home/ubuntu/moodle-zoho-backend/"</code></pre>
+  </div>
 
-        <div class="arch-diagram">
-          <div class="arch-title">Complete Integration Architecture — المعمارية الكاملة</div>
-          <div class="arch-item level-0">Zoho CRM (Cloud)</div>
-          <div class="arch-item level-1">↓ Webhook (HTTPS POST)</div>
-          <div class="arch-item level-1">FastAPI Backend — Python 3.11</div>
-          <div class="arch-item level-2">→ ZohoAuthClient: OAuth2 token management</div>
-          <div class="arch-item level-2">→ Payload parsing (3 formats)</div>
-          <div class="arch-item level-2">→ transform_zoho_to_moodle() — FIELD_MAPPINGS</div>
-          <div class="arch-item level-2">→ SQLAlchemy ORM — 8 entity models</div>
-          <div class="arch-item level-2">→ Idempotency via data_hash</div>
-          <div class="arch-item level-1">↕ SQLite (dev) / PostgreSQL (prod)</div>
-          <div class="arch-item level-1">→ Moodle Web Services REST API</div>
-          <div class="arch-item level-1">Moodle LMS (PHP)</div>
-          <div class="arch-item level-2">→ local_zoho_sync plugin</div>
-          <div class="arch-item level-2">→ update_user, enroll_user, get_user_info</div>
-          <div class="arch-item level-1">Production: Gunicorn + Nginx + systemd</div>
-          <div class="arch-item level-1">CI/CD: GitHub Actions + Docker Compose</div>
-        </div>
-      </div>
+  <div class="card">
+    <h2>4. Step 2 — Server Setup: Python &amp; Virtual Environment</h2>
+    <h2 class="ar">٤. الخطوة الثانية — إعداد Python والبيئة الافتراضية على السيرفر</h2>
+    <pre><code class="language-bash"># SSH into your server
+ssh ubuntu@your-server-ip
 
-      <!-- SKILLS MATRIX -->
-      <div class="section">
-        <div class="section-title">2. Skills You Gained</div>
-        <div class="section-title-ar">المهارات التي اكتسبتها</div>
-        <div class="section-divider"></div>
+# Update system packages
+sudo apt update && sudo apt upgrade -y
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Skill</th>
-                <th>المهارة</th>
-                <th>Lesson</th>
-                <th>Level</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Python virtual environments & project setup</td><td>البيئات الافتراضية وإعداد المشروع</td><td>00</td><td>⭐⭐</td></tr>
-              <tr><td>FastAPI routing, middleware, dependency injection</td><td>توجيه FastAPI وحقن الاعتمادية</td><td>01</td><td>⭐⭐⭐</td></tr>
-              <tr><td>SQLAlchemy ORM — models, sessions, queries</td><td>SQLAlchemy — الموديلز والقاعدة</td><td>02</td><td>⭐⭐⭐</td></tr>
-              <tr><td>OAuth2 token management & Zoho REST API</td><td>إدارة OAuth2 وـ Zoho API</td><td>03</td><td>⭐⭐⭐⭐</td></tr>
-              <tr><td>Moodle PHP plugin development</td><td>تطوير مكوّن Moodle بـ PHP</td><td>04</td><td>⭐⭐⭐⭐</td></tr>
-              <tr><td>Data transformation & field mapping</td><td>تحويل البيانات وتعيين الحقول</td><td>05</td><td>⭐⭐⭐</td></tr>
-              <tr><td>pytest, TestClient, mocking — integration tests</td><td>الاختبار والتحقيق في الأخطاء</td><td>06</td><td>⭐⭐⭐</td></tr>
-              <tr><td>Linux deployment: Nginx + Gunicorn + PostgreSQL</td><td>النشر على Linux</td><td>07</td><td>⭐⭐⭐⭐</td></tr>
-              <tr><td>Docker, Docker Compose, GitHub Actions CI/CD</td><td>Docker و CI/CD</td><td>08</td><td>⭐⭐⭐⭐</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+# Install Python 3.11 (Ubuntu 22.04 has Python 3.10 by default)
+sudo apt install -y python3.11 python3.11-venv python3.11-dev
 
-      <!-- EXTENSION IDEAS -->
-      <div class="section">
-        <div class="section-title">3. Extension Ideas — Looking Forward</div>
-        <div class="section-title-ar">أفكار للتوسع — نظرة نحو المستقبل</div>
-        <div class="section-divider"></div>
+# Navigate to the project
+cd /home/ubuntu/moodle-zoho-backend
 
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <ul style="line-height:2;">
-              <li>🔄 <strong>Bi-directional sync</strong>: Push Moodle grade changes back to Zoho via a Moodle plugin event handler</li>
-              <li>📊 <strong>Admin dashboard</strong>: Build a React/Vue dashboard showing sync statistics, error counts, and recent events</li>
-              <li>📱 <strong>SMS/WhatsApp notifications</strong>: When a student's enrollment status changes, send them an automated WhatsApp message via Twilio or Zoho Campaigns</li>
-              <li>🤖 <strong>AI-powered field mapping</strong>: Use an LLM to automatically suggest field mappings when connecting to a new Zoho module</li>
-              <li>📈 <strong>Advanced reporting</strong>: Add a <code>/reports</code> endpoint that aggregates grades, enrollment counts, payment statuses</li>
-              <li>🔐 <strong>Webhook signature verification</strong>: Add HMAC signature validation to prevent spoofed webhook submissions</li>
-              <li>🌍 <strong>Multi-tenant support</strong>: Use the existing <code>tenant_id</code> field to serve multiple schools from one deployment</li>
-            </ul>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <ul style="line-height:2;" dir="rtl">
-              <li>🔄 <strong>مزامنة ثنائية الاتجاه</strong>: إرسال درجات Moodle إلى Zoho عند تغييرها</li>
-              <li>📊 <strong>لوحة تحكم إدارية</strong>: بناء dashboard بـ React يُظهر إحصاءات المزامنة والأخطاء</li>
-              <li>📱 <strong>إشعارات SMS/WhatsApp</strong>: إرسال رسائل تلقائية عند تغيير حالة تسجيل الطالب</li>
-              <li>🤖 <strong>تعيين حقول بالذكاء الاصطناعي</strong>: استخدام LLM لاقتراح تعيينات الحقول تلقائياً</li>
-              <li>📈 <strong>تقارير متقدمة</strong>: إضافة endpoint للتقارير يجمّع الدرجات والتسجيلات والمدفوعات</li>
-              <li>🔐 <strong>التحقق من توقيع الـ Webhook</strong>: إضافة HMAC لمنع الطلبات المزيّفة</li>
-              <li>🌍 <strong>دعم متعدد المستأجرين</strong>: استخدام <code>tenant_id</code> لخدمة عدة مدارس من نشر واحد</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+# Create the virtual environment
+python3.11 -m venv .venv-2
 
-      <!-- RESOURCES -->
-      <div class="section">
-        <div class="section-title">4. Reference Resources</div>
-        <div class="section-title-ar">مصادر المرجعية</div>
-        <div class="section-divider"></div>
+# Activate it
+source .venv-2/bin/activate
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Resource</th>
-                <th>URL</th>
-                <th>Purpose</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>FastAPI Docs</td>
-                <td><code>https://fastapi.tiangolo.com</code></td>
-                <td>Official FastAPI reference + tutorials</td>
-              </tr>
-              <tr>
-                <td>SQLAlchemy 2.0 Docs</td>
-                <td><code>https://docs.sqlalchemy.org</code></td>
-                <td>ORM, Core, Session, Query patterns</td>
-              </tr>
-              <tr>
-                <td>Zoho CRM API</td>
-                <td><code>https://www.zoho.com/crm/developer/docs/api/v6</code></td>
-                <td>Module names, field API names, OAuth flow</td>
-              </tr>
-              <tr>
-                <td>Moodle WS Docs</td>
-                <td><code>https://docs.moodle.org/dev/Web_services</code></td>
-                <td>Plugin development, external functions, token setup</td>
-              </tr>
-              <tr>
-                <td>Pydantic v2</td>
-                <td><code>https://docs.pydantic.dev</code></td>
-                <td>Data validation, settings management</td>
-              </tr>
-              <tr>
-                <td>Gunicorn Docs</td>
-                <td><code>https://docs.gunicorn.org</code></td>
-                <td>Worker types, deployment config, signals</td>
-              </tr>
-              <tr>
-                <td>GitHub Actions</td>
-                <td><code>https://docs.github.com/actions</code></td>
-                <td>CI/CD workflows, secrets, SSH deployment</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+# Install all dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
 
-      <!-- FINAL CHALLENGE -->
-      <div class="section">
-        <div class="section-title">🏆 Final Challenges</div>
-        <div class="section-title-ar">التحديات النهائية</div>
-        <div class="section-divider"></div>
+# Verify FastAPI is installed
+python -c "import fastapi; print('FastAPI OK:', fastapi.__version__)"</code></pre>
+    <p class="ar">قم بتسجيل الدخول إلى السيرفر عبر SSH، ثم نفّذ الأوامر أعلاه بالترتيب. سيستغرق <code>pip install -r requirements.txt</code> بضع دقائق أول مرة.</p>
+  </div>
 
-        <div class="quiz-card">
-          <div class="quiz-title">🏆 Challenge 1 — Architecture Review</div>
-          <div class="quiz-question">A new Zoho module called "BTEC_Certificates" needs to be synced to a new Moodle custom field. What are ALL the files you need to create or modify?</div>
-          <div class="quiz-question-ar">وحدة Zoho جديدة تسمى "BTEC_Certificates" تحتاج مزامنة مع حقل Moodle مخصص. ما هي جميع الملفات التي تحتاج لإنشائها أو تعديلها؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Only <code>webhooks_shared.py</code> (add to FIELD_MAPPINGS)</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> New model file, <code>models/__init__.py</code>, <code>FIELD_MAPPINGS</code>, new webhook endpoint, router registration, and new PHP external function in the Moodle plugin</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Only the Moodle PHP plugin</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Only <code>FIELD_MAPPINGS</code> and a new webhook endpoint</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! A new entity requires: (1) SQLAlchemy model class, (2) import it in <code>models/__init__.py</code>, (3) add its mappings to <code>FIELD_MAPPINGS</code>, (4) create a new <code>webhooks_certificates.py</code> endpoint, (5) register it in <code>router.py</code>, (6) add a new PHP class in the Moodle plugin, and (7) declare it in <code>db/services.php</code>.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+  <div class="card">
+    <h2>5. Step 3 — Create the .env File on the Server</h2>
+    <h2 class="ar">٥. الخطوة الثالثة — إنشاء ملف .env على السيرفر</h2>
+    <p>Never copy your development .env to the server — use a clean production version. Create it directly on the server with production values:</p>
+    <p class="ar">لا تنسخ ملف .env من جهازك إلى السيرفر — أنشئ نسخة إنتاج نظيفة مباشرةً على السيرفر:</p>
+    <pre><code class="language-bash">nano /home/ubuntu/moodle-zoho-backend/.env</code></pre>
+    <p>Add all required variables (same keys as your local .env, but production values):</p>
+    <pre><code class="language-ini">SECRET_KEY=generate-a-long-random-string-here
+DATABASE_URL=sqlite:///./moodle_zoho_local.db
 
-        <div class="quiz-card">
-          <div class="quiz-title">🏆 Challenge 2 — Debugging Scenario</div>
-          <div class="quiz-question">Students are being created in your database (<code>sync_status="pending_moodle"</code>) but never updated to <code>"synced"</code>. Moodle users are not being updated. What should you check first?</div>
-          <div class="quiz-question-ar">الطلاب يُنشؤون في قاعدة البيانات (<code>pending_moodle</code>) لكنهم لا يصلون إلى <code>"synced"</code>. ماذا تتحقق أولاً؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Check if the <code>FIELD_MAPPINGS</code> has all fields</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> Check if <code>moodle_userid</code> is populated in the DB — the Moodle call is skipped if it's NULL</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Restart the FastAPI server</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Check the Zoho webhook configuration</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! In the webhook handler, <code>call_moodle_ws()</code> is only called if <code>db_student.moodle_userid</code> is not None. If the student was created before the Moodle user ID was synced, the DB record will have NULL there and Moodle will never be updated.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+ZOHO_CLIENT_ID=your-production-zoho-client-id
+ZOHO_CLIENT_SECRET=your-production-zoho-client-secret
+ZOHO_REFRESH_TOKEN=your-production-zoho-refresh-token
+ZOHO_API_DOMAIN=https://www.zohoapis.eu
+ZOHO_ACCOUNTS_DOMAIN=https://accounts.zoho.eu
 
-        <div class="quiz-card">
-          <div class="quiz-title">🏆 Challenge 3 — Production Security</div>
-          <div class="quiz-question">Someone discovers your webhook URL and is sending fake student records. What is the most appropriate solution?</div>
-          <div class="quiz-question-ar">شخص ما اكتشف رابط الـ webhook ويرسل سجلات مزيّفة. ما الحل الأنسب؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Change the URL path to something secret</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Block Zoho's IP in the firewall</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Implement HMAC webhook signature verification: Zoho signs each payload; your server verifies the signature before processing</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Require an API key in the query string</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! HMAC signature verification is the industry-standard solution. In Zoho, you set a secret key. Zoho signs each webhook payload with HMAC-SHA256. Your server recomputes the signature and rejects requests with invalid signatures. This cryptographically proves the request came from Zoho.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+MOODLE_URL=https://your-moodle.example.com
+MOODLE_TOKEN=your-production-moodle-token
 
-      </div>
+WEBHOOK_SECRET=a-different-secret-from-dev
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=use-a-strong-password-here</code></pre>
+    <p>Save with <kbd>Ctrl+O</kbd>, exit with <kbd>Ctrl+X</kbd>. Then restrict file permissions so only root can read it:</p>
+    <pre><code class="language-bash">chmod 600 /home/ubuntu/moodle-zoho-backend/.env</code></pre>
+    <p class="ar">احفظ الملف وقيّد صلاحياته. لا تستخدم نفس كلمات المرور من بيئة التطوير. احفظ كلمة المرور في مدير كلمات مرور آمن.</p>
+  </div>
 
-      <!-- FINAL MESSAGE -->
-      <div class="section" style="text-align:center;padding:2rem 0;">
-        <div style="background:linear-gradient(135deg,#1e40af,#4f46e5);color:#fff;border-radius:16px;padding:2.5rem 2rem;">
-          <div style="font-size:2.5rem;margin-bottom:1rem;">🚀</div>
-          <h3 style="font-size:1.4rem;font-weight:700;margin-bottom:.75rem;">You're Ready to Build!</h3>
-          <p style="opacity:.9;font-size:.95rem;margin-bottom:1rem;">You now have the complete knowledge to build, deploy, and maintain a professional Zoho ↔ Moodle integration system.</p>
-          <p style="font-family:'Tajawal',sans-serif;opacity:.85;font-size:.95rem;">لديك الآن المعرفة الكاملة لبناء ونشر وصيانة نظام تكامل احترافي بين Zoho وMoodle.</p>
-          <div style="margin-top:1.5rem;">
-            <a href="index.html" style="display:inline-block;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:.6rem 1.4rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.9rem;backdrop-filter:blur(4px);">
-              ← Back to Course Home
-            </a>
-          </div>
-        </div>
-      </div>
+  <div class="card">
+    <h2>6. Step 4 — systemd Service (Run 24/7 &amp; Auto-restart)</h2>
+    <h2 class="ar">٦. الخطوة الرابعة — خدمة systemd (تشغيل 24/7 وإعادة تشغيل تلقائية)</h2>
+    <p>systemd is Linux's service manager. By creating a service unit file for our backend, it will: start automatically when the server boots, restart if it crashes, and keep running 24/7.</p>
+    <p class="ar">systemd هو مدير خدمات Linux. بإنشاء ملف وحدة خدمة للباك-إند، سيبدأ تلقائياً عند بدء تشغيل السيرفر، يُعيد التشغيل عند التعطل، ويعمل 24/7.</p>
+    <pre><code class="language-bash">sudo nano /etc/systemd/system/moodle-zoho.service</code></pre>
+    <pre><code class="language-ini">[Unit]
+Description=Moodle-Zoho Integration Backend
+After=network.target
 
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/moodle-zoho-backend
+Environment="PATH=/home/ubuntu/moodle-zoho-backend/.venv-2/bin"
+ExecStart=/home/ubuntu/moodle-zoho-backend/.venv-2/bin/python start_server.py
+Restart=on-failure          ; restart if the process crashes
+RestartSec=10               ; wait 10 seconds before restarting
+StandardOutput=journal      ; logs go to journald
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+    <pre><code class="language-bash"># Enable and start the service
+sudo systemctl daemon-reload             # reload service files
+sudo systemctl enable moodle-zoho        # auto-start on boot
+sudo systemctl start moodle-zoho         # start now
+sudo systemctl status moodle-zoho        # check it is running
+
+# View live logs
+sudo journalctl -u moodle-zoho -f        # -f means follow (live tail)</code></pre>
+    <p class="ar">بعد تشغيله، <code>systemctl status</code> يجب أن يظهر <code>active (running)</code> باللون الأخضر. إذا ظهر فشل، <code>journalctl -u moodle-zoho -n 50</code> يعرض آخر 50 سطر من السجل لتشخيص المشكلة.</p>
+  </div>
+
+  <div class="card">
+    <h2>7. Step 5 — Nginx Reverse Proxy</h2>
+    <h2 class="ar">٧. الخطوة الخامسة — Nginx كـ Reverse Proxy</h2>
+    <p>Our FastAPI server runs on port 8001. Nginx runs on port 80 (HTTP) and 443 (HTTPS) and forwards traffic to our backend. This also lets us add SSL (HTTPS) using Let's Encrypt (free).</p>
+    <p class="ar">سيرفر FastAPI يعمل على المنفذ 8001. Nginx يعمل على المنفذ 80 (HTTP) و443 (HTTPS) ويُحوّل الطلبات إلى الباك-إند. هذا يسمح أيضاً بإضافة SSL (HTTPS) مجاناً عبر Let's Encrypt.</p>
+    <pre><code class="language-bash">sudo apt install -y nginx
+sudo nano /etc/nginx/sites-available/moodle-zoho</code></pre>
+    <pre><code class="language-nginx">server {
+    listen 80;
+    server_name sync.your-domain.com;   # your domain name
+
+    # Forward all requests to FastAPI
+    location / {
+        proxy_pass         http://127.0.0.1:8001;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # Increase timeout for long sync operations
+        proxy_read_timeout 120s;
+    }
+}</code></pre>
+    <pre><code class="language-bash"># Enable the site
+sudo ln -s /etc/nginx/sites-available/moodle-zoho /etc/nginx/sites-enabled/
+sudo nginx -t           # test config for syntax errors
+sudo systemctl reload nginx
+
+# Add free HTTPS with Let's Encrypt
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d sync.your-domain.com
+# Follow prompts — certbot auto-updates the Nginx config for HTTPS!</code></pre>
+    <p class="ar">بعد إعداد Nginx و SSL، يمكنك الوصول للوحة التحكم على <code>https://sync.your-domain.com/admin</code> من أي مكان في العالم.</p>
+  </div>
+
+  <div class="card">
+    <h2>8. Using ngrok for Webhook Testing</h2>
+    <h2 class="ar">٨. استخدام ngrok لاختبار الـ Webhooks</h2>
+    <p>During development, your <code>localhost:8001</code> is not accessible by Zoho or Moodle. ngrok creates a temporary public URL that tunnels to your local server — perfect for testing webhooks before deploying.</p>
+    <p class="ar">أثناء التطوير، <code>localhost:8001</code> غير متاح لـ Zoho أو Moodle. ngrok ينشئ رابطاً عاماً مؤقتاً يُحوّل إلى سيرفرك المحلي — مثالي لاختبار الـ webhooks قبل النشر.</p>
+    <pre><code class="language-bash"># Download ngrok from https://ngrok.com/download (free account)
+# Start your FastAPI server first, then in a second terminal:
+ngrok http 8001
+
+# You will see something like:
+# Forwarding  https://abc123.ngrok.io -> http://localhost:8001
+
+# Copy that https URL and set it as:
+# - Backend URL in Moodle plugin settings
+# - Webhook notification URL in Zoho Workflow Rules
+# Note: URL changes every time you restart ngrok (free plan)</code></pre>
+    <div class="warning-box">
+      ngrok is for development/testing only. Do not use it in production. In production, use your actual domain with Nginx + Let's Encrypt SSL as described above.<br/>
+      <strong>تحذير:</strong> ngrok للتطوير والاختبار فقط. لا تستخدمه في الإنتاج. في الإنتاج، استخدم نطاقك الفعلي مع Nginx + Let's Encrypt كما شُرح أعلاه.
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+  <div class="card">
+    <h2>9. Production Checklist</h2>
+    <h2 class="ar">٩. قائمة تحقق الإنتاج</h2>
+    <ul>
+      <li class="ar">✅ ملف <code>.env</code> يحتوي قيم إنتاج حقيقية (ليس نسخة التطوير)</li>
+      <li>✅ <code>.env</code> has <code>chmod 600</code> permissions</li>
+      <li class="ar">✅ كلمة المرور في <code>ADMIN_PASSWORD</code> قوية وفريدة</li>
+      <li>✅ SQLite database file has regular backups (daily cron job to copy to safe location)</li>
+      <li class="ar">✅ HTTPS مُفعَّل عبر Let's Encrypt وشهادة مجددة تلقائياً</li>
+      <li>✅ systemd service is enabled (starts on boot)</li>
+      <li class="ar">✅ تم اختبار واجهة /admin من متصفح خارجي على النطاق الحقيقي</li>
+      <li>✅ Zoho webhook URL updated to production URL (not ngrok or localhost)</li>
+      <li class="ar">✅ Moodle plugin webhook URL محدَّث برابط السيرفر الإنتاجي</li>
+      <li>✅ A full sync triggered manually after deployment to verify everything works</li>
+    </ul>
+    <pre><code class="language-bash"># Simple daily backup cron job — adds to crontab
+crontab -e
+# Add this line:
+0 3 * * * cp /home/ubuntu/moodle-zoho-backend/moodle_zoho_local.db \
+    /home/ubuntu/backups/moodle_zoho_$(date +\%Y\%m\%d).db</code></pre>
+    <p class="ar">الاحتياطي اليومي مهم جداً. قاعدة البيانات SQLite ملف واحد — نسخه إلى مكان آمن (أو تحميله إلى مخزن سحابي) كل يوم يحمي من فقدان البيانات.</p>
+  </div>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;">
+    <a href="lesson-08.html" class="btn-secondary">&#8592; Lesson 08: Testing</a>
+    <a href="index.html" class="btn-primary">&#127968; Back to Home</a>
+  </div>
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 — Developer Course</p></footer>
 <script src="course.js"></script>
-<script>initLesson(9);</script>
 </body>
 </html>

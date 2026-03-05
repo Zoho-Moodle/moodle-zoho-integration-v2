@@ -1,484 +1,841 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 02 — Database Design | Zoho+Moodle Course</title>
+  <title>Lesson 02 — FastAPI Backend &amp; Admin Panel | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar, li.ar {
+      direction: rtl; text-align: right;
+      font-family: 'Tajawal', sans-serif;
+      background: #fefce8; border-right: 4px solid #f59e0b;
+      padding: 0.6rem 1rem; margin: 0.5rem 0 1rem;
+      border-radius: 0 6px 6px 0; color: #1c1917;
+      font-size: 0.97rem; line-height: 1.8;
+    }
+    h2.ar {
+      direction: rtl; text-align: right;
+      font-family: 'Tajawal', sans-serif;
+      color: #92400e; font-size: 1rem;
+      font-weight: 600; margin: -0.4rem 0 0.75rem;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a>
+      <a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html" class="active">L2</a>
+      <a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a>
+      <a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a>
+      <a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a>
+      <a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
 
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 02</div>
-      <div class="lesson-number">Lesson 02</div>
-      <div class="lesson-title-en">Database Design with SQLAlchemy</div>
-      <div class="lesson-title-ar">تصميم قاعدة البيانات باستخدام SQLAlchemy</div>
-      <div class="lesson-meta">
-        <span>🕐 ~45 minutes</span>
-        <span>🎯 Intermediate</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
+<main class="lesson-container">
 
-    <div class="lesson-body">
+  <div class="lesson-header">
+    <div class="lesson-number-badge">02</div>
+    <div>
+      <h1 class="lesson-title">FastAPI Backend &amp; Admin Panel</h1>
+      <p class="lesson-subtitle">Understand how the FastAPI application is assembled, how requests flow through it, and how the Admin Panel is served and secured.</p>
+      <p class="lesson-subtitle" style="direction:rtl;text-align:right;font-family:'Tajawal',sans-serif;color:#92400e;">الباك اند ولوحة التحكم — كيف يعمل كل شيء من الداخل</p>
+    </div>
+  </div>
 
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Understand what an ORM is and why we use SQLAlchemy</li>
-          <li>Create model classes for all 8 entities: Students, Registrations, Classes, Enrollments, Grades, Payments, Programs, Units</li>
-          <li>Configure the database engine and session factory</li>
-          <li>Use SQLite for development and PostgreSQL for production</li>
-          <li>Query the database inside FastAPI endpoints</li>
-          <li>Understand foreign keys and indexes</li>
-        </ul>
-      </div>
+  <!-- ═══ SECTION 1: What is FastAPI? ═══ -->
+  <div class="card">
+    <h2>1 — What Is FastAPI?</h2>
+    <h2 class="ar">١ — ما هي FastAPI؟</h2>
 
-      <!-- WHAT IS ORM -->
-      <div class="section">
-        <div class="section-title">1. What is an ORM?</div>
-        <div class="section-title-ar">ما هو الـ ORM؟</div>
-        <div class="section-divider"></div>
+    <p>
+      <strong>FastAPI</strong> is a modern Python web framework for building REST APIs. A
+      <em>web framework</em> is a library that handles the low-level HTTP plumbing so you can
+      focus on application logic. Without a framework, you would have to manually parse HTTP headers,
+      read request bodies, handle routing, and format JSON responses — hundreds of lines of
+      boilerplate. FastAPI handles all of that and gives you a clean, declarative API to work with.
+    </p>
 
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <p>ORM = <strong>Object-Relational Mapper</strong>. It lets you work with database tables as Python classes, instead of writing raw SQL. Each class = one table. Each attribute = one column.</p>
-            <p style="margin-top:10px;"><strong>Without ORM (raw SQL):</strong></p>
-            <pre style="background:#f1f5f9;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">SELECT * FROM students WHERE zoho_id = '12345'</pre>
-            <p style="margin-top:10px;"><strong>With SQLAlchemy ORM:</strong></p>
-            <pre style="background:#f1f5f9;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">db.query(Student).filter(Student.zoho_id == '12345').first()</pre>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <p>ORM = Object-Relational Mapper. يسمح لك بالتعامل مع جداول قاعدة البيانات ككلاسات Python بدلاً من كتابة SQL مباشرة. كل كلاس = جدول. كل خاصية = عمود.</p>
-            <p style="margin-top:10px;"><strong>بدون ORM (SQL مباشر):</strong></p>
-            <pre style="background:#fef3c7;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">SELECT * FROM students WHERE zoho_id = '12345'</pre>
-            <p style="margin-top:10px;"><strong>مع SQLAlchemy ORM:</strong></p>
-            <pre style="background:#fef3c7;padding:10px;border-radius:6px;font-size:.85rem;margin-top:6px;">db.query(Student).filter(Student.zoho_id == '12345').first()</pre>
-          </div>
-        </div>
-      </div>
+    <p>
+      Think of FastAPI as a <strong>waiter in a restaurant</strong>. You (the developer) write the
+      menu (the endpoints and what they do). FastAPI is the waiter who:
+    </p>
+    <ul>
+      <li>Takes the customer's order (receives the HTTP request).</li>
+      <li>Validates it — "did the customer ask for something that's on the menu? Are all required fields present?" (Pydantic validation).</li>
+      <li>Hands the order to the kitchen (calls your handler function).</li>
+      <li>Brings back the meal in the right format (serializes your Python object to JSON and returns the HTTP response).</li>
+    </ul>
 
-      <!-- BASE SETUP -->
-      <div class="section">
-        <div class="section-title">2. Database Engine and Base Setup</div>
-        <div class="section-title-ar">إعداد المحرك والقاعدة</div>
-        <div class="section-divider"></div>
+    <p><strong>Why FastAPI over other frameworks (like Flask or Django)?</strong></p>
+    <ul>
+      <li><strong>Speed:</strong> FastAPI is built on Starlette (an async ASGI framework) and is one of the fastest Python web frameworks — comparable to NodeJS and Go in throughput.</li>
+      <li><strong>Automatic documentation:</strong> Just by defining your endpoint and its type hints, FastAPI generates a complete, interactive Swagger UI at <code>/docs</code> — no extra work needed.</li>
+      <li><strong>Type safety:</strong> FastAPI uses Python type hints everywhere. If a request sends a string where you declared an <code>int</code>, FastAPI rejects it with a clear error before your handler function is even called.</li>
+      <li><strong>Dependency injection:</strong> FastAPI has a clean built-in system for declaring shared dependencies (database sessions, authentication) that gets injected into handler functions automatically.</li>
+    </ul>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/infra/db/base.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase
+    <p class="ar">
+      <strong>FastAPI</strong> هو إطار ويب Python حديث لبناء REST APIs. إطار الويب هو مكتبة تتعامل
+      مع الأجزاء الدنيا من HTTP حتى تتفرّغ لمنطق تطبيقك.
+    </p>
+    <p class="ar">
+      فكّر في FastAPI كـ <strong>نادل في مطعم</strong>. أنت (المطوّر) تكتب القائمة (نقاط النهاية وما تفعله).
+      FastAPI هو النادل الذي: يستقبل طلب الزبون (HTTP request)، يتحقق من صحته (Pydantic validation)،
+      يمرّره للمطبخ (يستدعي دالة المعالج)، ويُعيد الطبق بالشكل الصحيح (JSON response).
+    </p>
+    <p class="ar">
+      لماذا FastAPI؟ <strong>السرعة</strong>: من أسرع أطر Python. <strong>التوثيق التلقائي</strong>:
+      بمجرد تعريف نقاط النهاية يُولّد FastAPI Swagger UI تفاعلياً على <code>/docs</code> تلقائياً.
+      <strong>أمان الأنواع</strong>: يستخدم type hints ويرفض طلبات غير صحيحة قبل استدعاء المعالج.
+      <strong>حقن التبعيات</strong>: نظام نظيف لإعلان التبعيات المشتركة (جلسة DB، المصادقة) تُحقن تلقائياً.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 2: How app/main.py works ═══ -->
+  <div class="card">
+    <h2>2 — How app/main.py Works</h2>
+    <h2 class="ar">٢ — كيف يعمل app/main.py</h2>
+
+    <p>
+      <code>app/main.py</code> is the entry point of the FastAPI application. When uvicorn starts
+      with <code>"app.main:app"</code>, it imports this file and retrieves the object named
+      <code>app</code> — a <code>FastAPI</code> instance. Let's walk through what happens in this
+      file step by step.
+    </p>
+
+    <p><strong>Step 1: Create the FastAPI application instance</strong></p>
+    <pre class="code-block">from fastapi import FastAPI
 from app.core.config import settings
+from contextlib import asynccontextmanager
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ── STARTUP ──
+    from app.infra.db.base import Base, engine
+    Base.metadata.create_all(bind=engine)  # create DB tables if missing
+    from app.core.scheduler import start_scheduler
+    start_scheduler()                       # begin background sync jobs
+    yield
+    # ── SHUTDOWN ──
+    from app.core.scheduler import stop_scheduler
+    stop_scheduler()                        # graceful shutdown
 
-# ── ENGINE: one connection pool for the whole app ─────────────────────────────
-engine = create_engine(
-    settings.DATABASE_URL,
+app = FastAPI(
+    title=settings.APP_NAME,
+    version="3.0.0",
+    lifespan=lifespan
+)</pre>
+    <p>
+      The <strong>lifespan</strong> context manager is a FastAPI feature (introduced in 0.93+) that
+      replaces the older <code>@app.on_event("startup")</code> pattern. Code before the
+      <code>yield</code> runs on startup; code after <code>yield</code> runs on shutdown. This is
+      where we create database tables and start the scheduler.
+    </p>
 
-    # SQLite-specific: required to allow multi-threaded access.
-    # For PostgreSQL, remove this line.
-    # ضروري لـ SQLite فقط — لا تستخدمه مع PostgreSQL
-    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {},
+    <p><strong>Step 2: Add CORS middleware</strong></p>
+    <pre class="code-block">from fastapi.middleware.cors import CORSMiddleware
 
-    # Pool settings (useful for PostgreSQL in production):
-    # pool_size=10,    Max connections in pool
-    # max_overflow=20, Extra connections when pool is full
-    # pool_pre_ping=True,  Test connections before using them
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # or list specific Moodle domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)</pre>
+    <p>
+      <strong>What is CORS middleware?</strong> When a browser page on <code>moodle.school.com</code>
+      makes an AJAX request to <code>api.school.com:8001</code>, the browser first sends a
+      "preflight" OPTIONS request to ask: "is this server OK with requests from this origin?"
+      The CORS middleware answers this preflight with the appropriate
+      <code>Access-Control-Allow-Origin</code> headers, telling the browser it is safe to proceed.
+      Without this middleware, all cross-origin calls from Moodle's frontend would be blocked by
+      the browser — even if the server physically received them.
+    </p>
+
+    <p><strong>Step 3: Mount the API and Admin routers</strong></p>
+    <pre class="code-block">from app.api.v1.router import api_router
+from app.admin.router import admin_router
+from fastapi.staticfiles import StaticFiles
+
+app.include_router(api_router, prefix="/api/v1")
+app.include_router(admin_router)
+
+# Serve CSS/JS for the admin panel
+app.mount("/static", StaticFiles(directory="admin/static"), name="static")</pre>
+    <p>
+      <code>app.include_router(api_router, prefix="/api/v1")</code> takes all routes defined in
+      <code>api_router</code> and makes them available under the <code>/api/v1/</code> prefix.
+      If a route is defined as <code>@router.post("/sync/students")</code> inside
+      <code>endpoints/sync_students.py</code>, it becomes
+      <code>POST /api/v1/sync/students</code> in the running application.
+    </p>
+
+    <p><strong>Step 4: Add the health check</strong></p>
+    <pre class="code-block">@app.get("/health")
+async def health():
+    return {"status": "ok", "app": settings.APP_NAME}</pre>
+
+    <p class="ar">
+      <code>app/main.py</code> هو نقطة دخول تطبيق FastAPI. عند بدء uvicorn بـ <code>"app.main:app"</code>،
+      يستورد هذا الملف ويجلب الكائن <code>app</code>.
+    </p>
+    <p class="ar">
+      <strong>دورة الحياة (lifespan)</strong>: الكود قبل <code>yield</code> يعمل عند بدء التشغيل
+      (إنشاء جداول DB، تشغيل المجدوّل)؛ الكود بعد <code>yield</code> يعمل عند الإيقاف (إيقاف المجدوّل).
+    </p>
+    <p class="ar">
+      <strong>CORS middleware</strong>: عند محاولة صفحة متصفح على <code>moodle.school.com</code>
+      إرسال طلب AJAX إلى <code>api.school.com:8001</code>، يرسل المتصفح أولاً طلب preflight OPTIONS.
+      CORS middleware يرد بالترويسات المناسبة للسماح بالطلب. بدون هذا، تُحجب جميع الطلبات
+      cross-origin من واجهة Moodle.
+    </p>
+    <p class="ar">
+      <code>app.include_router(api_router, prefix="/api/v1")</code>: يأخذ جميع المسارات المعرّفة
+      في <code>api_router</code> ويجعلها متاحة تحت بادئة <code>/api/v1/</code>.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 3: What is a Router? ═══ -->
+  <div class="card">
+    <h2>3 — What Is a Router?</h2>
+    <h2 class="ar">٣ — ما هو الراوتر (Router)؟</h2>
+
+    <p>
+      In FastAPI, a <strong>router</strong> (<code>APIRouter</code>) is like a mini-application
+      that can hold a group of routes. You define routes on the router inside a feature module,
+      then include that router in the main app. This is exactly like chapters in a book — the main
+      <code>app</code> is the book, and each router is a chapter with its own set of endpoints.
+    </p>
+
+    <p><strong>How it works in practice:</strong></p>
+    <pre class="code-block"># File: app/api/v1/endpoints/sync_students.py
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.infra.db.session import get_db
+from app.services.sync import sync_students_service
+
+router = APIRouter()
+
+@router.post("/students", summary="Sync all students from Moodle")
+async def sync_students_endpoint(db: Session = Depends(get_db)):
+    result = sync_students_service(db)
+    return result</pre>
+
+    <pre class="code-block"># File: app/api/v1/router.py
+from fastapi import APIRouter
+from .endpoints import sync_students, sync_grades, webhooks, mappings
+
+api_router = APIRouter()
+
+api_router.include_router(
+    sync_students.router,
+    prefix="/sync",
+    tags=["Sync"]
 )
-
-
-# ── BASE: parent class for all our models ─────────────────────────────────────
-# فئة أساسية لجميع الموديلز
-class Base(DeclarativeBase):
-    pass
-    # All models that inherit from Base will be picked up by
-    # Base.metadata.create_all(bind=engine) called in main.py lifespan
-    # كل الموديلز التي ترث من Base ستُنشأ جداولها تلقائياً</code></pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/infra/db/session.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from sqlalchemy.orm import sessionmaker, Session
-from app.infra.db.base import engine
-from typing import Generator
-
-
-# Session factory — creates new Session objects
-# مصنع الجلسات — ينشئ كائنات Session جديدة
-SessionLocal = sessionmaker(
-    autocommit=False,   # We commit manually with db.commit()
-    autoflush=False,    # We flush manually if needed
-    bind=engine
+api_router.include_router(
+    sync_grades.router,
+    prefix="/sync",
+    tags=["Sync"]
 )
+api_router.include_router(
+    webhooks.router,
+    prefix="/webhooks",
+    tags=["Webhooks"]
+)
+api_router.include_router(
+    mappings.router,
+    prefix="/mappings",
+    tags=["Mappings"]
+)</pre>
 
+    <pre class="code-block"># File: app/main.py (excerpt)
+from app.api.v1.router import api_router
+app.include_router(api_router, prefix="/api/v1")</pre>
 
-def get_db() -> Generator[Session, None, None]:
+    <p>
+      The final URL for the student sync endpoint is assembled from three pieces:
+      <code>/api/v1</code> (from main.py) + <code>/sync</code> (from router.py) +
+      <code>/students</code> (from the endpoint decorator) = <code>/api/v1/sync/students</code>.
+    </p>
+    <p>
+      The <strong><code>tags=["Sync"]</code></strong> parameter is used by Swagger UI to group
+      related endpoints under a collapsible section. All sync-related endpoints appear together
+      under a "Sync" heading in the <code>/docs</code> page, making the documentation much easier
+      to navigate.
+    </p>
+
+    <p class="ar">
+      في FastAPI، <strong>الراوتر</strong> (<code>APIRouter</code>) هو تطبيق مصغّر يحمل مجموعة
+      من المسارات. تعرّف المسارات على الراوتر داخل وحدة الميزة، ثم تضم ذلك الراوتر في التطبيق الرئيسي.
+      تماماً كالفصول في كتاب — التطبيق <code>app</code> هو الكتاب، وكل راوتر فصل بمجموعة نقاط نهايته.
+    </p>
+    <p class="ar">
+      URL النهائي لنقطة نهاية مزامنة الطلاب يُجمّع من ثلاثة أجزاء:
+      <code>/api/v1</code> (من main.py) + <code>/sync</code> (من router.py) +
+      <code>/students</code> (من ديكوراتور النقطة) = <code>/api/v1/sync/students</code>.
+    </p>
+    <p class="ar">
+      معامل <code>tags=["Sync"]</code> يستخدمه Swagger UI لتجميع نقاط النهاية ذات الصلة تحت
+      قسم قابل للطيّ في صفحة <code>/docs</code>، مما يجعل التوثيق أسهل في التنقّل.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 4: Understanding a single endpoint ═══ -->
+  <div class="card">
+    <h2>4 — Understanding a Single Endpoint Step by Step</h2>
+    <h2 class="ar">٤ — فهم نقطة نهاية واحدة خطوة بخطوة</h2>
+
+    <p>
+      Let's dissect a complete, realistic endpoint and understand every line. We will use the
+      student sync endpoint:
+    </p>
+    <pre class="code-block">from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import Dict, Any
+
+from app.infra.db.session import get_db
+from app.services.sync import sync_students_service
+from app.admin.auth import require_any_role
+
+router = APIRouter()
+
+@router.post(
+    "/students",
+    summary="Pull students from Moodle and upsert locally",
+    response_description="Sync summary with counts",
+    status_code=status.HTTP_200_OK
+)
+async def sync_students(
+    db: Session = Depends(get_db),
+    _user = Depends(require_any_role)
+) -> Dict[str, Any]:
     """
-    FastAPI Dependency: yields one DB session per request.
-
-    Usage:
-        @router.get("/something")
-        def endpoint(db: Session = Depends(get_db)):
-            ...
-
-    Timeline:
-        1. Request starts      → SessionLocal() creates a session
-        2. yield db            → endpoint receives the session
-        3. Request finishes    → finally: db.close() is called
-        4. Even if an error   → finally block still runs
-
-    دورة الحياة:
-        1. بدء الطلب     → إنشاء جلسة
-        2. yield db       → الـ endpoint يستخدم الجلسة
-        3. نهاية الطلب   → إغلاق الجلسة تلقائياً
-        4. حتى عند الخطأ → بلوك finally يعمل دائماً
+    Triggers a full pull of all user accounts from Moodle's
+    core_user_get_users web service, then upserts each user
+    into the local students table.
     """
-    db = SessionLocal()
     try:
-        yield db
-    finally:
-        db.close()</code></pre>
-        </div>
-      </div>
+        result = sync_students_service(db)
+        return {
+            "status": "success",
+            "created": result["created"],
+            "updated": result["updated"],
+            "skipped": result["skipped"],
+            "total": result["total"]
+        }
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Sync failed: {str(exc)}"
+        )</pre>
 
-      <!-- STUDENT MODEL -->
-      <div class="section">
-        <div class="section-title">3. Student Model — Actual Production Code</div>
-        <div class="section-title-ar">موديل الطالب — الكود الفعلي من المشروع</div>
-        <div class="section-divider"></div>
+    <p>Now let's explain each piece:</p>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/infra/db/models/student.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from sqlalchemy import Column, String, Integer, DateTime, Text
-from uuid import uuid4
-from datetime import datetime
-from app.infra.db.base import Base
+    <p>
+      <strong><code>@router.post("/students")</code></strong> — this decorator does two things:
+      (1) it registers the function as a handler for <code>POST /students</code>,
+      and (2) it tells Swagger UI the HTTP method, URL, and description. The extra parameters
+      <code>summary</code> and <code>response_description</code> are purely for documentation.
+    </p>
 
+    <p>
+      <strong><code>db: Session = Depends(get_db)</code></strong> — this is
+      <strong>dependency injection</strong>. The <code>Depends(get_db)</code> tells FastAPI:
+      "before calling this function, run <code>get_db()</code> and pass its result as <code>db</code>."
+      The <code>get_db()</code> function opens a SQLAlchemy database session, yields it, and
+      closes it when the request finishes. You never need to open or close the session yourself —
+      FastAPI's dependency system handles the lifecycle entirely.
+    </p>
 
-class Student(Base):
-    __tablename__ = "students"    # Table name in DB / اسم الجدول في قاعدة البيانات
+    <p>
+      <strong><code>_user = Depends(require_any_role)</code></strong> — a second dependency that
+      checks authentication. <code>require_any_role</code> reads the session cookie from the request,
+      looks up the user in <code>admin_users.json</code>, and raises <code>401 Unauthorized</code>
+      if the cookie is missing or invalid. The underscore prefix in <code>_user</code> is a Python
+      convention meaning "I declared this dependency for its side effect (auth check) but don't
+      need to use the return value in this function."
+    </p>
 
-    # ── Primary Key ──────────────────────────────────────────────────────────
-    # We use UUID strings (not integer IDs) to avoid ID conflicts
-    # when syncing from multiple sources.
-    # نستخدم UUID بدلاً من أرقام لتجنب تعارض المعرفات عند المزامنة
-    id = Column(String, primary_key=True,
-                default=lambda: str(uuid4()),  # Auto-generate UUID
-                index=True)
+    <p>
+      <strong><code>result = sync_students_service(db)</code></strong> — calls the service function
+      with the database session. The service does all the heavy lifting: calling Moodle API, parsing
+      users, upserting each record, logging the sync event. It returns a summary dictionary.
+    </p>
 
-    # ── Source/Tenant ─────────────────────────────────────────────────────────
-    tenant_id = Column(String, default="default", nullable=False)
-    source    = Column(String, default="zoho", nullable=True)
-    # Future: multi-tenancy support
+    <p>
+      <strong><code>raise HTTPException(...)</code></strong> — FastAPI's standard way to return an
+      error response. When you raise this exception anywhere in the call chain, FastAPI catches it
+      and returns a properly formatted JSON error response with the specified status code and detail
+      message. Your endpoint function never needs to manually build error response dicts.
+    </p>
 
-    # ── Identifiers (we keep BOTH Zoho ID and Moodle ID) ─────────────────────
-    zoho_id       = Column(String, unique=True, index=True, nullable=True)
-    moodle_user_id= Column(String, nullable=True)
-    moodle_userid = Column(Integer, nullable=True, index=True)
-    username      = Column(String, unique=True, index=True, nullable=True)
+    <p class="ar">
+      دعنا نشرح الأجزاء المهمة في هذه النقطة:
+    </p>
+    <p class="ar">
+      <strong><code>@router.post("/students")</code></strong> — هذا الديكوراتور يسجّل الدالة
+      كمعالج لـ <code>POST /students</code>، ويخبر Swagger UI بطريقة HTTP والرابط والوصف.
+    </p>
+    <p class="ar">
+      <strong><code>db: Session = Depends(get_db)</code></strong> — هذا هو <strong>حقن التبعيات</strong>.
+      <code>Depends(get_db)</code> يخبر FastAPI: "قبل استدعاء هذه الدالة، شغّل <code>get_db()</code>
+      ومرّر نتيجتها كـ <code>db</code>." دالة <code>get_db()</code> تفتح جلسة SQLAlchemy وتغلقها
+      تلقائياً عند انتهاء الطلب. لا تحتاج أبداً لفتح الجلسة أو إغلاقها يدوياً.
+    </p>
+    <p class="ar">
+      <strong><code>_user = Depends(require_any_role)</code></strong> — تبعية ثانية تتحقق من المصادقة.
+      <code>require_any_role</code> تقرأ كوكي الجلسة وتتحقق من المستخدم. إذا كانت الكوكي مفقودة
+      أو غير صالحة، تُطلق خطأ 401 Unauthorized.
+    </p>
+    <p class="ar">
+      <strong><code>raise HTTPException(...)</code></strong> — طريقة FastAPI القياسية لإعادة رد
+      خطأ. عند إطلاق هذا الاستثناء، تمسكه FastAPI وتُعيد رداً JSON منسّقاً بشكل صحيح.
+    </p>
+  </div>
 
-    # ── Student Information ───────────────────────────────────────────────────
-    display_name   = Column(String, nullable=True)
-    academic_email = Column(String, nullable=False)  # Required!
-    birth_date     = Column(String, nullable=True)   # "YYYY-MM-DD" string
-    phone          = Column(String, nullable=True)
-    address        = Column(String, nullable=True)
-    city           = Column(String, nullable=True)
-    country        = Column(String, nullable=True)
-    record_image   = Column(String, nullable=True)   # URL to profile photo
-    status         = Column(String, nullable=True)   # Active, Inactive, etc.
+  <!-- ═══ SECTION 5: What is the Admin Panel? ═══ -->
+  <div class="card">
+    <h2>5 — What Is the Admin Panel?</h2>
+    <h2 class="ar">٥ — ما هي لوحة التحكم؟</h2>
 
-    # ── Sync Tracking ─────────────────────────────────────────────────────────
-    # These fields help us avoid redundant syncs
-    # هذه الحقول تساعدنا على تجنب المزامنة المكررة
-    sync_status = Column(String, default="pending", nullable=True)
-    last_sync   = Column(Integer, nullable=True)    # Unix timestamp of last sync
-    data_hash   = Column(String, nullable=True)     # MD5 of last synced payload
-    fingerprint = Column(String, nullable=True)     # Alternative dedup key
+    <p>
+      The Admin Panel is a full web interface accessible at <code>http://localhost:8001/admin</code>.
+      It is <strong>not</strong> a Single-Page Application (SPA) built with React or Vue —
+      it is a classic <em>server-rendered</em> multi-page application. This means:
+    </p>
+    <ul>
+      <li>When you navigate to <code>/admin/dashboard</code>, FastAPI receives the GET request, queries the database for the latest stats, renders an HTML file (using Jinja2), and sends the complete HTML page to your browser.</li>
+      <li>When you click "Sync Students", the browser sends a form POST to <code>/admin/sync/students</code>. FastAPI runs the sync, renders the result page (with success/error message), and sends the new HTML back — the whole page refreshes.</li>
+    </ul>
+    <p>
+      This approach has significant advantages for a management tool:
+    </p>
+    <ul>
+      <li><strong>No frontend build step</strong> — no npm install, no webpack, no build artifacts. The HTML templates are source code.</li>
+      <li><strong>Simpler authentication</strong> — session cookies work natively in browsers with server-rendered apps without complex token refresh logic.</li>
+      <li><strong>Works without JavaScript</strong> — the core pages function even if JS is disabled (though some dynamic features like the log auto-refresh need it).</li>
+      <li><strong>Easier to debug</strong> — "View Source" in the browser shows exactly what the server sent.</li>
+    </ul>
 
-    # ── Timestamps ────────────────────────────────────────────────────────────
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime,
-                        default=datetime.utcnow,
-                        onupdate=datetime.utcnow,  # Auto-updated on every change
-                        nullable=False)</code></pre>
-        </div>
+    <p class="ar">
+      لوحة التحكم هي واجهة ويب كاملة في <code>http://localhost:8001/admin</code>.
+      <strong>ليست</strong> تطبيق صفحة واحدة (SPA) مبنياً بـ React أو Vue —
+      بل هي تطبيق متعدد الصفحات يُقدّم من الخادم (server-rendered).
+    </p>
+    <p class="ar">
+      عند التنقل إلى <code>/admin/dashboard</code>: تستقبل FastAPI طلب GET، تستعلم قاعدة البيانات
+      عن أحدث الإحصائيات، تُقدّم ملف HTML (باستخدام Jinja2)، وترسل صفحة HTML كاملة للمتصفح.
+      هذا النهج له مزايا: لا خطوة بناء frontend، مصادقة أبسط بكوكيات الجلسة،
+      يعمل حتى بدون JavaScript، وأسهل في التشخيص.
+    </p>
+  </div>
 
-        <div class="callout info">
-          <div class="callout-icon">💡</div>
-          <div class="callout-content">
-            <div class="callout-title">Why keep both zoho_id and moodle_user_id?</div>
-            <p>Students exist in <strong>both systems</strong>. <code class="inline">zoho_id</code> is used to match incoming Zoho webhook data. <code class="inline">moodle_userid</code> is used to call Moodle Web Services for that student. Without keeping both, we couldn't link a Zoho record update to the right Moodle user.</p>
-            <div class="callout-ar">الطلاب موجودون في <strong>كلا النظامين</strong>. <code class="inline">zoho_id</code> يُستخدم لمطابقة بيانات Zoho. <code class="inline">moodle_userid</code> يُستخدم لاستدعاء خدمات Moodle. بدون الاثنين لا يمكننا ربط سجل Zoho بالمستخدم الصحيح في Moodle.</div>
-          </div>
-        </div>
-      </div>
+  <!-- ═══ SECTION 6: Admin Panel Pages Walkthrough ═══ -->
+  <div class="card">
+    <h2>6 — Admin Panel Pages — Visual Walkthrough</h2>
+    <h2 class="ar">٦ — صفحات لوحة التحكم — جولة مرئية</h2>
 
-      <!-- OTHER MODELS -->
-      <div class="section">
-        <div class="section-title">4. Other Core Models — Summary</div>
-        <div class="section-title-ar">الموديلز الأخرى — ملخص</div>
-        <div class="section-divider"></div>
+    <p>Here is what you see on each admin page after logging in:</p>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Model Class</th>
-                <th>DB Table</th>
-                <th>Zoho Module</th>
-                <th>Key Relationships</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td><code>Student</code></td><td>students</td><td>BTEC_Students</td><td>Has many Registrations, Payments, Grades</td></tr>
-              <tr><td><code>Program</code></td><td>programs</td><td>BTEC_Programs</td><td>Has many Registrations, Classes</td></tr>
-              <tr><td><code>Registration</code></td><td>registrations</td><td>BTEC_Registrations</td><td>student_zoho_id → Student, program_zoho_id → Program</td></tr>
-              <tr><td><code>Class_</code></td><td>classes</td><td>BTEC_Classes</td><td>program_zoho_id → Program, Has many Enrollments</td></tr>
-              <tr><td><code>Enrollment</code></td><td>enrollments</td><td>BTEC_Enrollments</td><td>student_zoho_id → Student, class_zoho_id → Class</td></tr>
-              <tr><td><code>Grade</code></td><td>grades</td><td>BTEC_Grades</td><td>student_zoho_id → Student, unit_zoho_id → Unit</td></tr>
-              <tr><td><code>Payment</code></td><td>payments</td><td>BTEC_Payments</td><td>student_zoho_id → Student, registration_zoho_id → Registration</td></tr>
-              <tr><td><code>Unit</code></td><td>units</td><td>BTEC (units)</td><td>class_zoho_id → Class</td></tr>
-            </tbody>
-          </table>
-        </div>
+    <p><strong>/admin/login</strong></p>
+    <p>
+      A centered login form with two fields: "Username" and "Password", plus a "Login" button.
+      The form POSTs to <code>/admin/login</code>. On success, FastAPI creates an encrypted session
+      cookie and redirects to <code>/admin/dashboard</code>. On failure, the same page reloads
+      with an error message: "Invalid username or password." There is no "Remember me" option —
+      sessions expire when the browser is closed (configurable).
+    </p>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/infra/db/models/registration.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from sqlalchemy import Column, String, DateTime, ForeignKey, Index
-from uuid import uuid4
-from datetime import datetime
-from app.infra.db.base import Base
+    <p><strong>/admin/dashboard</strong></p>
+    <p>
+      The first page after login. Contains a top row of <strong>summary cards</strong> showing:
+      total students in the database, total enrolment records, total grade records, total payment
+      records, and the timestamp of the last completed sync. Below the cards: a table of the 20
+      most recent sync events (type, status, number of records processed, timestamp). A sidebar
+      on the left shows navigation links to all admin pages.
+    </p>
 
+    <p><strong>/admin/sync</strong></p>
+    <p>
+      Four individual sync buttons and one "Full Sync" button:
+    </p>
+    <ul>
+      <li><strong>Sync Students</strong> — pulls all user accounts from Moodle and upserts into the local <code>students</code> table.</li>
+      <li><strong>Sync Grades</strong> — fetches all grade items for all enrolled students.</li>
+      <li><strong>Sync Enrolments</strong> — refreshes course enrolment records.</li>
+      <li><strong>Sync Payments</strong> — pulls payment/order records from Moodle.</li>
+      <li><strong>Full Sync</strong> — runs all four syncs in sequence.</li>
+    </ul>
+    <p>
+      Each button is inside a form. When you click it, a POST request fires. The server runs the
+      sync synchronously (the browser waits), then redirects back to this page with a flash message
+      at the top showing the result: "Sync Students completed: 245 created, 12 updated, 3 skipped."
+    </p>
 
-class Registration(Base):
-    __tablename__ = "registrations"
+    <p><strong>/admin/sync/history</strong></p>
+    <p>
+      A paginated table (20 rows per page) of all sync events ever logged, in reverse chronological
+      order. Columns: event type, status (green checkmark for OK, red X for error), records
+      processed, duration in seconds, timestamp, error message (if any). You can filter by event
+      type using a dropdown at the top. Useful for diagnosing when syncs started failing.
+    </p>
 
-    id        = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    tenant_id = Column(String, default="default", nullable=False)
-    source    = Column(String, default="zoho", nullable=True)
-    zoho_id   = Column(String, nullable=False, index=True)
+    <p><strong>/admin/mappings</strong></p>
+    <p>
+      A table showing the field mapping configuration. Each row represents one mapping:
+      Zoho module (e.g., <code>Contacts</code>), Zoho field name (e.g., <code>Email</code>),
+      local table (e.g., <code>students</code>), local column (e.g., <code>email</code>),
+      and an optional transform function. You can add new mappings, edit existing ones, or
+      delete mappings that are no longer needed. These mappings are read by
+      <code>push_to_zoho_service()</code> to know which local fields to send to which Zoho fields.
+    </p>
 
-    # ── Foreign Keys ──────────────────────────────────────────────────────────
-    # These reference the zoho_id column in parent tables, not their primary key.
-    # This is because Zoho events give us zoho_id, not the internal UUID.
-    # نستخدم zoho_id كمفتاح خارجي لأن أحداث Zoho تعطينا zoho_id
-    student_zoho_id = Column(String,
-                             ForeignKey("students.zoho_id"),
-                             nullable=False, index=True)
-    program_zoho_id = Column(String,
-                             ForeignKey("programs.zoho_id"),
-                             nullable=False, index=True)
+    <p><strong>/admin/data</strong></p>
+    <p>
+      A tabbed interface to browse the database contents directly. Tabs: Students, Enrolments,
+      Grades, Payments. Each tab shows a searchable, sortable table. The Students tab has a search
+      box (search by name or email) and shows columns: ID, Moodle ID, First Name, Last Name, Email,
+      Zoho Contact ID, Last Synced. Clicking a row shows that record's full detail. Useful for
+      verifying that sync is working and that Zoho IDs are being populated correctly.
+    </p>
 
-    # ── Registration Details ──────────────────────────────────────────────────
-    enrollment_status = Column(String, nullable=False)
-    registration_date = Column(String, nullable=True)   # "YYYY-MM-DD"
-    completion_date   = Column(String, nullable=True)
-    total_fees        = Column(String, nullable=True)
+    <p><strong>/admin/settings</strong></p>
+    <p>
+      A two-column form showing all editable <code>.env</code> keys on the left and input boxes on
+      the right. Sensitive fields (like <code>ZOHO_CLIENT_SECRET</code>) show a masked value
+      (<code>***</code>) with a reveal button. When you submit the form, FastAPI writes the new
+      values back to the <code>.env</code> file. A yellow banner reminds you to restart the server
+      for changes to take effect (since the Settings object is only read at startup).
+    </p>
 
-    # ── Sync Tracking ─────────────────────────────────────────────────────────
-    sync_status = Column(String, default="pending", nullable=True)
-    data_hash   = Column(String, nullable=True)
+    <p><strong>/admin/logs</strong></p>
+    <p>
+      Displays the last 200 lines from the server's log output in a dark-background code block.
+      Lines are colour-coded by level: DEBUG (gray), INFO (white), WARNING (yellow), ERROR (red).
+      The page auto-refreshes every 10 seconds using a JavaScript <code>setInterval</code>.
+      Useful for monitoring live activity or diagnosing an error that just occurred — without
+      needing SSH access to the server.
+    </p>
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow,
-                        onupdate=datetime.utcnow, nullable=False)
+    <p><strong>/admin/users</strong></p>
+    <p>
+      A table listing all admin panel user accounts (from <code>admin_users.json</code>). Columns:
+      username, role, date created. Actions: "Change Password" (shows a modal form), "Delete"
+      (with confirmation prompt). At the top: "Add User" button that opens a form for
+      username + password + role selection. Passwords are never stored in plain text — bcrypt
+      hashes them before writing to <code>admin_users.json</code>.
+    </p>
 
-    # ── Composite Indexes: speed up common queries ────────────────────────────
-    # فهارس مركّبة: تسريع الاستعلامات الشائعة
-    __table_args__ = (
-        Index("ix_reg_tenant_student", "tenant_id", "student_zoho_id"),
-        Index("ix_reg_tenant_zoho",    "tenant_id", "zoho_id"),
-    )</code></pre>
-        </div>
-      </div>
+    <p><strong>/admin/setup</strong></p>
+    <p>
+      A multi-step wizard for first-time configuration. Steps: (1) Enter Moodle URL and Web
+      Services token → click "Test Moodle Connection" which calls <code>/api/v1/debug/moodle-test</code>
+      and shows a success/error banner. (2) Enter Zoho Client ID, Client Secret, Refresh Token,
+      Region → click "Test Zoho Connection." (3) Generate a fresh <code>ENCRYPTION_KEY</code>
+      in-browser → copy it to <code>.env</code>. (4) Summary page with all configured values
+      and a "Save & Restart" button.
+    </p>
 
-      <!-- COMMON QUERIES -->
-      <div class="section">
-        <div class="section-title">5. Common SQLAlchemy Query Patterns</div>
-        <div class="section-title-ar">أنماط الاستعلام الشائعة في SQLAlchemy</div>
-        <div class="section-divider"></div>
+    <p class="ar">
+      إليك ما تراه في كل صفحة من صفحات لوحة التحكم بعد تسجيل الدخول:
+    </p>
+    <p class="ar">
+      <strong>/admin/login</strong>: نموذج مركزي بحقلَي اسم مستخدم وكلمة مرور. عند النجاح، تُنشأ
+      كوكي جلسة مشفّرة والتحويل إلى dashboard.
+      <strong>/admin/dashboard</strong>: بطاقات ملخّص (إجمالي الطلاب، التسجيلات، الدرجات، الدفعات)
+      وجدول بأحدث 20 حدث مزامنة.
+      <strong>/admin/sync</strong>: أزرار لتشغيل كل مزامنة يدوياً مع عرض النتيجة.
+      <strong>/admin/sync/history</strong>: جدول مُرقَّم بكل أحداث المزامنة مع التصفية حسب النوع.
+      <strong>/admin/mappings</strong>: محرر تعيين الحقول بين Zoho وعمود قاعدة البيانات المحلية.
+      <strong>/admin/data</strong>: واجهة متعددة التبويبات لتصفّح محتوى قاعدة البيانات مع بحث.
+      <strong>/admin/settings</strong>: نموذج لتعديل متغيرات .env عبر الويب دون SSH.
+      <strong>/admin/logs</strong>: يعرض آخر 200 سطر من سجلات الخادم مع تحديث تلقائي كل 10 ثوانٍ.
+      <strong>/admin/users</strong>: إدارة حسابات لوحة التحكم (إضافة، تغيير كلمة مرور، حذف).
+      <strong>/admin/setup</strong>: معالج الإعداد الأولي متعدد الخطوات.
+    </p>
+  </div>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">Query patterns reference</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from app.infra.db.models.student import Student
-from app.infra.db.models.registration import Registration
+  <!-- ═══ SECTION 7: How Authentication Works ═══ -->
+  <div class="card">
+    <h2>7 — How Authentication Works</h2>
+    <h2 class="ar">٧ — كيف تعمل المصادقة؟</h2>
 
-# ── SELECT ────────────────────────────────────────────────────────────────────
-# Get one by primary key / جلب واحد بالمفتاح الأساسي
-student = db.get(Student, "some-uuid-here")
+    <p>
+      The admin panel uses <strong>session-based authentication</strong> — the classic, proven
+      approach for web UIs that are rendered by the server. Here is the complete flow:
+    </p>
 
-# Get one by condition / جلب واحد بشرط
-student = db.query(Student).filter(Student.zoho_id == "12345").first()
+    <p><strong>Step 1: Storing admin users</strong></p>
+    <p>
+      Admin users are stored in <code>backend/admin_users.json</code> — a JSON file listing
+      usernames and their <strong>bcrypt</strong>-hashed passwords. bcrypt is a one-way hash
+      function — there is no way to get the plain password back from the hash. To verify a login,
+      you hash the input and compare it to the stored hash.
+    </p>
+    <pre class="code-block">[
+  {
+    "username": "admin",
+    "password_hash": "$2b$12$abcdefghij...",
+    "role": "admin"
+  }
+]</pre>
 
-# Get all matching / جلب جميع المطابقين
-students = db.query(Student).filter(Student.status == "Active").all()
+    <p><strong>Step 2: The login flow</strong></p>
+    <ol>
+      <li>User submits the login form — browser sends <code>POST /admin/login</code> with form fields <code>username</code> and <code>password</code>.</li>
+      <li><code>auth.py</code> reads <code>admin_users.json</code>, finds the matching username, and calls <code>bcrypt.checkpw(password.encode(), stored_hash)</code> to verify the password. If it doesn't match, returns the login page with an error.</li>
+      <li>If the password matches, <code>auth.py</code> creates a signed, encrypted JWT (JSON Web Token) or a Fernet-encrypted session token containing the username and role, and sets it as an <code>HttpOnly</code> cookie named <code>session</code>.</li>
+      <li>The browser stores this cookie and sends it automatically with every subsequent request to the admin panel.</li>
+    </ol>
 
-# Multiple filters / شروط متعددة
-students = db.query(Student)\
-             .filter(Student.status == "Active")\
-             .filter(Student.tenant_id == "default")\
-             .order_by(Student.created_at.desc())\
-             .limit(20)\
-             .all()
+    <p><strong>Step 3: Protecting routes with <code>require_any_role</code></strong></p>
+    <p>
+      Every admin panel page handler declares <code>user = Depends(require_any_role)</code>.
+      This FastAPI dependency function:
+    </p>
+    <ol>
+      <li>Reads the <code>session</code> cookie from the request.</li>
+      <li>Decrypts/verifies it.</li>
+      <li>If invalid or missing, raises <code>HTTPException(302)</code> that redirects to <code>/admin/login</code>.</li>
+      <li>If valid, returns the user dict so the route handler can access <code>user["username"]</code> if needed.</li>
+    </ol>
 
-# Count / عدّ
-count = db.query(Student).count()
+    <p><strong>Adding a new admin user:</strong></p>
+    <pre class="code-block"># From inside backend/ with the virtual environment active:
+python -c "
+import bcrypt, json
+password = b'your_new_password_here'
+hashed = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12)).decode()
+print(hashed)
+"
+# Copy that hash and manually add to admin_users.json:
+# {"username": "newuser", "password_hash": "&lt;pasted hash&gt;", "role": "admin"}
 
-# ── INSERT ────────────────────────────────────────────────────────────────────
-new_student = Student(
-    zoho_id="123",
-    academic_email="ahmed@school.com",
-    display_name="Ahmed Ali"
-)
-db.add(new_student)
-db.commit()           # Write to DB / الكتابة إلى قاعدة البيانات
-db.refresh(new_student)  # Reload from DB to get auto-generated fields
+# Or use the /admin/users page in the web UI — it handles this for you.</pre>
 
-# ── UPSERT (INSERT or UPDATE) ─────────────────────────────────────────────────
-# db.merge() = insert if not exists, otherwise update
-# db.merge() = يُدرج إذا لم يكن موجوداً، وإلا يُحدّث
-existing = Student(id="known-uuid", zoho_id="123", academic_email="new@email.com")
-db.merge(existing)
-db.commit()
+    <p class="ar">
+      تستخدم لوحة التحكم <strong>المصادقة بالجلسات</strong> — النهج التقليدي والموثوق لتطبيقات
+      الويب المُقدَّمة من الخادم.
+    </p>
+    <p class="ar">
+      <strong>الخطوة ١</strong>: يُخزَّن مستخدمو الإدارة في <code>admin_users.json</code> بكلمات
+      مرور مُجزَّأة بـ <strong>bcrypt</strong> (دالة تجزئة أحادية الاتجاه — لا يمكن استعادة
+      كلمة المرور من الهاش).
+    </p>
+    <p class="ar">
+      <strong>الخطوة ٢</strong>: عند تقديم نموذج الدخول، يقرأ <code>auth.py</code> الملف JSON ويتحقق
+      من كلمة المرور بـ <code>bcrypt.checkpw()</code>. إذا تطابقا، يُنشئ توكن جلسة مشفّر ويضعه
+      ككوكي <code>HttpOnly</code> يُرسله المتصفح تلقائياً مع كل طلب لاحق.
+    </p>
+    <p class="ar">
+      <strong>الخطوة ٣</strong>: كل معالج صفحة إدارة يُعلن <code>user = Depends(require_any_role)</code>.
+      هذه الدالة تقرأ كوكي الجلسة، تتحقق منها، وإذا كانت مفقودة/غير صالحة تُعيد توجيهاً إلى
+      صفحة الدخول. إذا كانت صالحة، تُعيد بيانات المستخدم.
+    </p>
+  </div>
 
-# ── UPDATE ────────────────────────────────────────────────────────────────────
-student = db.query(Student).filter(Student.zoho_id == "123").first()
-if student:
-    student.status = "Inactive"
-    student.sync_status = "synced"
-    db.commit()
+  <!-- ═══ SECTION 8: Jinja2 Templates ═══ -->
+  <div class="card">
+    <h2>8 — Jinja2 Templates — How HTML Pages Are Built</h2>
+    <h2 class="ar">٨ — قوالب Jinja2 — كيف تُبنى صفحات HTML</h2>
 
-# ── DELETE ────────────────────────────────────────────────────────────────────
-student = db.query(Student).filter(Student.zoho_id == "123").first()
-if student:
-    db.delete(student)
-    db.commit()</code></pre>
-        </div>
-      </div>
+    <p>
+      <strong>Jinja2</strong> is a Python template engine — a system for generating HTML by mixing
+      a static HTML skeleton with dynamic data. Think of a Jinja2 template as a document with
+      "fill-in-the-blank" placeholders. You write the HTML structure once, and the server fills in
+      the blanks with real data on every request.
+    </p>
 
-      <!-- INIT MODELS FILE -->
-      <div class="section">
-        <div class="section-title">6. The models/__init__.py — Why It Matters</div>
-        <div class="section-title-ar">لماذا <code class="inline">models/__init__.py</code> مهم</div>
-        <div class="section-divider"></div>
+    <p><strong>Template syntax basics:</strong></p>
+    <pre class="code-block">{# This is a comment — not rendered in the HTML #}
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/infra/db/models/__init__.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">"""
-Import all models here so that Base.metadata.create_all() knows about them.
+&lt;!-- Print a variable --&gt;
+&lt;p&gt;Welcome, {{ user.username }}!&lt;/p&gt;
 
-When main.py does: import app.infra.db.models
-Python executes this __init__.py, which imports all model classes.
-SQLAlchemy then knows about all tables and can CREATE them.
+&lt;!-- Conditionals --&gt;
+{% if sync_result.status == "success" %}
+  &lt;div class="alert-success"&gt;Sync completed: {{ sync_result.created }} created.&lt;/div&gt;
+{% else %}
+  &lt;div class="alert-error"&gt;Sync failed: {{ sync_result.error }}&lt;/div&gt;
+{% endif %}
 
-إذا لم تستورد الموديلز هنا، فإن Base.metadata.create_all() لن يعرف
-عنها ولن ينشئ جداولها في قاعدة البيانات.
-"""
-from app.infra.db.models.student import Student          # noqa
-from app.infra.db.models.program import Program          # noqa
-from app.infra.db.models.registration import Registration  # noqa
-from app.infra.db.models.class_ import Class_            # noqa
-from app.infra.db.models.enrollment import Enrollment    # noqa
-from app.infra.db.models.grade import Grade              # noqa
-from app.infra.db.models.payment import Payment          # noqa
-from app.infra.db.models.unit import Unit                # noqa
-from app.infra.db.models.event_log import EventLog       # noqa</code></pre>
-        </div>
-      </div>
+&lt;!-- Loops --&gt;
+&lt;table&gt;
+  &lt;tbody&gt;
+    {% for student in students %}
+    &lt;tr&gt;
+      &lt;td&gt;{{ student.firstname }} {{ student.lastname }}&lt;/td&gt;
+      &lt;td&gt;{{ student.email }}&lt;/td&gt;
+    &lt;/tr&gt;
+    {% endfor %}
+  &lt;/tbody&gt;
+&lt;/table&gt;</pre>
 
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 02 Quiz</div>
-        <div class="section-divider"></div>
+    <p><strong>How data flows from router.py to template:</strong></p>
+    <p>
+      In <code>admin/router.py</code>, every page handler ends with a
+      <code>TemplateResponse</code> call:
+    </p>
+    <pre class="code-block">from fastapi.templating import Jinja2Templates
+from fastapi import Request
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">What does <code>db.merge(obj)</code> do in SQLAlchemy?</div>
-          <div class="quiz-question-ar">ماذا يفعل <code>db.merge(obj)</code> في SQLAlchemy؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Always inserts a new row, regardless of duplicates</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Inserts if the primary key doesn't exist, updates if it does</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Deletes and re-inserts the row</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Only works on relationships, not single rows</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! <code>db.merge()</code> is the UPSERT operation — it checks the primary key and either INSERTs or UPDATEs. This is perfect for sync operations where we receive data from Zoho that may or may not already be in the DB.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+templates = Jinja2Templates(directory="admin/templates")
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">Why do we import all model files in <code>models/__init__.py</code>?</div>
-          <div class="quiz-question-ar">لماذا نستورد جميع الموديلز في <code>models/__init__.py</code>؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To make the models available in templates</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> So that <code>Base.metadata.create_all()</code> knows about all tables before creating them</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To enable lazy loading of models</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To reduce import time</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! SQLAlchemy's <code>Base.metadata</code> only knows about a model after the class has been imported. If we don't import a model file, <code>create_all()</code> won't create that table.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+@admin_router.get("/dashboard")
+async def dashboard(
+    request: Request,
+    db: Session = Depends(get_db),
+    user = Depends(require_any_role)
+):
+    student_count = db.query(Student).count()
+    enrolment_count = db.query(Enrollment).count()
+    recent_events = db.query(SyncEvent).order_by(
+        SyncEvent.created_at.desc()
+    ).limit(20).all()
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">What SQLAlchemy parameter automatically updates a <code>DateTime</code> column every time a row is updated?</div>
-          <div class="quiz-question-ar">ما المعامل في SQLAlchemy الذي يُحدّث حقل <code>DateTime</code> تلقائياً عند كل تعديل؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> <code>auto_update=True</code></li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> <code>default=datetime.utcnow</code></li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> <code>onupdate=datetime.utcnow</code></li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> <code>trigger=datetime.utcnow</code></li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! <code>onupdate=datetime.utcnow</code> tells SQLAlchemy to call <code>datetime.utcnow</code> and store the result in the column every time the row is updated. This is how we track when a record was last modified.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-      </div>
+    return templates.TemplateResponse(
+        "dashboard.html",           # which template file to render
+        {
+            "request": request,     # always required by FastAPI Jinja2
+            "user": user,           # current logged-in user
+            "student_count": student_count,
+            "enrolment_count": enrolment_count,
+            "recent_events": recent_events,
+        }
+    )</pre>
+    <p>
+      The dictionary you pass as the second argument becomes the <em>template context</em> —
+      every key in that dictionary is available as a variable in the Jinja2 template. The
+      <code>{{ student_count }}</code> placeholder in <code>dashboard.html</code> will be replaced
+      with the actual number when the template is rendered.
+    </p>
 
+    <p><strong>Template inheritance with base.html:</strong></p>
+    <p>
+      Every page in the admin panel shares the same layout: sidebar on the left, main content area
+      on the right, a top bar with the page title and user info. Instead of copying this structure
+      into every template file (which would be a maintenance nightmare), Jinja2 supports
+      <em>template inheritance</em>. A parent template (<code>base.html</code>) defines the overall
+      layout with a <strong>block</strong> placeholder:
+    </p>
+    <pre class="code-block">&lt;!-- base.html --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;{% block title %}Admin{% endblock %} | Moodle-Zoho Admin&lt;/title&gt;
+  &lt;link rel="stylesheet" href="/static/admin.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;aside class="sidebar"&gt;
+    &lt;!-- navigation links --&gt;
+    &lt;a href="/admin/dashboard"&gt;Dashboard&lt;/a&gt;
+    &lt;a href="/admin/sync"&gt;Sync&lt;/a&gt;
+    ...
+  &lt;/aside&gt;
+  &lt;main&gt;
+    {% block content %}
+    &lt;!-- child templates fill this in --&gt;
+    {% endblock %}
+  &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+    <p>Each individual page template extends <code>base.html</code> and only defines its blocks:</p>
+    <pre class="code-block">&lt;!-- dashboard.html --&gt;
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  &lt;h1&gt;Dashboard&lt;/h1&gt;
+  &lt;div class="stat-card"&gt;
+    &lt;span class="stat-number"&gt;{{ student_count }}&lt;/span&gt;
+    &lt;span class="stat-label"&gt;Students&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;!-- more content --&gt;
+{% endblock %}</pre>
+
+    <p>
+      When Jinja2 renders <code>dashboard.html</code>, it takes <code>base.html</code>'s full HTML
+      structure and inserts the <code>{% block content %}</code> section from
+      <code>dashboard.html</code>. You get the complete page with the sidebar, header, and all the
+      common chrome — by writing only the unique content of each page.
+    </p>
+
+    <p class="ar">
+      <strong>Jinja2</strong> هو محرّك قوالب Python — نظام لتوليد HTML بخلط هيكل HTML ثابت
+      مع بيانات ديناميكية. فكّر في قالب Jinja2 كوثيقة بـ "فراغات للتعبئة". تكتب هيكل HTML مرة واحدة،
+      والخادم يملأ الفراغات ببيانات حقيقية عند كل طلب.
+    </p>
+    <p class="ar">
+      <strong>صيغة القوالب</strong>: <code>{{ variable }}</code> لطباعة متغير،
+      <code>{% if condition %}...{% endif %}</code> للشروط،
+      <code>{% for item in list %}...{% endfor %}</code> للحلقات.
+    </p>
+    <p class="ar">
+      <strong>كيف تتدفق البيانات</strong> من router.py إلى القالب:
+      في router.py، كل معالج صفحة ينتهي بـ <code>templates.TemplateResponse("dashboard.html", {...})</code>.
+      القاموس الذي تمرّره يصبح <em>سياق القالب</em> — كل مفتاح متاح كمتغير في Jinja2.
+    </p>
+    <p class="ar">
+      <strong>وراثة القوالب مع base.html</strong>: كل صفحة في لوحة التحكم تشترك في نفس التخطيط.
+      بدلاً من نسخ هذا الهيكل في كل ملف قالب، يدعم Jinja2 وراثة القوالب. القالب الأب
+      (<code>base.html</code>) يعرّف التخطيط الكلي مع لواصق <code>{% block content %}</code>.
+      كل قالب صفحة فردي يمتدّ <code>base.html</code> ويعرّف لواصقه فقط.
+      عند تقديم Jinja2 للقالب، يأخذ هيكل base.html الكامل ويُدرج قسم المحتوى الفريد للصفحة.
+    </p>
+  </div>
+
+  <!-- ═══ QUICK REFERENCE ═══ -->
+  <div class="card">
+    <h2>Quick Reference — Key Concepts Summary</h2>
+    <h2 class="ar">المرجع السريع — ملخّص المفاهيم الأساسية</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Concept</th><th>In plain words</th><th>Where in the codebase</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>FastAPI app</td><td>The object uvicorn runs — it knows all routes</td><td><code>app/main.py</code></td></tr>
+          <tr><td>APIRouter</td><td>A group of related endpoints — like a chapter</td><td><code>app/api/v1/endpoints/*.py</code></td></tr>
+          <tr><td>api_router</td><td>Combines all endpoint routers into one</td><td><code>app/api/v1/router.py</code></td></tr>
+          <tr><td>Depends(get_db)</td><td>Auto-opens a DB session per request</td><td><code>app/infra/db/session.py</code></td></tr>
+          <tr><td>require_any_role</td><td>Guards routes — rejects unauthenticated requests</td><td><code>app/admin/auth.py</code></td></tr>
+          <tr><td>lifespan</td><td>Runs on startup and shutdown</td><td><code>app/main.py</code></td></tr>
+          <tr><td>CORSMiddleware</td><td>Allows cross-domain requests from Moodle</td><td><code>app/main.py</code></td></tr>
+          <tr><td>TemplateResponse</td><td>Renders a Jinja2 HTML template with data</td><td><code>app/admin/router.py</code></td></tr>
+          <tr><td>base.html</td><td>Parent template with sidebar — all pages inherit it</td><td><code>app/admin/templates/base.html</code></td></tr>
+          <tr><td>admin_users.json</td><td>Admin users with bcrypt-hashed passwords</td><td><code>backend/admin_users.json</code></td></tr>
+        </tbody>
+      </table>
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
-<script src="course.js"></script>
-<script>initLesson(2);</script>
+    <p class="ar">
+      ملخّص المفاهيم الأساسية: FastAPI app (الكائن الذي يشغّله uvicorn)، APIRouter (مجموعة نقاط نهاية
+      مترابطة)، api_router (يجمع جميع الراوترات)، Depends(get_db) (يفتح جلسة DB تلقائياً لكل طلب)،
+      require_any_role (يحمي المسارات ويرفض غير المصادَق عليهم)، lifespan (يعمل عند البدء والإيقاف)،
+      CORSMiddleware (يسمح بالطلبات من Moodle)، TemplateResponse (يُقدّم قالب HTML بالبيانات)،
+      base.html (القالب الأب الذي ترثه جميع الصفحات)، admin_users.json (مستخدمو الإدارة بكلمات مرور مشفّرة).
+    </p>
+  </div>
+
+  <nav class="lesson-nav">
+    <a href="lesson-01.html" class="nav-btn nav-btn-prev">← Lesson 01</a>
+    <a href="lesson-03.html" class="nav-btn nav-btn-next">Lesson 03 →</a>
+  </nav>
+
+</main>
 </body>
 </html>

@@ -1,420 +1,654 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zoho + Moodle Integration — Full Course</title>
+  <title>Moodle-Zoho Integration v3 — 10-Week Developer Course</title>
   <link rel="stylesheet" href="shared.css" />
   <style>
-    body { font-family: var(--font-sans); background: var(--dark); }
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 60px 24px;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(79,70,229,.18) 0%, transparent 70%);
-    }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(79,70,229,.25);
-      border: 1px solid rgba(79,70,229,.4);
-      color: #a5b4fc;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: .85rem;
-      font-weight: 600;
-      margin-bottom: 24px;
-      position: relative;
-    }
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      font-weight: 800;
-      color: white;
-      line-height: 1.1;
-      max-width: 800px;
-      position: relative;
-    }
-    .hero h1 span { color: #818cf8; }
-    .hero-subtitle {
-      font-family: 'Tajawal', sans-serif;
-      font-size: 1.5rem;
-      color: #94a3b8;
-      margin-top: 8px;
-      position: relative;
-    }
-    .hero-desc {
-      font-size: 1.1rem;
-      color: var(--gray-400);
-      max-width: 560px;
-      margin: 20px auto 0;
-      line-height: 1.7;
-      position: relative;
-    }
-    .hero-stats {
-      display: flex;
-      gap: 32px;
-      justify-content: center;
-      margin: 40px 0;
-      flex-wrap: wrap;
-      position: relative;
-    }
-    .stat {
-      text-align: center;
-    }
-    .stat-num {
-      font-size: 2rem;
-      font-weight: 800;
-      color: white;
-    }
-    .stat-label {
-      font-size: .8rem;
-      color: var(--gray-400);
-      text-transform: uppercase;
-      letter-spacing: .1em;
-    }
-    .start-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--primary);
-      color: white;
-      padding: 16px 40px;
-      border-radius: 12px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all .2s;
-      position: relative;
-      margin-top: 8px;
-    }
-    .start-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79,70,229,.4); }
-    .tech-stack {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 48px;
-      position: relative;
-    }
-    .tech-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 8px;
-      font-size: .85rem;
-      color: var(--gray-400);
-    }
-    .tech-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
-
-    /* COURSE GRID */
-    .course-section {
-      background: var(--gray-50);
-      padding: 80px 24px;
-    }
-    .course-section h2 {
-      text-align: center;
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    .course-section h2 + p {
-      text-align: center;
-      color: var(--gray-600);
-      margin-bottom: 48px;
-      font-family: 'Tajawal', sans-serif;
-      font-size: 1.1rem;
-    }
-    .lessons-grid {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 24px;
-    }
-    .lesson-card {
-      background: white;
-      border: 1px solid var(--gray-200);
-      border-radius: 12px;
-      padding: 28px;
-      text-decoration: none;
-      color: inherit;
-      transition: all .2s;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      position: relative;
-      overflow: hidden;
-    }
-    .lesson-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-    }
-    .lesson-card:hover {
-      border-color: var(--primary);
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-3px);
-    }
-    .lesson-card .card-num {
-      font-size: .8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      opacity: .5;
-    }
-    .lesson-card .card-icon {
-      font-size: 2rem;
-      line-height: 1;
-    }
-    .lesson-card .card-title { font-size: 1.1rem; font-weight: 700; }
-    .lesson-card .card-title-ar {
-      font-family: 'Tajawal', sans-serif;
-      direction: rtl;
-      font-size: .9rem;
-      color: var(--gray-600);
-      font-weight: 500;
-    }
-    .lesson-card .card-desc { font-size: .875rem; color: var(--gray-600); line-height: 1.6; }
-    .lesson-card .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: auto;
-      padding-top: 12px;
-      border-top: 1px solid var(--gray-100);
-      font-size: .8rem;
-      color: var(--gray-400);
-    }
-
-    .color-0  { background: #6366f1; }
-    .color-1  { background: #8b5cf6; }
-    .color-2  { background: #06b6d4; }
-    .color-3  { background: #f59e0b; }
-    .color-4  { background: #10b981; }
-    .color-5  { background: #ef4444; }
-    .color-6  { background: #3b82f6; }
-    .color-7  { background: #ec4899; }
-    .color-8  { background: #84cc16; }
-    .color-9  { background: #f97316; }
-
-    .lesson-card:nth-child(1)::before { background: #6366f1; }
-    .lesson-card:nth-child(2)::before { background: #8b5cf6; }
-    .lesson-card:nth-child(3)::before { background: #06b6d4; }
-    .lesson-card:nth-child(4)::before { background: #f59e0b; }
-    .lesson-card:nth-child(5)::before { background: #10b981; }
-    .lesson-card:nth-child(6)::before { background: #ef4444; }
-    .lesson-card:nth-child(7)::before { background: #3b82f6; }
-    .lesson-card:nth-child(8)::before { background: #ec4899; }
-    .lesson-card:nth-child(9)::before { background: #84cc16; }
-    .lesson-card:nth-child(10)::before { background: #f97316; }
-
-    footer {
-      background: var(--dark);
-      color: var(--gray-400);
-      text-align: center;
-      padding: 32px 24px;
-      font-size: .875rem;
-    }
-    footer a { color: #818cf8; text-decoration: none; }
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar,h3.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+    .hero{background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:#fff;padding:3rem 2rem;border-radius:12px;margin-bottom:2rem}
+    .hero h1{font-size:2rem;margin:0 0 .5rem}
+    .hero .hero-ar{direction:rtl;font-family:"Tajawal",sans-serif;font-size:1.1rem;opacity:.95;margin:.4rem 0;line-height:1.7}
+    .hero .badge{display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;padding:.25rem .8rem;font-size:.8rem;margin-top:.6rem}
+    .weeks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;margin:1.5rem 0}
+    .week-card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:1.5rem;text-decoration:none;color:inherit;display:block;transition:box-shadow .2s,transform .2s;position:relative}
+    .week-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateY(-3px)}
+    .week-badge{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.2rem .65rem;border-radius:20px;margin-bottom:.75rem}
+    .week-card h3{font-size:1.05rem;font-weight:700;margin:0 0 .2rem;color:#0f172a}
+    .week-card .ar-title{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;font-size:.9rem;color:#92400e;margin:.15rem 0 .6rem}
+    .week-card .desc{font-size:.84rem;color:#475569;margin:0 0 .7rem;line-height:1.5}
+    .week-card .desc-ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;font-size:.83rem;color:#78350f;margin:0 0 .75rem;line-height:1.7}
+    .week-card .tasks{list-style:none;padding:0;margin:0 0 .8rem;font-size:.82rem;color:#334155}
+    .week-card .tasks li::before{content:"✓ ";color:#10b981;font-weight:700}
+    .week-card .tasks li.ar{font-family:"Tajawal",sans-serif;direction:rtl;text-align:right;background:none;border:none;padding:.1rem 0;margin:0;font-size:.82rem;color:#5c3317}
+    .week-card .tasks li.ar::before{content:"✓ ";color:#10b981;font-weight:700}
+    .week-card .lesson-links{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
+    .week-card .lesson-links a{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:.2rem .55rem;font-size:.78rem;color:#4f46e5;text-decoration:none;font-weight:600}
+    .week-card .lesson-links a:hover{background:#e0e7ff}
+    .w1{border-top:4px solid #6366f1}.w1 .week-badge{background:#eef2ff;color:#4338ca}
+    .w2{border-top:4px solid #0ea5e9}.w2 .week-badge{background:#f0f9ff;color:#0369a1}
+    .w3{border-top:4px solid #10b981}.w3 .week-badge{background:#ecfdf5;color:#065f46}
+    .w4{border-top:4px solid #f59e0b}.w4 .week-badge{background:#fffbeb;color:#92400e}
+    .w5{border-top:4px solid #ef4444}.w5 .week-badge{background:#fff1f2;color:#991b1b}
+    .w6{border-top:4px solid #8b5cf6}.w6 .week-badge{background:#f5f3ff;color:#5b21b6}
+    .w7{border-top:4px solid #06b6d4}.w7 .week-badge{background:#ecfeff;color:#0e7490}
+    .w8{border-top:4px solid #ec4899}.w8 .week-badge{background:#fdf2f8;color:#9d174d}
+    .w9{border-top:4px solid #84cc16}.w9 .week-badge{background:#f7fee7;color:#3f6212}
+    .w10{border-top:4px solid #64748b}.w10 .week-badge{background:#f8fafc;color:#334155}
+    .lessons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;margin:1.2rem 0}
+    .lesson-card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:1.1rem 1.3rem;text-decoration:none;color:inherit;display:block;transition:box-shadow .2s,transform .2s}
+    .lesson-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
+    .lesson-card .lesson-num{font-size:.75rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem}
+    .lesson-card h3{font-size:.95rem;font-weight:700;margin:0 0 .25rem;color:#0f172a}
+    .lesson-card .ar-title{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;font-size:.85rem;color:#92400e;margin:.15rem 0 .4rem}
+    .lesson-card p{font-size:.82rem;color:#475569;margin:0}
+    .module-chip{display:inline-block;background:#fef3c7;border:1px solid #fcd34d;border-radius:5px;padding:.15rem .5rem;font-size:.76rem;font-family:monospace;color:#92400e;margin:.1rem .1rem}
+    .week-card .deliverables{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:.65rem .95rem;margin-top:.75rem}
+    .week-card .deliverables h4{font-size:.72rem;font-weight:700;color:#166534;margin:0 0 .4rem;text-transform:uppercase;letter-spacing:.05em}
+    .week-card .deliverables ul{list-style:none;padding:0;margin:0;font-size:.8rem;color:#14532d}
+    .week-card .deliverables ul li{margin:.2rem 0;line-height:1.5}
+    .week-card .deliverables ul li::before{content:"🎯 ";font-size:.73rem}
+    .week-card .deliverables .ar-del{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;font-size:.79rem;color:#166534;margin:.35rem 0 0;line-height:1.75}
   </style>
 </head>
 <body>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a><a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a><a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html">L9</a>
+    </div>
+  </nav>
+</header>
+<main class="lesson-container">
 
-<section class="hero">
-  <div class="hero-badge">
-    🎓 Full Integration Course
-  </div>
-  <h1>Zoho + Moodle<br/>Integration with <span>FastAPI</span></h1>
-  <p class="hero-subtitle">دورة تعليمية متكاملة من الصفر حتى الإنتاج</p>
-  <p class="hero-desc">
-    A complete step-by-step course teaching you how to build a production-ready integration 
-    between Zoho CRM and Moodle using Python FastAPI as the backend middleware.
-    All lessons include real code, Arabic + English explanations, and quizzes.
-  </p>
-
-  <div class="hero-stats">
-    <div class="stat">
-      <div class="stat-num">10</div>
-      <div class="stat-label">Lessons</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">2</div>
-      <div class="stat-label">Languages</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">50+</div>
-      <div class="stat-label">Code Examples</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">30+</div>
-      <div class="stat-label">Quiz Questions</div>
-    </div>
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Moodle-Zoho Integration v3</h1>
+    <p style="opacity:.9;font-size:1rem;margin:.2rem 0">10-Week Project-Oriented Developer Course &nbsp;&middot;&nbsp; English &amp; Arabic</p>
+    <p class="hero-ar">كورس المطوّر الموجَّه بالمشروع — 10 أسابيع تفصيلية باللغتين للمبتدئين</p>
+    <span class="badge">FastAPI &nbsp;&middot;&nbsp; SQLite &nbsp;&middot;&nbsp; Zoho CRM &nbsp;&middot;&nbsp; Moodle Plugin</span>
   </div>
 
-  <a href="lesson-00.html" class="start-btn">
-    Start Learning → ابدأ الآن
-  </a>
-
-  <div class="tech-stack">
-    <div class="tech-pill"><span class="dot" style="background:#4f46e5"></span> FastAPI Python</div>
-    <div class="tech-pill"><span class="dot" style="background:#f59e0b"></span> SQLAlchemy ORM</div>
-    <div class="tech-pill"><span class="dot" style="background:#06b6d4"></span> Zoho CRM API</div>
-    <div class="tech-pill"><span class="dot" style="background:#10b981"></span> Moodle PHP Plugin</div>
-    <div class="tech-pill"><span class="dot" style="background:#8b5cf6"></span> PostgreSQL</div>
-    <div class="tech-pill"><span class="dot" style="background:#ef4444"></span> Webhooks</div>
+  <!-- ABOUT -->
+  <div class="card">
+    <h2>About This Course</h2>
+    <h2 class="ar">عن هذا الكورس</h2>
+    <p>This course teaches the <strong>Moodle-Zoho Integration v3</strong> project from scratch.
+    The project is a FastAPI backend that bridges <strong>Zoho CRM</strong> (the student data source,
+    using 8 custom BTEC modules) with <strong>Moodle</strong> (the learning platform).
+    Every time a student is registered, updated, or graduated in Zoho, the change is automatically
+    reflected in Moodle — and vice versa.</p>
+    <p class="ar">يُعلّمك هذا الكورس مشروع <strong>Moodle-Zoho Integration v3</strong> من الصفر.
+    المشروع عبارة عن باك-إند مبني على FastAPI يعمل كجسر بين <strong>Zoho CRM</strong>
+    (مصدر بيانات الطلاب، ويستخدم 8 وحدات BTEC مخصصة) و<strong>Moodle</strong> (منصة التعلم).
+    في كل مرة يُسجَّل طالب أو يُعدَّل أو يتخرج في Zoho، ينعكس التغيير تلقائياً في Moodle — والعكس صحيح.</p>
+    <p>The course follows a <strong>project-oriented weekly plan</strong>: each week you focus on one
+    specific layer of the system, read the actual source files for that layer, and produce a small
+    deliverable that confirms your understanding.</p>
+    <p class="ar">يتبع الكورس <strong>خطة أسبوعية موجَّهة بالمشروع</strong>: كل أسبوع تتمحور حول طبقة
+    واحدة محددة من النظام، تقرأ ملفات المصدر الحقيقية لتلك الطبقة، وتنتج مُخرَجاً صغيراً يؤكد فهمك.
+    المتطلب الوحيد هو معرفة أساسية بالبايثون وفكرة عامة عن HTTP و JSON.</p>
+    <div class="tip-box">
+      <strong>Prerequisite:</strong> Basic Python knowledge and a general understanding of HTTP/JSON.
+      No FastAPI, Moodle, or Zoho experience needed.<br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif;line-height:1.7">
+        <strong>المتطلبات:</strong> معرفة أساسية بالبايثون وفكرة عامة عن HTTP و JSON. لا تحتاج خبرة مسبقة
+        بـ FastAPI أو Moodle أو Zoho.
+      </span>
+    </div>
   </div>
-</section>
 
-<section class="course-section">
-  <h2>Course Curriculum</h2>
-  <p>المنهج الدراسي الكامل — خطوة بخطوة</p>
+  <!-- 10-WEEK ROADMAP -->
+  <div class="card">
+    <h2>10-Week Project Roadmap</h2>
+    <h2 class="ar">خريطة الطريق — 10 أسابيع</h2>
+    <div class="weeks-grid">
 
-  <div class="lessons-grid">
+      <!-- WEEK 1 -->
+      <a href="lesson-01.html" class="week-card w1">
+        <span class="week-badge">Week 1 — الأسبوع الأول</span>
+        <h3>Architectural Analysis</h3>
+        <div class="ar-title">تحليل المعمارية</div>
+        <p class="desc">Understand the 3-tier architecture (Zoho → FastAPI → Moodle), trace the full
+        data-flow map, and identify every major component before touching any code.</p>
+        <p class="desc-ar">افهم المعمارية ثلاثية الطبقات (Zoho → FastAPI → Moodle)، تتبّع خريطة تدفق
+        البيانات الكاملة، وتعرّف على كل مكوّن رئيسي قبل لمس أي كود.</p>
+        <ul class="tasks">
+          <li>Read ARCHITECTURE.md and DATA_FLOW_MAP.md at project root</li>
+          <li>Sketch the 3 tiers and label each component</li>
+          <li>List every top-level folder in backend/ and state its purpose</li>
+          <li>Name all 8 BTEC* custom Zoho modules</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">اقرأ ARCHITECTURE.md و DATA_FLOW_MAP.md في جذر المشروع</li>
+          <li class="ar">ارسم الطبقات الثلاث وسمّ كل مكوّن</li>
+          <li class="ar">اذكر كل مجلد رئيسي في backend/ وهدفه</li>
+          <li class="ar">اذكر الـ 8 وحدات BTEC* المخصصة في Zoho</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>A hand-drawn or digital diagram showing all 3 tiers with component names labelled</li>
+            <li>Written list of all 8 BTEC* Zoho modules with a one-line description of each</li>
+            <li>A summary of every top-level folder in <code>backend/</code> and its purpose</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: رسم للمعمارية الثلاثية، قائمة الـ 8 وحدات BTEC مع شرح كل منها، وجدول بمجلدات backend/</p>
+        </div>
+        <div class="lesson-links">
+          <a href="lesson-01.html">Lesson 01</a>
+          <a href="lesson-00.html">Lesson 00</a>
+        </div>
+      </a>
 
-    <a href="lesson-00.html" class="lesson-card">
-      <div class="card-num">Lesson 00</div>
-      <div class="card-icon">⚙️</div>
-      <div class="card-title">Environment Setup</div>
-      <div class="card-title-ar">إعداد بيئة العمل</div>
-      <div class="card-desc">Install Python, FastAPI, VS Code, and create your first "Hello World" API. Set up the complete project structure.</div>
-      <div class="card-footer">
-        <span>🕐 ~30 min</span>
-        <span class="badge badge-green">Beginner</span>
-      </div>
-    </a>
+      <!-- WEEK 2 -->
+      <a href="lesson-00.html" class="week-card w2">
+        <span class="week-badge">Week 2 — الأسبوع الثاني</span>
+        <h3>Environment Setup</h3>
+        <div class="ar-title">إعداد البيئة</div>
+        <p class="desc">Install all dependencies, configure every .env variable, start the server on
+        port 8001, and verify the admin panel and Swagger docs are accessible.</p>
+        <p class="desc-ar">ثبّت كل المتطلبات، اضبط كل متغيرات .env، شغّل السيرفر على المنفذ 8001،
+        وتحقق من وصولك للوحة التحكم وـ Swagger docs.</p>
+        <ul class="tasks">
+          <li>Create .venv-2 and install requirements.txt inside it</li>
+          <li>Create .env with: DATABASE_URL, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET,
+          ZOHO_REFRESH_TOKEN, ZOHO_REGION, MOODLE_BASE_URL, MOODLE_TOKEN, WEBHOOK_BASE_URL</li>
+          <li>Run <code>python start_server.py</code> → server starts on port 8001</li>
+          <li>Open localhost:8001/admin and localhost:8001/docs — confirm both load</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">أنشئ .venv-2 وثبّت requirements.txt بداخله</li>
+          <li class="ar">أنشئ .env بالمتغيرات: DATABASE_URL, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET,
+          ZOHO_REFRESH_TOKEN, ZOHO_REGION, MOODLE_BASE_URL, MOODLE_TOKEN, WEBHOOK_BASE_URL</li>
+          <li class="ar">شغّل <code>python start_server.py</code> → يبدأ السيرفر على المنفذ 8001</li>
+          <li class="ar">افتح localhost:8001/admin و localhost:8001/docs — تأكد من تحميل كليهما</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>Server running on localhost:8001 — <code>/admin</code> and <code>/docs</code> both load without errors</li>
+            <li>Completed <code>.env</code> file with all 8 required keys filled in (no placeholder values)</li>
+            <li>Screenshot or notes confirming Zoho and Moodle connections are reachable from the backend</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: السيرفر يعمل على 8001 مع تحميل /admin و /docs، ملف .env مكتمل، وتأكيد اتصال Zoho و Moodle</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-00.html">Lesson 00</a></div>
+      </a>
 
-    <a href="lesson-01.html" class="lesson-card">
-      <div class="card-num">Lesson 01</div>
-      <div class="card-icon">🚀</div>
-      <div class="card-title">FastAPI Backend</div>
-      <div class="card-title-ar">بناء الـ Backend</div>
-      <div class="card-desc">Learn FastAPI routes, request handling, validation with Pydantic, async/await, dependency injection, and auto documentation.</div>
-      <div class="card-footer">
-        <span>🕐 ~45 min</span>
-        <span class="badge badge-blue">Intermediate</span>
-      </div>
-    </a>
+      <!-- WEEK 3 -->
+      <a href="lesson-03.html" class="week-card w3">
+        <span class="week-badge">Week 3 — الأسبوع الثالث</span>
+        <h3>Database &amp; Domain Models</h3>
+        <div class="ar-title">تصميم قاعدة البيانات والنماذج</div>
+        <p class="desc">Study all 10 SQLAlchemy ORM models, understand the canonical upsert pattern
+        (INSERT OR REPLACE), and learn the difference between domain objects and database models.</p>
+        <p class="desc-ar">ادرس الـ 10 نماذج SQLAlchemy ORM، افهم نمط الـ upsert الموحّد
+        (INSERT OR REPLACE)، وتعلّم الفرق بين كائنات الـ domain ونماذج قاعدة البيانات.</p>
+        <ul class="tasks">
+          <li>Read all 10 files in app/infra/db/models/</li>
+          <li>Read all 10 domain models in app/domain/</li>
+          <li>Understand Base class and session factory in db/base.py and db/session.py</li>
+          <li>Trace the upsert pattern used in every service (no Alembic)</li>
+          <li>Draw the ER diagram: students, enrollments, grades, payments, classes</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">اقرأ كل الـ 10 ملفات في app/infra/db/models/</li>
+          <li class="ar">اقرأ الـ 10 نماذج في app/domain/</li>
+          <li class="ar">افهم كلاس Base ومصنع الجلسة في db/base.py و db/session.py</li>
+          <li class="ar">تتبّع نمط الـ upsert في كل service (لا حاجة لـ Alembic)</li>
+          <li class="ar">ارسم مخطط ER: الطلاب، التسجيلات، الدرجات، المدفوعات، الفصول</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>ER diagram drawn showing all 10 tables with foreign-key relationships</li>
+            <li>Ability to query SQLite directly and explain every column in the <code>students</code> and <code>enrollments</code> tables</li>
+            <li>Written explanation of why the project uses upsert instead of Alembic migrations</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: مخطط ER للـ 10 جداول، القدرة على الاستعلام عن SQLite وشرح كل عمود، وشرح سبب استخدام upsert</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-03.html">Lesson 03</a></div>
+      </a>
 
-    <a href="lesson-02.html" class="lesson-card">
-      <div class="card-num">Lesson 02</div>
-      <div class="card-icon">🗄️</div>
-      <div class="card-title">Database Design</div>
-      <div class="card-title-ar">تصميم قاعدة البيانات</div>
-      <div class="card-desc">Design and implement the database using SQLAlchemy ORM. Create models for Students, Registrations, Payments, Grades, and Classes.</div>
-      <div class="card-footer">
-        <span>🕐 ~45 min</span>
-        <span class="badge badge-blue">Intermediate</span>
-      </div>
-    </a>
+      <!-- WEEK 4 -->
+      <a href="lesson-04.html" class="week-card w4">
+        <span class="week-badge">Week 4 — الأسبوع الرابع</span>
+        <h3>Zoho CRM Integration</h3>
+        <div class="ar-title">تكامل Zoho CRM</div>
+        <p class="desc">Obtain OAuth2 credentials, study all 8 BTEC* custom modules, test the
+        ZohoClient with real API calls, and map field API names from each module.</p>
+        <p class="desc-ar">احصل على بيانات OAuth2، ادرس الـ 8 وحدات BTEC* المخصصة، اختبر ZohoClient
+        باستدعاءات API حقيقية، وعيّن أسماء حقول الـ API من كل وحدة.</p>
+        <ul class="tasks">
+          <li>Get ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN from Zoho Developer Console</li>
+          <li>Read app/infra/zoho/ — auth.py (OAuth token refresh), client.py (paginated GET)</li>
+          <li>Read app/ingress/zoho/btec_students_parser.py and base parser.py</li>
+          <li>Read zoho_workflow_service.py — see all 8 BTEC modules and 16 rules defined</li>
+          <li>Test via Swagger: POST /api/v1/sync/students — verify response body</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">احصل على ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN من Zoho Developer Console</li>
+          <li class="ar">اقرأ app/infra/zoho/ — auth.py (تجديد OAuth token)، client.py (جلب مُصفَّح)</li>
+          <li class="ar">اقرأ btec_students_parser.py والـ base parser.py</li>
+          <li class="ar">اقرأ zoho_workflow_service.py — اطّلع على الـ 8 وحدات BTEC والـ 16 rule المعرّفة</li>
+          <li class="ar">اختبر عبر Swagger: POST /api/v1/sync/students — تحقق من نص الاستجابة</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>Successful API call to <code>BTEC_Students</code> via Swagger — response body shows real student data</li>
+            <li>Written list of all 8 BTEC modules with their API names, upsert endpoints, and delete endpoints</li>
+            <li>Explanation of how OAuth2 token refresh works in <code>auth.py</code> and when it fires</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: استدعاء API ناجح لـ BTEC_Students عبر Swagger، قائمة الـ 8 وحدات مع endpoints، وشرح تجديد OAuth2 token</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-04.html">Lesson 04</a></div>
+      </a>
 
-    <a href="lesson-03.html" class="lesson-card">
-      <div class="card-num">Lesson 03</div>
-      <div class="card-icon">🔗</div>
-      <div class="card-title">Zoho API & Webhooks</div>
-      <div class="card-title-ar">Zoho API والـ Webhooks</div>
-      <div class="card-desc">Set up Zoho OAuth2, understand CRM modules, configure webhook notifications, and build the webhook handler pipeline.</div>
-      <div class="card-footer">
-        <span>🕐 ~60 min</span>
-        <span class="badge badge-purple">Advanced</span>
-      </div>
-    </a>
+      <!-- WEEK 5 -->
+      <a href="lesson-02.html" class="week-card w5">
+        <span class="week-badge">Week 5 — الأسبوع الخامس</span>
+        <h3>First Sync Endpoint — End-to-End</h3>
+        <div class="ar-title">أول Endpoint للمزامنة — من البداية للنهاية</div>
+        <p class="desc">Trace the complete student-sync pipeline: Zoho API call → ingress → parser →
+        mapper → service → database. Then navigate FastAPI routers and the 12 backend admin templates.</p>
+        <p class="desc-ar">تتبّع pipeline مزامنة الطلاب كاملةً: Zoho API → ingress → parser → mapper →
+        service → قاعدة البيانات. ثم تجوَّل في FastAPI routers والـ 12 قالب إداري في الباك-إند.</p>
+        <ul class="tasks">
+          <li>Read app/api/v1/endpoints/sync_students.py — the entry point</li>
+          <li>Trace: student_ingress.py → btec_students_parser.py → student_mapper.py → student_service.py</li>
+          <li>Read app/core/config.py — all 20+ settings and their .env keys</li>
+          <li>Read backend/admin/router.py and all 12 Jinja2 templates in admin/templates/</li>
+          <li>Understand main.py — router includes, middleware, lifespan events</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">اقرأ sync_students.py — نقطة الدخول</li>
+          <li class="ar">تتبّع: student_ingress.py → btec_students_parser.py → student_mapper.py → student_service.py</li>
+          <li class="ar">اقرأ app/core/config.py — الـ 20+ إعداد ومفاتيح .env الخاصة بها</li>
+          <li class="ar">اقرأ admin/router.py وكل الـ 12 قالب Jinja2 في admin/templates/</li>
+          <li class="ar">افهم main.py — ضم الـ routers، الـ middleware، أحداث دورة الحياة</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>Full student-sync pipeline traced in writing: entry point → ingress → parser → mapper → service → DB</li>
+            <li>Backend admin dashboard at <code>/admin</code> shows synced student data with correct row count</li>
+            <li>Ability to explain every setting in <code>config.py</code> and which <code>.env</code> key controls it</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: توثيق pipeline المزامنة كاملةً، لوحة التحكم تعرض بيانات مزامَنة، وشرح كل إعداد في config.py</p>
+        </div>
+        <div class="lesson-links">
+          <a href="lesson-02.html">Lesson 02</a>
+          <a href="lesson-03.html">Lesson 03</a>
+        </div>
+      </a>
 
-    <a href="lesson-04.html" class="lesson-card">
-      <div class="card-num">Lesson 04</div>
-      <div class="card-icon">🔌</div>
-      <div class="card-title">Moodle Plugin</div>
-      <div class="card-title-ar">إضافة Moodle</div>
-      <div class="card-desc">Build a Moodle local plugin in PHP. Define Web Services, create DB tables, implement a student dashboard with AJAX + AMD JS.</div>
-      <div class="card-footer">
-        <span>🕐 ~60 min</span>
-        <span class="badge badge-purple">Advanced</span>
-      </div>
-    </a>
+      <!-- WEEK 6 -->
+      <a href="lesson-05.html" class="week-card w6">
+        <span class="week-badge">Week 6 — الأسبوع السادس</span>
+        <h3>Moodle Plugin &amp; UI Pages</h3>
+        <div class="ar-title">إضافة Moodle وصفحات واجهة المستخدم</div>
+        <p class="desc">Install <code>local_moodle_zoho_sync</code>, configure the Web Service token,
+        and explore all 12 admin UI pages and the 7-page student dashboard embedded in Moodle.</p>
+        <p class="desc-ar">ثبّت إضافة <code>local_moodle_zoho_sync</code>، اضبط الـ Web Service token،
+        واستكشف الـ 12 صفحة إدارية ولوحة الطالب المكوّنة من 7 صفحات المدمجة في Moodle.</p>
+        <ul class="tasks">
+          <li>Copy moodle_plugin/ into Moodle /local/moodle_zoho_sync/ and run upgrade</li>
+          <li>Create Moodle Web Service user, assign capabilities, generate token</li>
+          <li>Explore 12 admin pages: dashboard.php, event_logs.php, sync_management.php,
+          health_check.php, statistics.php, student_search.php, grade_queue_monitor.php,
+          btec_templates.php, student_dashboard_management.php, event_detail.php,
+          event_logs_enhanced.php, health_monitor_detailed.php</li>
+          <li>Explore 7 student pages: profile.php, programs.php, classes.php,
+          student_card.php, requests.php, serve_photo.php, card_print.php</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">انسخ moodle_plugin/ إلى /local/moodle_zoho_sync/ في Moodle وشغّل التحديث</li>
+          <li class="ar">أنشئ مستخدم Web Service، خصّص الصلاحيات، واصنع الـ token</li>
+          <li class="ar">استكشف الـ 12 صفحة إدارية: dashboard.php, event_logs.php, sync_management.php,
+          health_check.php, statistics.php, student_search.php, grade_queue_monitor.php,
+          btec_templates.php, student_dashboard_management.php, event_detail.php,
+          event_logs_enhanced.php, health_monitor_detailed.php</li>
+          <li class="ar">استكشف الـ 7 صفحات للطالب: profile.php, programs.php, classes.php,
+          student_card.php, requests.php, serve_photo.php, card_print.php</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>Plugin installed in Moodle — <strong>health_check.php</strong> shows GREEN for backend connection</li>
+            <li>All 4 student dashboard tabs visible when logged in as a test student</li>
+            <li>UI Testing Groups A and D from Lesson 05 completed and all checks passed</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: الإضافة مثبّتة وhealth_check.php أخضر، الـ 4 تبويبات مرئية للطالب، ومجموعات A وD من دليل الاختبار مكتملة</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-05.html">Lesson 05</a></div>
+      </a>
 
-    <a href="lesson-05.html" class="lesson-card">
-      <div class="card-num">Lesson 05</div>
-      <div class="card-icon">🔄</div>
-      <div class="card-title">Data Flow & Field Mapping</div>
-      <div class="card-title-ar">تدفق البيانات والمابينغ</div>
-      <div class="card-desc">Deep dive into the full data pipeline. Understand field mapping between Zoho and Moodle, transformation logic, and sync patterns.</div>
-      <div class="card-footer">
-        <span>🕐 ~45 min</span>
-        <span class="badge badge-blue">Intermediate</span>
-      </div>
-    </a>
+      <!-- WEEK 7 -->
+      <a href="lesson-06.html" class="week-card w7">
+        <span class="week-badge">Week 7 — الأسبوع السابع</span>
+        <h3>Full Sync Cycle</h3>
+        <div class="ar-title">دورة المزامنة الكاملة</div>
+        <p class="desc">Run the full sync for all entity types: students, BTEC students, enrollments,
+        grades, payments, classes, registrations, and units. Configure APScheduler and verify results.</p>
+        <p class="desc-ar">شغّل المزامنة الكاملة لكل أنواع الكيانات: الطلاب، BTEC Students، التسجيلات،
+        الدرجات، المدفوعات، الفصول، تسجيلات البرامج، والوحدات. اضبط APScheduler وتحقق من النتائج.</p>
+        <ul class="tasks">
+          <li>Trigger each sync via Swagger: /sync/students, /sync/enrollments,
+          /sync/grades, /sync/payments, /sync/classes, /sync/programs,
+          /sync/registrations, /sync/units</li>
+          <li>Read app/core/scheduler.py — cron intervals, job names, error handling</li>
+          <li>Read app/api/v1/endpoints/full_sync.py — how all syncs are orchestrated</li>
+          <li>Query SQLite DB: verify rows in each table after sync</li>
+          <li>Check Moodle admin → confirm users, enrollments, grades are updated</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">شغّل كل sync عبر Swagger: /sync/students, /sync/enrollments,
+          /sync/grades, /sync/payments, /sync/classes, /sync/programs, /sync/registrations, /sync/units</li>
+          <li class="ar">اقرأ scheduler.py — فترات الـ cron، أسماء المهام، معالجة الأخطاء</li>
+          <li class="ar">اقرأ full_sync.py — كيف تُنسَّق كل عمليات المزامنة</li>
+          <li class="ar">استعلم SQLite DB: تحقق من الصفوف في كل جدول بعد المزامنة</li>
+          <li class="ar">افحص Moodle admin → تأكد من تحديث المستخدمين والتسجيلات والدرجات</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>All 8 sync endpoints run successfully — SQLite tables populated for students, enrollments, grades, payments, classes</li>
+            <li>Moodle student accounts created and enrolled in at least one course</li>
+            <li>UI Testing Groups B and C from Lesson 05 completed and all checks passed</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: الـ 8 endpoints تعمل وجداول SQLite ممتلئة، حسابات طلاب في Moodle، ومجموعات B وC من دليل الاختبار مكتملة</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-06.html">Lesson 06</a></div>
+      </a>
 
-    <a href="lesson-06.html" class="lesson-card">
-      <div class="card-num">Lesson 06</div>
-      <div class="card-icon">🧪</div>
-      <div class="card-title">Testing & Debugging</div>
-      <div class="card-title-ar">الاختبار والتصحيح</div>
-      <div class="card-desc">Write pytest test cases for all endpoints. Test webhook flows, use FastAPI TestClient, and debug common integration errors.</div>
-      <div class="card-footer">
-        <span>🕐 ~45 min</span>
-        <span class="badge badge-blue">Intermediate</span>
-      </div>
-    </a>
+      <!-- WEEK 8 -->
+      <a href="lesson-07.html" class="week-card w8">
+        <span class="week-badge">Week 8 — الأسبوع الثامن</span>
+        <h3>Webhooks &amp; Real-Time Events</h3>
+        <div class="ar-title">الـ Webhooks والأحداث الفورية</div>
+        <p class="desc">Set up all 16 Zoho Workflow Rules (2 per BTEC module), understand
+        HMAC-SHA256 signature verification, and trace events from the Moodle plugin into FastAPI.</p>
+        <p class="desc-ar">أعدّ الـ 16 Workflow Rule في Zoho (2 لكل وحدة BTEC)، افهم
+        التحقق من توقيع HMAC-SHA256، وتتبّع الأحداث القادمة من إضافة Moodle إلى FastAPI.</p>
+        <ul class="tasks">
+          <li>Run POST /api/v1/webhooks/setup — auto-creates all 16 rules in Zoho</li>
+          <li>Inspect zoho_rules_state.json — verify all webhook and rule IDs are saved</li>
+          <li>Read webhooks.py (701 lines) — all 8 upsert + 8 delete handlers</li>
+          <li>Read app/core/security.py — HMAC-SHA256 signature verification</li>
+          <li>Read app/core/idempotency.py — duplicate-event detection and skipping</li>
+          <li>Read student_dashboard_webhooks.py — events from Moodle plugin to FastAPI</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">شغّل POST /api/v1/webhooks/setup — ينشئ تلقائياً الـ 16 rule في Zoho</li>
+          <li class="ar">افحص zoho_rules_state.json — تحقق من حفظ IDs الـ webhook والـ rule</li>
+          <li class="ar">اقرأ webhooks.py (701 سطر) — الـ 8 معالجات upsert والـ 8 معالجات delete</li>
+          <li class="ar">اقرأ security.py — التحقق من توقيع HMAC-SHA256</li>
+          <li class="ar">اقرأ idempotency.py — اكتشاف الأحداث المكررة وتخطّيها</li>
+          <li class="ar">اقرأ student_dashboard_webhooks.py — الأحداث من إضافة Moodle إلى FastAPI</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>All 16 Zoho Workflow Rules created — <code>zoho_rules_state.json</code> contains all IDs</li>
+            <li>At least one live webhook received and confirmed in Moodle Event Logs with status SENT</li>
+            <li>Written explanation of how HMAC-SHA256 signature verification protects the webhook endpoint</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: الـ 16 rule في Zoho موجودة وzoho_rules_state.json مكتمل، webhook حي واحد على الأقل تم استقباله، وشرح HMAC-SHA256</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-07.html">Lesson 07</a></div>
+      </a>
 
-    <a href="lesson-07.html" class="lesson-card">
-      <div class="card-num">Lesson 07</div>
-      <div class="card-icon">🚢</div>
-      <div class="card-title">Production Deployment</div>
-      <div class="card-title-ar">نشر المشروع في الإنتاج</div>
-      <div class="card-desc">Deploy FastAPI with Gunicorn + Nginx. Configure PostgreSQL for production, install the Moodle plugin on a live instance.</div>
-      <div class="card-footer">
-        <span>🕐 ~50 min</span>
-        <span class="badge badge-purple">Advanced</span>
-      </div>
-    </a>
+      <!-- WEEK 9 -->
+      <a href="lesson-08.html" class="week-card w9">
+        <span class="week-badge">Week 9 — الأسبوع التاسع</span>
+        <h3>Testing, Debugging &amp; Student Dashboard</h3>
+        <div class="ar-title">الاختبار والتصحيح ولوحة الطالب</div>
+        <p class="desc">Write pytest tests, use the debug and debug_enhanced endpoints, read admin
+        event logs, and fully explore the 4-tab student dashboard in Moodle.</p>
+        <p class="desc-ar">اكتب اختبارات pytest، استخدم debug و debug_enhanced endpoints،
+        اقرأ سجلات الأحداث الإدارية، واستكشف لوحة الطالب ذات الـ 4 تبويبات في Moodle بالكامل.</p>
+        <ul class="tasks">
+          <li>Run <code>pytest tests/ -v</code> — read conftest.py and understand all fixtures</li>
+          <li>Use GET /api/v1/debug/students and /debug/enrollments in Swagger</li>
+          <li>Read debug_enhanced.py — extended debug endpoints with filtering</li>
+          <li>Open admin/logs — read event_log table, filter by status=FAILED</li>
+          <li>Log in as a student in Moodle — visit all 4 dashboard tabs:
+          Profile · Programmes · Classes · Student Card</li>
+          <li>Submit a change request via profile.php → verify it appears in BTEC_Student_Requests</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">شغّل <code>pytest tests/ -v</code> — اقرأ conftest.py وافهم كل الـ fixtures</li>
+          <li class="ar">استخدم GET /api/v1/debug/students و /debug/enrollments في Swagger</li>
+          <li class="ar">اقرأ debug_enhanced.py — debug endpoints موسّعة مع خيارات تصفية</li>
+          <li class="ar">افتح admin/logs — اقرأ جدول event_log، صفّي بـ status=FAILED</li>
+          <li class="ar">سجّل دخول كطالب في Moodle — زر الـ 4 تبويبات:
+          الملف الشخصي · البرامج · الفصول · بطاقة الطالب</li>
+          <li class="ar">أرسل طلب تغيير عبر profile.php → تحقق من ظهوره في BTEC_Student_Requests</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li><code>pytest tests/ -v</code> passes with zero failures</li>
+            <li>All 5 UI Testing Groups (A→E) from Lesson 05 completed and documented</li>
+            <li>Student dashboard fully explored — change request submitted and confirmed in <code>BTEC_Student_Requests</code></li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: pytest يمر بصفر أخطاء، مجموعات الاختبار الـ 5 مكتملة وموثّقة، ولوحة الطالب مستكشفة بالكامل</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-08.html">Lesson 08</a></div>
+      </a>
 
-    <a href="lesson-08.html" class="lesson-card">
-      <div class="card-num">Lesson 08</div>
-      <div class="card-icon">⚡</div>
-      <div class="card-title">CI/CD Pipeline</div>
-      <div class="card-title-ar">التكامل والتسليم المستمر</div>
-      <div class="card-desc">Set up GitHub Actions for automatic testing and deployment. Build a Docker image and automate the full deployment pipeline.</div>
-      <div class="card-footer">
-        <span>🕐 ~40 min</span>
-        <span class="badge badge-blue">Intermediate</span>
-      </div>
-    </a>
+      <!-- WEEK 10 -->
+      <a href="lesson-09.html" class="week-card w10">
+        <span class="week-badge">Week 10 — الأسبوع العاشر</span>
+        <h3>Production Deployment</h3>
+        <div class="ar-title">النشر على الإنتاج</div>
+        <p class="desc">Deploy backend to Linux via rsync, configure a systemd unit for auto-restart,
+        set up Nginx as HTTPS reverse proxy, and update Zoho Workflow Rules to the production URL.</p>
+        <p class="desc-ar">انشر الباك-إند على Linux عبر rsync، اضبط systemd unit للتشغيل التلقائي،
+        اضبط Nginx كـ HTTPS reverse proxy، وحدّث Workflow Rules في Zoho لرابط الإنتاج.</p>
+        <ul class="tasks">
+          <li>rsync -avz backend/ user@server:/opt/moodle_zoho/</li>
+          <li>Create Python venv on server, install requirements.txt</li>
+          <li>Create /etc/systemd/system/moodle_zoho.service with Restart=always</li>
+          <li>Configure Nginx: proxy_pass http://127.0.0.1:8001 on port 443</li>
+          <li>Issue free TLS cert: certbot --nginx -d yourdomain.com</li>
+          <li>Update server .env: WEBHOOK_BASE_URL = https://yourdomain.com</li>
+          <li>Re-run POST /api/v1/webhooks/setup to update all Zoho rules with production URL</li>
+        </ul>
+        <ul class="tasks">
+          <li class="ar">rsync -avz backend/ user@server:/opt/moodle_zoho/</li>
+          <li class="ar">أنشئ Python venv على السيرفر وثبّت requirements.txt</li>
+          <li class="ar">أنشئ /etc/systemd/system/moodle_zoho.service مع Restart=always</li>
+          <li class="ar">اضبط Nginx: proxy_pass http://127.0.0.1:8001 على المنفذ 443</li>
+          <li class="ar">أصدر شهادة TLS مجانية: certbot --nginx -d yourdomain.com</li>
+          <li class="ar">حدّث .env على السيرفر: WEBHOOK_BASE_URL = https://yourdomain.com</li>
+          <li class="ar">أعِد تشغيل POST /api/v1/webhooks/setup لتحديث كل rules Zoho برابط الإنتاج</li>
+        </ul>
+        <div class="deliverables">
+          <h4>📋 End-of-Week Deliverables</h4>
+          <ul>
+            <li>Backend running as a systemd service — survives a server reboot (<code>sudo reboot</code> test)</li>
+            <li>Nginx serving HTTPS on port 443 — browser shows padlock icon with valid TLS cert</li>
+            <li>Zoho Workflow Rules updated to production URL — live webhook confirmed received on production server</li>
+          </ul>
+          <p class="ar-del">نهاية الأسبوع: الباك-إند يعمل كـ systemd service ويبقى بعد إعادة التشغيل، Nginx يخدم HTTPS مع شهادة TLS، و Zoho webhook يصل للسيرفر الإنتاجي</p>
+        </div>
+        <div class="lesson-links"><a href="lesson-09.html">Lesson 09</a></div>
+      </a>
 
-    <a href="lesson-09.html" class="lesson-card">
-      <div class="card-num">Lesson 09</div>
-      <div class="card-icon">🎓</div>
-      <div class="card-title">Conclusion & Next Steps</div>
-      <div class="card-title-ar">الخاتمة والخطوات القادمة</div>
-      <div class="card-desc">Review the full system architecture, explore extension ideas, get resource recommendations, and complete the final project challenge.</div>
-      <div class="card-footer">
-        <span>🕐 ~20 min</span>
-        <span class="badge badge-green">Wrap-up</span>
-      </div>
-    </a>
-
+    </div><!-- /weeks-grid -->
   </div>
-</section>
 
-<footer>
-  <p>Built from a real production project. All code examples are tested and running in production.</p>
-  <p style="margin-top:8px;font-family:'Tajawal',sans-serif;">مبني على مشروع حقيقي — جميع الأمثلة مختبرة وتعمل في الإنتاج</p>
-</footer>
+  <!-- BTEC MODULES REFERENCE TABLE -->
+  <div class="card">
+    <h2>Zoho CRM — All 8 BTEC Custom Modules</h2>
+    <h2 class="ar">Zoho CRM — الـ 8 وحدات BTEC المخصصة</h2>
+    <p>The project uses 8 custom Zoho CRM modules — not the standard "Contacts" or "Deals".
+    Each module has 2 Workflow Rules (upsert + delete), totaling <strong>16 rules</strong>.
+    The full definition is in <code>app/services/zoho_workflow_service.py</code>.</p>
+    <p class="ar">يستخدم المشروع 8 وحدات مخصصة في Zoho CRM — وليس "Contacts" أو "Deals" القياسية.
+    لكل وحدة Workflow Rule اثنان (upsert + delete)، الإجمالي <strong>16 rule</strong>.
+    التعريف الكامل في <code>app/services/zoho_workflow_service.py</code>.</p>
+    <table class="info-table">
+      <thead>
+        <tr><th>Module (API Name)</th><th>Purpose (EN)</th><th>الهدف (AR)</th><th>Upsert Webhook</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="module-chip">BTEC_Students</span></td>
+            <td>Student enrichment: photo, department, branch, student ID</td>
+            <td>بيانات الطالب التكميلية: صورة، قسم، فرع، رقم الطالب</td>
+            <td>student_updated</td></tr>
+        <tr><td><span class="module-chip">BTEC_Registrations</span></td>
+            <td>Programme registration records</td>
+            <td>سجلات التسجيل في البرنامج الأكاديمي</td>
+            <td>registration_created</td></tr>
+        <tr><td><span class="module-chip">BTEC_Payments</span></td>
+            <td>Payment records and status</td>
+            <td>سجلات المدفوعات وحالتها</td>
+            <td>payment_recorded</td></tr>
+        <tr><td><span class="module-chip">BTEC_Classes</span></td>
+            <td>Class schedules and cohort groupings</td>
+            <td>جداول الفصول الدراسية وتجميعات المجموعات</td>
+            <td>class_created</td></tr>
+        <tr><td><span class="module-chip">BTEC_Enrollments</span></td>
+            <td>Links a student to a specific class</td>
+            <td>يربط الطالب بفصل دراسي محدد</td>
+            <td>enrollment_updated</td></tr>
+        <tr><td><span class="module-chip">BTEC_Grades</span></td>
+            <td>Grade submissions and unit results</td>
+            <td>تسليم الدرجات ونتائج الوحدات الدراسية</td>
+            <td>grade_submitted</td></tr>
+        <tr><td><span class="module-chip">BTEC_Student_Requests</span></td>
+            <td>Student change requests (name, email, photo…)</td>
+            <td>طلبات تغيير بيانات الطالب (اسم، إيميل، صورة…)</td>
+            <td>request_status_changed</td></tr>
+        <tr><td><span class="module-chip">BTEC</span></td>
+            <td>Unit definitions. API name is "BTEC", not "BTEC_Units".</td>
+            <td>تعريفات الوحدات الدراسية. اسم الـ API هو "BTEC" وليس "BTEC_Units".</td>
+            <td>btec_definition_updated</td></tr>
+      </tbody>
+    </table>
+  </div>
 
+  <!-- QUICK REFERENCE -->
+  <div class="card">
+    <h2>Quick Reference</h2>
+    <h2 class="ar">مرجع سريع</h2>
+    <h3>Key Commands</h3>
+    <pre><code class="language-powershell">cd backend
+.venv-2\Scripts\activate        # Windows: activate virtual environment
+python start_server.py           # start backend server on port 8001
+pytest tests/ -v                 # run all tests</code></pre>
+    <h3>Key URLs (local development)</h3>
+    <table class="info-table">
+      <thead><tr><th>URL</th><th>Purpose</th><th>الهدف</th></tr></thead>
+      <tbody>
+        <tr><td><a href="http://localhost:8001/admin" target="_blank">localhost:8001/admin</a></td>
+            <td>Admin Panel home</td><td>لوحة التحكم الرئيسية</td></tr>
+        <tr><td><a href="http://localhost:8001/admin/sync" target="_blank">localhost:8001/admin/sync</a></td>
+            <td>Manual sync control</td><td>تشغيل المزامنة يدوياً</td></tr>
+        <tr><td><a href="http://localhost:8001/admin/logs" target="_blank">localhost:8001/admin/logs</a></td>
+            <td>Event logs and errors</td><td>سجل الأحداث والأخطاء</td></tr>
+        <tr><td><a href="http://localhost:8001/admin/data" target="_blank">localhost:8001/admin/data</a></td>
+            <td>Data browser</td><td>استعراض البيانات</td></tr>
+        <tr><td><a href="http://localhost:8001/docs" target="_blank">localhost:8001/docs</a></td>
+            <td>Swagger interactive API docs</td><td>وثائق الـ API التفاعلية</td></tr>
+      </tbody>
+    </table>
+    <h3>Technologies</h3>
+    <table class="info-table">
+      <thead><tr><th>Technology</th><th>Role</th><th>الدور</th></tr></thead>
+      <tbody>
+        <tr><td>FastAPI</td><td>Backend web framework (Python 3.11)</td><td>إطار الباك-إند</td></tr>
+        <tr><td>SQLite + SQLAlchemy</td><td>Local database + ORM</td><td>قاعدة البيانات المحلية + ORM</td></tr>
+        <tr><td>Zoho CRM v8 API</td><td>Student and academic data source</td><td>مصدر بيانات الطلاب والأكاديمية</td></tr>
+        <tr><td>Moodle REST API</td><td>LMS — enroll, grade, user management</td><td>منصة التعلم — تسجيل، درجات، مستخدمون</td></tr>
+        <tr><td>APScheduler</td><td>Scheduled background sync jobs</td><td>مهام المزامنة المجدوَلة في الخلفية</td></tr>
+        <tr><td>local_moodle_zoho_sync</td><td>Moodle plugin — events and student UI</td><td>إضافة Moodle — الأحداث وواجهة الطالب</td></tr>
+        <tr><td>Nginx + systemd</td><td>Production reverse proxy and service manager</td><td>Reverse proxy في الإنتاج ومدير الخدمات</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ALL LESSONS GRID -->
+  <div class="card">
+    <h2>All Lessons — Quick Access</h2>
+    <h2 class="ar">كل الدروس — وصول سريع</h2>
+    <div class="lessons-grid">
+      <a href="lesson-00.html" class="lesson-card">
+        <div class="lesson-num">Lesson 00 &middot; Week 2</div>
+        <h3>Setup &amp; Configuration</h3>
+        <div class="ar-title">الإعداد والتهيئة</div>
+        <p>Python, .venv-2, .env variables, running the server for the first time.</p>
+      </a>
+      <a href="lesson-01.html" class="lesson-card">
+        <div class="lesson-num">Lesson 01 &middot; Week 1</div>
+        <h3>Project Structure</h3>
+        <div class="ar-title">هيكل المشروع</div>
+        <p>Every folder and file — 3-tier architecture, all 30+ endpoint files explained.</p>
+      </a>
+      <a href="lesson-02.html" class="lesson-card">
+        <div class="lesson-num">Lesson 02 &middot; Week 5</div>
+        <h3>FastAPI &amp; Admin Panel</h3>
+        <div class="ar-title">FastAPI ولوحة التحكم</div>
+        <p>main.py, routers, endpoints, 12 Jinja2 admin templates, authentication.</p>
+      </a>
+      <a href="lesson-03.html" class="lesson-card">
+        <div class="lesson-num">Lesson 03 &middot; Week 3</div>
+        <h3>Database Design</h3>
+        <div class="ar-title">تصميم قاعدة البيانات</div>
+        <p>SQLite, SQLAlchemy, all 10 tables, upsert pattern, domain vs infra models.</p>
+      </a>
+      <a href="lesson-04.html" class="lesson-card">
+        <div class="lesson-num">Lesson 04 &middot; Week 4</div>
+        <h3>Zoho CRM Integration</h3>
+        <div class="ar-title">التكامل مع Zoho CRM</div>
+        <p>OAuth2, 8 BTEC* custom modules, ZohoClient, pagination, field API names.</p>
+      </a>
+      <a href="lesson-05.html" class="lesson-card">
+        <div class="lesson-num">Lesson 05 &middot; Week 6</div>
+        <h3>Moodle Plugin &amp; Web Services</h3>
+        <div class="ar-title">إضافة Moodle وخدمات الويب</div>
+        <p>local_moodle_zoho_sync: install, token setup, 12 admin pages, 7 student pages.</p>
+      </a>
+      <a href="lesson-06.html" class="lesson-card">
+        <div class="lesson-num">Lesson 06 &middot; Week 7</div>
+        <h3>Data Synchronisation</h3>
+        <div class="ar-title">مزامنة البيانات</div>
+        <p>Mapper pattern, all 8 sync endpoints, APScheduler cron jobs.</p>
+      </a>
+      <a href="lesson-07.html" class="lesson-card">
+        <div class="lesson-num">Lesson 07 &middot; Week 8</div>
+        <h3>Webhooks Architecture</h3>
+        <div class="ar-title">هندسة الـ Webhooks</div>
+        <p>16 Zoho Workflow Rules, HMAC-SHA256, Moodle plugin events, idempotency.</p>
+      </a>
+      <a href="lesson-08.html" class="lesson-card">
+        <div class="lesson-num">Lesson 08 &middot; Week 9</div>
+        <h3>Testing &amp; Debugging</h3>
+        <div class="ar-title">الاختبار والتصحيح</div>
+        <p>pytest, conftest.py, debug endpoints, event logs, student dashboard deep-dive.</p>
+      </a>
+      <a href="lesson-09.html" class="lesson-card">
+        <div class="lesson-num">Lesson 09 &middot; Week 10</div>
+        <h3>Deployment to Linux</h3>
+        <div class="ar-title">النشر على Linux</div>
+        <p>rsync, systemd, Nginx reverse proxy, HTTPS with Certbot, production checklist.</p>
+      </a>
+    </div>
+  </div>
+
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 &mdash; 10-Week Developer Course</p></footer>
+<script src="course.js"></script>
 </body>
 </html>

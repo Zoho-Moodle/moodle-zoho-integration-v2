@@ -1,499 +1,783 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 01 — FastAPI Backend | Zoho+Moodle Course</title>
+  <title>Lesson 01 — Project Structure | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar, li.ar {
+      direction: rtl; text-align: right;
+      font-family: 'Tajawal', sans-serif;
+      background: #fefce8; border-right: 4px solid #f59e0b;
+      padding: 0.6rem 1rem; margin: 0.5rem 0 1rem;
+      border-radius: 0 6px 6px 0; color: #1c1917;
+      font-size: 0.97rem; line-height: 1.8;
+    }
+    h2.ar {
+      direction: rtl; text-align: right;
+      font-family: 'Tajawal', sans-serif;
+      color: #92400e; font-size: 1rem;
+      font-weight: 600; margin: -0.4rem 0 0.75rem;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a>
+      <a href="lesson-01.html" class="active">L1</a>
+      <a href="lesson-02.html">L2</a>
+      <a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a>
+      <a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a>
+      <a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a>
+      <a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
-
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 01</div>
-      <div class="lesson-number">Lesson 01</div>
-      <div class="lesson-title-en">FastAPI Backend Development</div>
-      <div class="lesson-title-ar">بناء الـ Backend باستخدام FastAPI</div>
-      <div class="lesson-meta">
-        <span>🕐 ~45 minutes</span>
-        <span>🎯 Intermediate</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
-
-    <div class="lesson-body">
-
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Understand how FastAPI handles HTTP methods: GET, POST, PUT, DELETE</li>
-          <li>Use path parameters, query parameters, and request bodies</li>
-          <li>Implement Pydantic models for request/response validation</li>
-          <li>Apply Dependency Injection with <code class="inline">Depends()</code></li>
-          <li>Organize endpoints into routers with prefixes</li>
-          <li>Understand the full <code class="inline">main.py</code> of this project</li>
-        </ul>
-      </div>
-
-      <!-- HTTP METHODS -->
-      <div class="section">
-        <div class="section-title">1. HTTP Methods in FastAPI</div>
-        <div class="section-title-ar">أنواع طلبات HTTP في FastAPI</div>
-        <div class="section-divider"></div>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Decorator</th><th>HTTP Method</th><th>Use Case</th><th>الاستخدام</th></tr></thead>
-            <tbody>
-              <tr><td><code class="inline">@router.get()</code></td><td>GET</td><td>Read data</td><td>قراءة البيانات</td></tr>
-              <tr><td><code class="inline">@router.post()</code></td><td>POST</td><td>Create data / receive webhook</td><td>إنشاء بيانات / استقبال webhook</td></tr>
-              <tr><td><code class="inline">@router.put()</code></td><td>PUT</td><td>Update (replace entirely)</td><td>تحديث كامل</td></tr>
-              <tr><td><code class="inline">@router.patch()</code></td><td>PATCH</td><td>Update (partial)</td><td>تحديث جزئي</td></tr>
-              <tr><td><code class="inline">@router.delete()</code></td><td>DELETE</td><td>Delete data</td><td>حذف البيانات</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/endpoints/students_example.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional
-
-router = APIRouter(prefix="/students", tags=["students"])
-
-# ── Pydantic model for request body ──────────────────────────────────────────
-class StudentCreate(BaseModel):
-    """
-    Schema for creating a student.
-    FastAPI uses this for auto-validation AND auto-documentation.
-    Pydantic يتحقق تلقائياً من كل الحقول المدخلة
-    """
-    first_name: str
-    last_name: str
-    email: str
-    phone: Optional[str] = None       # Optional field, defaults to None
-
-
-class StudentResponse(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-    email: str
-
-    class Config:
-        from_attributes = True  # أي orm_mode=True في Pydantic v1
-
-
-# ── GET /students/{student_id} ────────────────────────────────────────────────
-@router.get("/{student_id}", response_model=StudentResponse)
-def get_student(student_id: int):
-    """
-    Get a single student by ID.
-
-    Path parameter: student_id is automatically extracted from the URL
-    and validated as an integer. If the URL is /students/abc, FastAPI
-    returns a 422 error automatically.
-
-    معامل المسار: student_id يُستخرج تلقائياً من الرابط
-    ويُتحقق منه كعدد صحيح. إذا كان abc مثلاً → خطأ 422 تلقائي
-    """
-    # Simulate DB lookup
-    if student_id == 1:
-        return {"id": 1, "first_name": "Ahmed", "last_name": "Ali", "email": "ahmed@example.com"}
-    raise HTTPException(status_code=404, detail=f"Student {student_id} not found")
-
-
-# ── GET /students/?search=ahmed&limit=10 ─────────────────────────────────────
-@router.get("/")
-def list_students(search: Optional[str] = None, limit: int = 20, offset: int = 0):
-    """
-    List students with optional query parameters.
-
-    Query parameters are defined as function arguments with defaults.
-    GET /students/?search=ahmed&limit=5&offset=0
-
-    معاملات الاستعلام (query params) تُعرَّف كـ arguments مع قيم افتراضية
-    """
-    return {
-        "results": [],
-        "search": search,
-        "limit": limit,
-        "offset": offset
-    }
-
-
-# ── POST /students/ ───────────────────────────────────────────────────────────
-@router.post("/", status_code=201)
-def create_student(student: StudentCreate):
-    """
-    Create a new student.
-
-    FastAPI automatically:
-    1. Parses the JSON request body
-    2. Validates all fields against StudentCreate
-    3. Returns 422 Validation Error if any field is wrong
-    4. Shows this schema in Swagger /docs
-
-    FastAPI تلقائياً:
-    1. يحلل الـ JSON body
-    2. يتحقق من كل الحقول
-    3. يُرجع 422 إذا كان هناك خطأ في البيانات
-    """
-    return {
-        "status": "created",
-        "student": student.dict()
-    }</code></pre>
-        </div>
-      </div>
-
-      <!-- MAIN.PY EXPLAINED -->
-      <div class="section">
-        <div class="section-title">2. The Real main.py — Explained Line by Line</div>
-        <div class="section-title-ar">شرح main.py الفعلي من المشروع سطراً بسطر</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/main.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from contextlib import asynccontextmanager          # (1) For lifespan
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # (2) Cross-origin requests
-from app.api.v1.router import router as api_router  # (3) Our main router
-from app.core.config import settings                # (4) .env settings
-from admin.router import router as admin_router     # (5) Admin panel
-from app.infra.db.base import Base, engine          # (6) SQLAlchemy engine
-import app.infra.db.models  # noqa — (7) IMPORTANT: registers all models
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-# ─────────────────────────────────────────────────────────────
-# (8) LIFESPAN — runs ONCE when server starts/stops
-# يُنفَّذ مرة واحدة عند بدء الخادم وإيقافه
-# ─────────────────────────────────────────────────────────────
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # STARTUP: Create all DB tables if they don't exist
-    # البدء: إنشاء جداول DB إذا لم تكن موجودة
-    Base.metadata.create_all(bind=engine)
-    logger.info("✅ Database tables created/verified.")
-    yield  # ← Application runs here / التطبيق يعمل هنا
-    # SHUTDOWN: Clean up resources here (optional)
-    # الإيقاف: تنظيف الموارد (اختياري)
-
-
-# ─────────────────────────────────────────────────────────────
-# (9) CREATE THE FASTAPI APP
-# ─────────────────────────────────────────────────────────────
-app = FastAPI(
-    title=settings.APP_NAME,   # Shown in Swagger UI
-    lifespan=lifespan          # Register our startup/shutdown hook
-)
-
-
-# ─────────────────────────────────────────────────────────────
-# (10) CORS MIDDLEWARE
-# Allows Moodle (on port 443) to call Backend (on port 8001).
-# Without this, browsers block cross-origin requests.
-# يسمح لـ Moodle بالاتصال بالـ Backend
-# ─────────────────────────────────────────────────────────────
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],       # In prod: use your Moodle domain only
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# ─────────────────────────────────────────────────────────────
-# (11) REGISTER ROUTERS
-# All API endpoints live under /api/v1/...
-# All admin HTML pages live under /admin/...
-# ─────────────────────────────────────────────────────────────
-app.include_router(api_router, prefix="/api/v1")
-app.include_router(admin_router)
-
-# A simple health check directly on the app (not in any sub-router)
-@app.get("/health")
-async def root_health():
-    return {"status": "healthy", "service": settings.APP_NAME}</code></pre>
-        </div>
-
-        <div class="callout info">
-          <div class="callout-icon">💡</div>
-          <div class="callout-content">
-            <div class="callout-title">Why import app.infra.db.models? (Line 7)</div>
-            <p>SQLAlchemy's <code class="inline">Base.metadata.create_all()</code> only knows about models that have been <strong>imported</strong> before it's called. If we don't import the models, the tables won't get created — even though the model files exist. This single import line pulls in all model classes.</p>
-            <div class="callout-ar">SQLAlchemy لا يعرف عن الموديلز إلا إذا تم <strong>استيرادها</strong> قبل استدعاء <code class="inline">create_all()</code>. هذا السطر يضمن استيراد جميع الموديلز قبل إنشاء الجداول.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ROUTERS -->
-      <div class="section">
-        <div class="section-title">3. Organizing Endpoints with Routers</div>
-        <div class="section-title-ar">تنظيم الـ Endpoints باستخدام Routers</div>
-        <div class="section-divider"></div>
-
-        <p>Instead of registering all endpoints in <code class="inline">main.py</code>, we use <strong>APIRouter</strong> to split them into logical files, then include them all in <code class="inline">router.py</code>:</p>
-        <p style="font-family:'Tajawal',sans-serif;direction:rtl;margin:4px 0 16px;color:var(--gray-600);">بدلاً من وضع كل الـ endpoints في ملف واحد، نستخدم APIRouter لتقسيمها في ملفات منطقية:</p>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/router.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from fastapi import APIRouter
-
-# Import each endpoint file's router
-from app.api.v1.endpoints.health import router as health_router
-from app.api.v1.endpoints.sync_students import router as sync_students_router
-from app.api.v1.endpoints.sync_registrations import router as sync_registrations_router
-from app.api.v1.endpoints.student_dashboard_webhooks import router as dashboard_router
-from app.api.v1.endpoints.debug_enhanced import router as debug_router
-
-# The main router — all endpoints in this project live here
-router = APIRouter()
-
-# ── Register each sub-router ──────────────────────────────────────────────────
-# tags = group label shown in Swagger /docs
-router.include_router(health_router,           tags=["health"])
-router.include_router(sync_students_router,    tags=["sync"])
-router.include_router(sync_registrations_router, tags=["sync"])
-
-# Webhook handlers: prefix is set inside the endpoint file itself
-router.include_router(dashboard_router, prefix="/webhooks/student-dashboard")
-
-router.include_router(debug_router,            tags=["debug"])
-
-
-# ── Final URL paths are stacked ───────────────────────────────────────────────
-# main.py:       app.include_router(api_router, prefix="/api/v1")
-# router.py:     router.include_router(sync_students_router)
-# endpoint file: APIRouter(prefix="/sync")
-#                @router.post("/students")
-#
-# Result:   POST /api/v1/sync/students  ✅</code></pre>
-        </div>
-      </div>
-
-      <!-- DEPENDENCY INJECTION -->
-      <div class="section">
-        <div class="section-title">4. Dependency Injection — <code class="inline">Depends()</code></div>
-        <div class="section-title-ar">حقن التبعيات — <code class="inline">Depends()</code></div>
-        <div class="section-divider"></div>
-
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <p><code class="inline">Depends()</code> is FastAPI's dependency injection system. It lets you declare <strong>shared dependencies</strong> (like a database session, or an auth check) once, and inject it into many endpoints cleanly.</p>
-            <p style="margin-top:8px;">The most important use in this project: <strong>injecting a DB session into every endpoint that needs it.</strong></p>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <p><code class="inline">Depends()</code> هو نظام حقن التبعيات في FastAPI. يسمح لك بتعريف <strong>تبعيات مشتركة</strong> (مثل جلسة DB أو التحقق من الهوية) مرة واحدة، وحقنها في عدة endpoints بشكل نظيف.</p>
-            <p style="margin-top:8px;">أهم استخدام في مشروعنا: <strong>حقن جلسة DB في كل endpoint يحتاجها.</strong></p>
-          </div>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/endpoints/sync_students.py — Actual project code</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlalchemy.orm import Session
-import logging
-
-from app.infra.db.session import get_db   # Our DB session factory
-
-logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/sync")
-
-
-@router.post("/students", summary="Sync Students from Zoho")
-async def sync_students(
-    request: Request,
-    db: Session = Depends(get_db)   # ← FastAPI injects a DB session automatically!
-    #                   ^^^^^^^^^^
-    # On every request: creates a new session, yields it, then closes it.
-    # في كل طلب: ينشئ جلسة، يمرّرها، ثم يُغلقها تلقائياً.
-):
-    """
-    Sync all BTEC_Students from Zoho CRM into the local database.
-    POST /api/v1/sync/students
-    """
-    try:
-        body = await request.json()
-
-        # db is now a live SQLAlchemy Session
-        # db الآن جلسة SQLAlchemy حية
-        students_data = body.get("data", [])
-        count = 0
-        for s in students_data:
-            # db.merge() = INSERT or UPDATE based on primary key
-            # db.merge() = إدخال أو تحديث بناءً على المفتاح الأساسي
-            from app.infra.db.models.student import Student
-            student = Student(
-                zoho_id=s.get("id"),
-                display_name=s.get("Full_Name"),
-                academic_email=s.get("Email"),
-            )
-            db.merge(student)
-            count += 1
-
-        db.commit()   # Save all changes / حفظ جميع التغييرات
-        return {"status": "success", "synced": count}
-
-    except Exception as e:
-        db.rollback()  # Undo on error / تراجع عن التغييرات عند الخطأ
-        logger.error(f"sync_students error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))</code></pre>
-        </div>
-      </div>
-
-      <!-- PYDANTIC SETTINGS -->
-      <div class="section">
-        <div class="section-title">5. Configuration with pydantic-settings</div>
-        <div class="section-title-ar">تحميل الإعدادات من <code class="inline">.env</code></div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/core/config.py — Actual project code</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
-import os
-
-# Resolve .env path relative to this file
-# نحدد مسار .env بالنسبة لموقع هذا الملف
-_ENV_FILE = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", ".env")
-    #           backend/app/core/config.py  →  backend/.env
-)
-
-class Settings(BaseSettings):
-    # All attributes are automatically loaded from .env
-    # جميع الخصائص تُحمَّل تلقائياً من .env
-
-    DATABASE_URL: str = "sqlite:///./moodle_zoho_local.db"
-    APP_NAME: str = "Moodle Zoho Integration"
-    ENV: str = "development"
-
-    # Moodle
-    MOODLE_BASE_URL: Optional[str] = None
-    MOODLE_TOKEN: Optional[str] = None
-    MOODLE_ENABLED: bool = False
-
-    # Zoho
-    ZOHO_CLIENT_ID: Optional[str] = None
-    ZOHO_CLIENT_SECRET: Optional[str] = None
-    ZOHO_REFRESH_TOKEN: Optional[str] = None
-    ZOHO_REGION: str = "com"
-
-    # Webhook
-    WEBHOOK_BASE_URL: Optional[str] = None
-
-    # model_config tells pydantic-settings where to find .env
-    model_config = SettingsConfigDict(env_file=_ENV_FILE, extra="ignore")
-
-
-# Create a single instance — imported everywhere in the project
-# instance واحدة تُستخدم في كل مكان في المشروع
-settings = Settings()</code></pre>
-        </div>
-
-        <p style="margin-top:16px;">Usage anywhere in the project:</p>
-        <div class="code-block">
-          <div class="code-header"><span class="code-lang">python</span><button class="copy-btn">Copy</button></div>
-          <pre><code class="language-python">from app.core.config import settings
-
-print(settings.MOODLE_BASE_URL)  # → https://your-moodle.com
-print(settings.MOODLE_ENABLED)   # → True (bool, auto-converted from "true")
-print(settings.ENV)              # → "development"</code></pre>
-        </div>
-      </div>
-
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 01 Quiz</div>
-        <div class="section-divider"></div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">What is the purpose of <code>Depends(get_db)</code> in a FastAPI endpoint?</div>
-          <div class="quiz-question-ar">ما الغرض من <code>Depends(get_db)</code> في FastAPI endpoint؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It creates a new database every request</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> It injects a database session that is automatically closed after the request</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It connects to the database only once at startup</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It locks the database during the request</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! <code>Depends(get_db)</code> calls the <code>get_db</code> generator function, which creates a new Session, yields it to the endpoint, and then closes it in the <code>finally</code> block — even if an exception occurred.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">Given <code>app.include_router(api_router, prefix="/api/v1")</code> and <code>APIRouter(prefix="/sync")</code> and <code>@router.post("/students")</code>, what is the full URL?</div>
-          <div class="quiz-question-ar">إذا كان لدينا prefix="/api/v1" ثم prefix="/sync" ثم @router.post("/students")، ما هو الرابط النهائي؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> /students</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> /sync/students</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> /api/v1/sync/students</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> /api/sync/v1/students</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! URL prefixes stack: /api/v1 (from main.py include_router) + /sync (from APIRouter) + /students (from decorator) = /api/v1/sync/students</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">What is the purpose of the <code>lifespan</code> function in the FastAPI app?</div>
-          <div class="quiz-question-ar">ما الغرض من دالة <code>lifespan</code> في تطبيق FastAPI؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It defines the API's response schema</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It handles the lifespan of each HTTP request</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> It runs code at app startup (before yield) and app shutdown (after yield)</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It sets the timeout for all requests</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Code before <code>yield</code> runs at startup (e.g., create DB tables). Code after <code>yield</code> runs at shutdown (cleanup). This replaces the old <code>@app.on_event("startup")</code> pattern.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-      </div>
-
+  </nav>
+</header>
+
+<main class="lesson-container">
+
+  <div class="lesson-header">
+    <div class="lesson-number-badge">01</div>
+    <div>
+      <h1 class="lesson-title">Project Structure Deep Dive</h1>
+      <p class="lesson-subtitle">Understand every folder and file in the repository — what it does, why it exists, and how it connects to the rest of the system.</p>
+      <p class="lesson-subtitle" style="direction:rtl;text-align:right;font-family:'Tajawal',sans-serif;color:#92400e;">هيكل المشروع بالتفصيل — كل مجلد وكل ملف</p>
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
-<script src="course.js"></script>
-<script>initLesson(1);</script>
+  <!-- ═══ SECTION 1: Why project structure matters ═══ -->
+  <div class="card">
+    <h2>1 — Why Project Structure Matters</h2>
+    <h2 class="ar">١ — لماذا يهمّنا هيكل المشروع؟</h2>
+
+    <p>
+      Imagine two offices. The first office has every document piled randomly on a single desk —
+      contracts mixed with invoices mixed with HR forms. Finding anything takes ten minutes, and
+      new employees have no idea where to start. The second office has labelled filing cabinets:
+      one for contracts, one for invoices, one for HR. Any person — including someone who has never
+      been there before — can find what they need in thirty seconds.
+    </p>
+    <p>
+      A software project without deliberate structure is the first office. When a bug appears in
+      production at 2am, you cannot afford to spend twenty minutes figuring out which file handles
+      which behaviour. Good project structure means every file has exactly one well-defined job,
+      files that work together are grouped into the same folder, and any developer can navigate
+      the codebase on their first day.
+    </p>
+    <p>
+      This project follows the <strong>layered architecture</strong> pattern, also called
+      <em>n-tier architecture</em>. Each layer has a specific responsibility and only communicates
+      with the layers immediately adjacent to it:
+    </p>
+    <ul>
+      <li><strong>API layer</strong> (<code>app/api/</code>) — receives HTTP requests, validates input, returns HTTP responses.</li>
+      <li><strong>Service layer</strong> (<code>app/services/</code>) — orchestrates business logic, calls infrastructure.</li>
+      <li><strong>Infrastructure layer</strong> (<code>app/infra/</code>) — communicates with external systems (database, Moodle, Zoho).</li>
+      <li><strong>Domain layer</strong> (<code>app/domain/</code>) — defines the data shapes shared across all layers.</li>
+    </ul>
+
+    <p class="ar">
+      تخيّل مكتبَين. المكتب الأول: كل وثيقة مرمية عشوائياً على طاولة واحدة — عقود مختلطة بفواتير
+      مختلطة بملفات مستخدمين. إيجاد أي شيء يستغرق عشر دقائق. المكتب الثاني: خزانات ملفات مسمّاة:
+      واحدة للعقود، واحدة للفواتير، واحدة للموارد البشرية. أي شخص — حتى المبتدئ — يجد ما يحتاجه خلال ثلاثين ثانية.
+    </p>
+    <p class="ar">
+      مشروع برمجي بدون هيكل متعمّد هو المكتب الأول. هيكل المشروع الجيد يعني أن كل ملف له وظيفة
+      واحدة محددة بوضوح، والملفات التي تعمل معاً مجمّعة في نفس المجلد، وأي مطوّر يمكنه التنقّل
+      في الكود من أول يوم.
+    </p>
+    <p class="ar">
+      يتبع هذا المشروع نمط <strong>الهندسة طبقية</strong>: طبقة API تستقبل الطلبات وتُعيد الردود،
+      طبقة خدمة تنسّق منطق الأعمال، طبقة بنية تحتية تتواصل مع قاعدة البيانات وZoho وMoodle،
+      وطبقة نماذج (domain) تعرّف أشكال البيانات المشتركة.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 2: Top-level folders ═══ -->
+  <div class="card">
+    <h2>2 — Top-Level Folders</h2>
+    <h2 class="ar">٢ — المجلدات الرئيسية</h2>
+
+    <p>The repository root contains four significant directories:</p>
+    <div class="diagram-box">
+      <pre>
+moodle-zoho-integration-v3/
+├── backend/          ← Python FastAPI server (this course's main focus)
+├── moodle_plugin/    ← PHP plugin that gets installed on the Moodle server
+├── course/           ← This course's HTML/CSS/JS files (what you're reading now)
+└── .venv-2/          ← Python virtual environment (machine-local, not in git)
+      </pre>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Folder</th><th>Language</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>backend/</code></td>
+            <td>Python 3.11</td>
+            <td>The FastAPI web server. Handles all sync logic, exposes REST APIs, runs the scheduled jobs, and serves the Admin Panel. This is where you will spend 90% of your time.</td>
+          </tr>
+          <tr>
+            <td><code>moodle_plugin/</code></td>
+            <td>PHP 8.x</td>
+            <td>A standard Moodle local plugin that fires events (course enrolment, grade change, payment) and forwards them to the FastAPI backend via HTTP POST. It is installed on the Moodle server, not run locally.</td>
+          </tr>
+          <tr>
+            <td><code>course/</code></td>
+            <td>HTML/CSS/JS</td>
+            <td>This developer course — static HTML pages linked to a shared stylesheet. Can be opened directly in a browser — no server required.</td>
+          </tr>
+          <tr>
+            <td><code>.venv-2/</code></td>
+            <td>—</td>
+            <td>The virtual environment created by <code>python -m venv .venv-2</code>. Contains the private Python interpreter and all installed packages. Excluded from git. Recreate it with one command if you clone the repo to a new machine.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <strong>Important separation:</strong> The Python backend and the Moodle PHP plugin are
+      completely independent programs. They do not share code, they do not share a process, and they
+      do not share a database. They communicate <em>exclusively</em> over HTTP — the PHP plugin POSTs
+      event data to the FastAPI backend's endpoints, and the backend responds with JSON.
+    </p>
+
+    <p class="ar">
+      يحتوي جذر المستودع على أربعة مجلدات رئيسية: <code>backend/</code> (خادم Python FastAPI —
+      محور هذه الدورة)، <code>moodle_plugin/</code> (إضافة PHP تُثبَّت على خادم Moodle)،
+      <code>course/</code> (ملفات هذه الدورة التعليمية)، و<code>.venv-2/</code> (البيئة الافتراضية
+      المحلية غير المرفوعة إلى git).
+    </p>
+    <p class="ar">
+      <strong>فصل مهم:</strong> الخادم Python والإضافة PHP مستقلان تماماً. لا يشتركان في كود،
+      ولا في عملية، ولا في قاعدة بيانات. يتواصلان <em>حصراً</em> عبر HTTP — الإضافة PHP ترسل
+      بيانات الأحداث إلى نقاط نهاية FastAPI، والخادم يرد بـ JSON.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 3: backend/ root files ═══ -->
+  <div class="card">
+    <h2>3 — backend/ Root Files</h2>
+    <h2 class="ar">٣ — ملفات جذر مجلد backend/</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>start_server.py</code></td>
+            <td>The entry point — the only script you ever run. Calls <code>uvicorn.run("app.main:app", host="0.0.0.0", port=8001)</code> which starts the HTTP server. Keeping this in a separate file (instead of running uvicorn directly from the command line) lets you add pre-startup logic like environment validation.</td>
+          </tr>
+          <tr>
+            <td><code>requirements.txt</code></td>
+            <td>Pinned list of all Python packages the project needs. New developers run <code>pip install -r requirements.txt</code> once and get identical package versions to everyone on the team. <em>Always pin versions</em> — without pins, <code>pip install</code> may grab newer breaking versions.</td>
+          </tr>
+          <tr>
+            <td><code>.env</code></td>
+            <td>Your private secrets and configuration (not committed to git). Contains credentials for Moodle and Zoho, the SQLite path, log level, and the encryption key. Copy from <code>.env.example</code> and fill in real values.</td>
+          </tr>
+          <tr>
+            <td><code>.env.example</code></td>
+            <td>A safe template committed to git. Lists every .env variable with a descriptive placeholder value. New developers use this as a guide to know what they need to configure.</td>
+          </tr>
+          <tr>
+            <td><code>moodle_zoho_local.db</code></td>
+            <td>The SQLite database file. Auto-created on first server startup. Contains all synced data: students, enrolments, grades, payments, field mappings, sync event log, etc. Back this file up regularly on a production server.</td>
+          </tr>
+          <tr>
+            <td><code>admin_users.json</code></td>
+            <td>A JSON file listing admin panel users and their bcrypt-hashed passwords. Example: <code>[{"username": "admin", "password_hash": "$2b$12$..."}]</code>. The admin panel's login system reads this file to authenticate sessions. You can add or remove users by editing this file or using the /admin/users page.</td>
+          </tr>
+          <tr>
+            <td><code>alembic.ini</code></td>
+            <td>Configuration for Alembic (the database migration tool). Points Alembic at your database URL and migration scripts folder. Used when you need to add a column or change a table structure without losing existing data.</td>
+          </tr>
+          <tr>
+            <td><code>pytest.ini</code></td>
+            <td>Configuration for pytest (the test runner). Tells pytest where to find tests and which markers are defined. Run <code>pytest</code> from inside <code>backend/</code> to execute the full test suite.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      مجلد <code>backend/</code> يحتوي ملفات جذر مهمة: <code>start_server.py</code> هو نقطة الدخول
+      الوحيدة التي تشغّلها. <code>requirements.txt</code> قائمة الحزم المثبّتة. <code>.env</code>
+      بياناتك السرية والإعدادات (غير مرفوعة لـ git). <code>.env.example</code> قالب آمن في git.
+      <code>moodle_zoho_local.db</code> ملف قاعدة البيانات SQLite (يُنشأ تلقائياً).
+      <code>admin_users.json</code> قائمة مستخدمي لوحة التحكم بكلمات مرور مشفّرة.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 4: app/ — The Application Package ═══ -->
+  <div class="card">
+    <h2>4 — backend/app/ — The Application Package</h2>
+    <h2 class="ar">٤ — حزمة التطبيق backend/app/</h2>
+
+    <p>
+      Everything inside <code>backend/app/</code> is a <strong>Python package</strong>. In Python,
+      a package is simply a folder that contains a file named <code>__init__.py</code>. That file
+      may be empty or may contain initialization code. Its presence tells Python "this directory is
+      a package — you can import from it using dot notation (<code>from app.core.config import settings</code>)."
+    </p>
+
+    <p>The top-level package structure inside <code>app/</code>:</p>
+    <div class="diagram-box">
+      <pre>
+app/
+├── __init__.py
+├── main.py              ← FastAPI application factory
+├── api/
+│   └── v1/
+│       ├── router.py    ← aggregates all endpoint routers
+│       └── endpoints/   ← one file per feature (students, grades, etc.)
+├── core/
+│   ├── config.py        ← reads .env into a Settings object
+│   ├── scheduler.py     ← APScheduler background jobs
+│   ├── security.py      ← HMAC verification
+│   ├── idempotency.py   ← prevent duplicate webhook processing
+│   └── logging.py       ← logging configuration
+├── domain/
+│   └── models/          ← Pydantic data models (schemas)
+├── infra/
+│   ├── db/              ← SQLAlchemy ORM models and session
+│   ├── moodle/          ← Moodle REST API client
+│   └── zoho/            ← Zoho CRM OAuth2 client
+└── services/            ← business logic orchestration
+      </pre>
+    </div>
+
+    <p>
+      <strong>app/main.py</strong> is the heart of the application. When uvicorn starts, it imports
+      this file and looks for the object named <code>app</code> (the FastAPI instance). Here is what
+      main.py does in order:
+    </p>
+    <ol>
+      <li>Creates the FastAPI application: <code>app = FastAPI(title=settings.APP_NAME)</code></li>
+      <li>Adds CORS middleware — explained below.</li>
+      <li>Defines a <code>lifespan</code> context manager that runs on startup (creates DB tables, starts the scheduler) and on shutdown (stops the scheduler cleanly).</li>
+      <li>Mounts the API router at <code>/api/v1</code>: all REST endpoints live under this prefix.</li>
+      <li>Mounts the admin router at <code>/admin</code>: serves the HTML admin panel.</li>
+      <li>Adds a <code>/health</code> endpoint that returns <code>{"status": "ok"}</code>.</li>
+    </ol>
+
+    <p>
+      <strong>What is CORS?</strong> CORS stands for Cross-Origin Resource Sharing. When a browser
+      page at <code>https://moodle.school.com</code> makes an HTTP request to
+      <code>http://backend.school.com:8001</code>, the browser blocks the request by default because
+      they have different origins (different domains or ports). CORS middleware tells the browser
+      "this server explicitly allows requests from these origins" by adding special response headers.
+      FastAPI's <code>CORSMiddleware</code> handles this automatically when you list the allowed origins.
+    </p>
+
+    <p class="ar">
+      كل شيء داخل <code>backend/app/</code> هو <strong>حزمة Python</strong>. الحزمة هي مجلد يحتوي
+      ملف <code>__init__.py</code> (قد يكون فارغاً) — وجود هذا الملف يخبر Python أن هذا المجلد
+      حزمة يمكن الاستيراد منها بصيغة نقطية (<code>from app.core.config import settings</code>).
+    </p>
+    <p class="ar">
+      <strong>app/main.py</strong> هو قلب التطبيق. عند بدء uvicorn، يستورد هذا الملف ويبحث عن
+      الكائن <code>app</code> (مثيل FastAPI). يقوم main.py بالترتيب بـ: إنشاء تطبيق FastAPI،
+      إضافة CORS middleware، تعريف دورة حياة التطبيق (إنشاء جداول DB، تشغيل المجدوّل)،
+      ربط راوتر API على <code>/api/v1</code>، وربط راوتر لوحة التحكم على <code>/admin</code>.
+    </p>
+    <p class="ar">
+      <strong>ما هو CORS؟</strong> اختصار Cross-Origin Resource Sharing (مشاركة الموارد عبر الأصول المختلفة).
+      عندما يحاول المتصفح إرسال طلب HTTP من <code>moodle.school.com</code> إلى <code>backend:8001</code>،
+      يحجب المتصفح الطلب تلقائياً لاختلاف الأصول. CORS middleware يضيف ترويسات استجابة خاصة
+      تخبر المتصفح أن هذا الخادم يسمح صراحةً بالطلبات من تلك الأصول.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 5: app/api/v1/endpoints/ ═══ -->
+  <div class="card">
+    <h2>5 — backend/app/api/v1/endpoints/ — The API Endpoints</h2>
+    <h2 class="ar">٥ — نقاط نهاية API</h2>
+
+    <p>
+      An <strong>API endpoint</strong> is a URL that your server exposes and that external clients
+      can call. For example, <code>POST /api/v1/sync/students</code> is an endpoint that triggers
+      student synchronisation. Each endpoint is a Python function decorated with a FastAPI route
+      decorator like <code>@router.post("/sync/students")</code>.
+    </p>
+    <p>
+      Instead of putting all 50+ endpoints in a single 2000-line file, each feature area gets its
+      own file. The <code>v1/router.py</code> then imports all these routers and combines them:
+    </p>
+    <pre class="code-block"># app/api/v1/router.py (simplified)
+from fastapi import APIRouter
+from .endpoints import sync_students, sync_grades, webhooks, mappings, ...
+
+api_router = APIRouter()
+api_router.include_router(sync_students.router, prefix="/sync", tags=["sync"])
+api_router.include_router(sync_grades.router,   prefix="/sync", tags=["sync"])
+api_router.include_router(webhooks.router,      prefix="/webhooks", tags=["webhooks"])
+# ... and so on for every endpoint file</pre>
+
+    <p><strong>Key endpoint files and what they handle:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>File</th><th>URL Prefix</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>sync_students.py</code></td><td><code>/api/v1/sync/students</code></td><td>Triggers a pull of all student records from Moodle's <code>core_user_get_users</code> Web Service function and upserts them into the local <code>students</code> table.</td></tr>
+          <tr><td><code>sync_grades.py</code></td><td><code>/api/v1/sync/grades</code></td><td>Fetches grade data from Moodle for all enrolled students and syncs to the <code>grades</code> table.</td></tr>
+          <tr><td><code>sync_enrollments.py</code></td><td><code>/api/v1/sync/enrollments</code></td><td>Syncs course enrolment records — which student is enrolled in which course with which status.</td></tr>
+          <tr><td><code>sync_payments.py</code></td><td><code>/api/v1/sync/payments</code></td><td>Pulls payment/order records from Moodle and stores them locally for reconciliation with Zoho CRM deals.</td></tr>
+          <tr><td><code>webhooks.py</code></td><td><code>/api/v1/webhooks/zoho</code></td><td>Receives incoming trigger notifications from Zoho CRM. Verifies HMAC signature, checks idempotency key, processes the payload, and returns 200 OK.</td></tr>
+          <tr><td><code>mappings.py</code></td><td><code>/api/v1/mappings</code></td><td>CRUD endpoints for field mappings — the configuration table that defines which Zoho field name maps to which local database column.</td></tr>
+          <tr><td><code>zoho_push.py</code></td><td><code>/api/v1/zoho/push</code></td><td>Pushes locally stored student/enrolment/grade data up to Zoho CRM contacts and modules.</td></tr>
+          <tr><td><code>health.py</code></td><td><code>/health</code></td><td>Simple health check endpoint. Returns database connectivity status. Called by monitoring systems.</td></tr>
+          <tr><td><code>debug.py</code></td><td><code>/api/v1/debug</code></td><td>Development-only endpoints for inspecting internal state, testing API connections, and debugging sync issues. Disabled in production.</td></tr>
+          <tr><td><code>registrations.py</code></td><td><code>/api/v1/registrations</code></td><td>Manages student registration records — the bridge between a Zoho CRM lead/contact becoming a Moodle student.</td></tr>
+          <tr><td><code>programs.py</code></td><td><code>/api/v1/programs</code></td><td>Programme management — maps Moodle course categories to Zoho programme records for structured enrolment tracking.</td></tr>
+          <tr><td><code>classes.py</code></td><td><code>/api/v1/classes</code></td><td>Class/cohort management — allows grouping students into academic classes for reporting in Zoho.</td></tr>
+          <tr><td><code>btec.py</code></td><td><code>/api/v1/btec</code></td><td>BTEC qualification template management — handles assignment templates for BTEC grading schemes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      <strong>نقطة نهاية API</strong> هي URL يعرضه خادمك ويمكن للعملاء الخارجيين استدعاؤه.
+      بدلاً من وضع جميع نقاط النهاية (50+) في ملف واحد ضخم، كل منطقة وظيفية لها ملفها الخاص.
+      يقوم <code>v1/router.py</code> باستيراد جميع هذه الراوترات ودمجها. هذا يجعل الكود منظّماً:
+      كل شخص يعرف أين يذهب حين يريد تعديل سلوك معين.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 6: app/core/ ═══ -->
+  <div class="card">
+    <h2>6 — backend/app/core/ — Cross-Cutting Concerns</h2>
+    <h2 class="ar">٦ — المخاوف المشتركة app/core/</h2>
+
+    <p>
+      The <code>core/</code> folder holds utilities that are needed everywhere in the application —
+      not tied to any single feature, but used across all features. This pattern is called
+      "cross-cutting concerns" in software architecture.
+    </p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>File</th><th>What it provides</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>config.py</code></td>
+            <td>
+              Defines a <code>Settings</code> class using <code>pydantic_settings.BaseSettings</code>.
+              Pydantic reads all variables from the <code>.env</code> file and populates the class fields
+              with type conversion and validation. A module-level singleton
+              <code>settings = Settings()</code> is created once and imported everywhere:
+              <code>from app.core.config import settings</code>. This means the entire app references
+              config through a single strongly-typed object rather than scattered <code>os.getenv()</code> calls.
+            </td>
+          </tr>
+          <tr>
+            <td><code>scheduler.py</code></td>
+            <td>
+              Sets up an <strong>APScheduler</strong> background scheduler that runs periodic sync jobs.
+              Jobs are registered with their schedule (e.g., <code>IntervalTrigger(minutes=15)</code>) and
+              the scheduler starts when the FastAPI application starts. Jobs run in a thread pool so they
+              don't block the async event loop that handles HTTP requests.
+            </td>
+          </tr>
+          <tr>
+            <td><code>security.py</code></td>
+            <td>
+              HMAC-SHA256 webhook signature verification. When Zoho sends a webhook POST, it includes
+              an <code>X-Zoho-Webhook-Token</code> header that is an HMAC-SHA256 hash of the request
+              body using <code>ZOHO_WEBHOOK_HMAC_SECRET</code> as the key. This file provides the
+              <code>verify_zoho_signature(body, header)</code> function that recomputes the hash and
+              compares it. Any request where they don't match is rejected with 401 Unauthorized.
+            </td>
+          </tr>
+          <tr>
+            <td><code>idempotency.py</code></td>
+            <td>
+              Prevents duplicate processing of webhook events. Zoho may resend the same webhook if it
+              doesn't receive a 200 OK quickly enough (network timeout). The idempotency system stores
+              a fingerprint (hash of the webhook payload or a unique event ID) in the database. Before
+              processing any webhook, it checks if that ID was already processed. If yes, the handler
+              returns 200 OK immediately without re-running the business logic. This prevents double-writing
+              to the database.
+            </td>
+          </tr>
+          <tr>
+            <td><code>logging.py</code></td>
+            <td>
+              Configures Python's standard <code>logging</code> module for the whole application.
+              Sets the log format (timestamp, level, module name, message), sets the log level from
+              <code>settings.LOG_LEVEL</code>, and adds file handler if needed. Importing this module
+              early in <code>main.py</code> ensures consistent logging everywhere.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      مجلد <code>core/</code> يحتوي الأدوات المساعدة المطلوبة في كل مكان بالتطبيق — غير مرتبطة
+      بميزة واحدة بل تُستخدم عبر جميع الميزات.
+    </p>
+    <p class="ar">
+      <code>config.py</code>: يعرّف كلاس <code>Settings</code> يقرأ جميع متغيرات <code>.env</code>
+      بالتحقق من الأنواع. يُنشأ كائن واحد مشترك (<code>settings</code>) يستورده الجميع.
+      <code>scheduler.py</code>: يضبط APScheduler لتشغيل مزامنات دورية في الخلفية.
+      <code>security.py</code>: يوفّر دالة التحقق من توقيع HMAC-SHA256 للـ webhooks الواردة.
+      <code>idempotency.py</code>: يمنع معالجة نفس الـ webhook مرتين عبر تخزين بصمة الحدث.
+      <code>logging.py</code>: يضبط نظام السجلّات (logs) للتطبيق بأكمله.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 7: app/domain/ ═══ -->
+  <div class="card">
+    <h2>7 — backend/app/domain/ — Data Models</h2>
+    <h2 class="ar">٧ — نماذج البيانات app/domain/</h2>
+
+    <p>
+      In software architecture, the <strong>domain layer</strong> defines the core data structures
+      and business concepts of your application — independent of databases, HTTP, or external APIs.
+      In this project, domain models are <strong>Pydantic</strong> classes that describe the shape
+      of data flowing between layers: what a "student" looks like, what fields a "grade" has, etc.
+    </p>
+    <p>
+      Pydantic models provide automatic data validation and serialization. When FastAPI receives a
+      JSON body and you declare the endpoint parameter as a Pydantic model, FastAPI automatically
+      parses the JSON, validates each field type, raises a helpful 422 error if anything is wrong,
+      and gives you a clean Python object.
+    </p>
+
+    <p><strong>Key domain models and what they represent:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Represents</th><th>Key Fields</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Student</code></td><td>A learner in both Moodle and Zoho</td><td>moodle_id, zoho_contact_id, firstname, lastname, email, phone, status</td></tr>
+          <tr><td><code>Enrollment</code></td><td>A student's registration in a Moodle course</td><td>student_id, course_id, course_name, enrol_date, completion_status, zoho_deal_id</td></tr>
+          <tr><td><code>Grade</code></td><td>A student's grade in a course item</td><td>student_id, course_id, grade_item_name, grade_value, grade_max, percentage, last_synced</td></tr>
+          <tr><td><code>Payment</code></td><td>A financial transaction record from Moodle</td><td>student_id, course_id, amount, currency, payment_date, gateway, order_id</td></tr>
+          <tr><td><code>Registration</code></td><td>A pre-enrolment record (Zoho lead converting to Moodle student)</td><td>zoho_lead_id, target_course_id, status, created_at</td></tr>
+          <tr><td><code>Class</code></td><td>An academic cohort grouping students</td><td>class_name, program_id, academic_year, student_ids</td></tr>
+          <tr><td><code>Unit</code></td><td>A learning unit within a programme</td><td>unit_code, unit_name, credit_value, programme_id</td></tr>
+          <tr><td><code>Program</code></td><td>An academic programme mapping Moodle categories to Zoho</td><td>program_name, moodle_category_id, zoho_module, zoho_field_map</td></tr>
+          <tr><td><code>SyncEvent</code></td><td>An audit log entry for every sync operation</td><td>event_type, status, records_processed, error_message, created_at</td></tr>
+          <tr><td><code>BtecTemplate</code></td><td>A BTEC assignment grading template</td><td>template_name, units, criteria, pass_threshold</td></tr>
+          <tr><td><code>FieldMapping</code></td><td>Configuration: Zoho field → local DB column</td><td>zoho_module, zoho_field, local_table, local_column, transform_fn</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      <strong>طبقة النماذج (domain)</strong> تعرّف الهياكل البيانية الأساسية لتطبيقك —
+      مستقلةً عن قواعد البيانات أو HTTP أو APIs الخارجية. في هذا المشروع، نماذج الـ domain
+      هي كلاسات <strong>Pydantic</strong> تصف شكل البيانات المتدفقة بين الطبقات.
+    </p>
+    <p class="ar">
+      Pydantic توفّر التحقق التلقائي من البيانات والتسلسل (serialization). عندما تستقبل FastAPI
+      جسم JSON وتعلن معامل النقطة النهائية بكلاس Pydantic، تقوم FastAPI تلقائياً بتحليل JSON
+      والتحقق من كل نوع حقل ورفع خطأ 422 واضح إذا كان هناك خطأ.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 8: app/infra/ ═══ -->
+  <div class="card">
+    <h2>8 — backend/app/infra/ — Infrastructure Layer</h2>
+    <h2 class="ar">٨ — طبقة البنية التحتية app/infra/</h2>
+
+    <p>
+      The <strong>infrastructure layer</strong> is the boundary between your application code and
+      external systems. Every dependency on something outside your Python process — the SQLite
+      database, the Moodle web service API, the Zoho REST API — is isolated in this layer.
+      The benefit: if you ever need to swap SQLite for PostgreSQL, you change code only in
+      <code>infra/db/</code> — not in business logic or API handlers.
+    </p>
+
+    <p><strong>infra/db/ — Database</strong></p>
+    <ul>
+      <li><code>base.py</code> — Declares the SQLAlchemy <code>Base</code> class that all ORM models inherit from, and creates the engine from <code>settings.DATABASE_URL</code>.</li>
+      <li><code>session.py</code> — Provides the <code>get_db()</code> FastAPI dependency. Each request gets its own database <code>Session</code> — a transaction context — which is automatically closed when the request ends. Usage: <code>db: Session = Depends(get_db)</code> in endpoint functions.</li>
+      <li><code>models.py</code> — SQLAlchemy ORM table definitions — Python classes decorated with <code>@mapper_registry.mapped</code> that each correspond to a database table. These define the SQL schema: column names, types, indexes, foreign keys.</li>
+    </ul>
+
+    <p><strong>infra/moodle/ — Moodle API Client</strong></p>
+    <ul>
+      <li><code>users.py</code> — Functions that call Moodle's Web Service REST API. For example, <code>get_all_users()</code> constructs a GET/POST request to <code>{MOODLE_BASE_URL}/webservice/rest/server.php?wsfunction=core_user_get_users&moodlewsrestformat=json&wstoken={token}</code> and returns the parsed user list.</li>
+      <li>All Moodle API calls go through this client — business logic never builds Moodle HTTP requests directly. This isolation means you can mock this client in tests.</li>
+    </ul>
+
+    <p><strong>infra/zoho/ — Zoho CRM Client</strong></p>
+    <ul>
+      <li><code>client.py</code> — An <strong>httpx</strong>-based Zoho API client that handles OAuth2 token management automatically. It stores the current access token in memory. When a request fails with 401 (token expired), it automatically calls the Zoho token refresh endpoint using the <code>ZOHO_REFRESH_TOKEN</code>, gets a new access token, and retries the request. Your application code never deals with token refresh — the client handles it transparently.</li>
+      <li>Methods include: <code>search_contacts(email)</code>, <code>create_contact(data)</code>, <code>update_contact(id, data)</code>, <code>create_deal(data)</code>, <code>get_module_fields(module)</code>.</li>
+    </ul>
+
+    <p class="ar">
+      <strong>طبقة البنية التحتية</strong> هي الحدود بين كود تطبيقك والأنظمة الخارجية.
+      كل اعتماد على شيء خارج عملية Python — قاعدة البيانات SQLite، واجهة Moodle API، واجهة Zoho API —
+      محصور في هذه الطبقة. الفائدة: لو أردت يوماً استبدال SQLite بـ PostgreSQL، تغيّر الكود
+      في <code>infra/db/</code> فقط دون تعديل منطق الأعمال أو معالجات API.
+    </p>
+    <p class="ar">
+      <code>infra/db/</code>: يحتوي تعريف قاعدة Python Base لـ SQLAlchemy، مزوّد الجلسة <code>get_db()</code>،
+      وتعريفات جداول ORM. <code>infra/moodle/</code>: يحتوي عميل Moodle REST API.
+      <code>infra/zoho/client.py</code>: عميل Zoho مع إدارة توكن OAuth2 التلقائية — عند انتهاء
+      صلاحية التوكن، يجدّده العميل تلقائياً دون أن يهتم بذلك كود الأعمال.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 9: app/services/ ═══ -->
+  <div class="card">
+    <h2>9 — backend/app/services/ — The Service Layer</h2>
+    <h2 class="ar">٩ — طبقة الخدمات app/services/</h2>
+
+    <p>
+      The <strong>service layer</strong> is where business logic lives. Services are Python functions
+      (or classes) that orchestrate between the infrastructure layer and the API layer. An API handler
+      should be thin — it validates input, calls a service function, and returns the result. The
+      service function does the real work: calling Moodle, transforming data, calling Zoho, saving
+      to the database.
+    </p>
+    <p>
+      Why separate services from endpoints? Because the same business logic may be needed in multiple
+      places. The "sync students" logic needs to run both when a user clicks the button on the Admin
+      Panel (<code>POST /admin/sync</code>) and when the scheduler runs it automatically every 15
+      minutes. By putting the logic in a service function, both can call the same function — no code
+      duplication.
+    </p>
+
+    <p><strong>Key service functions:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Service</th><th>What it orchestrates</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>sync_students_service(db)</code></td><td>Calls <code>infra.moodle.users.get_all_users()</code>, transforms each user dict into a <code>Student</code> domain model, then upserts (insert or update) each record in the <code>students</code> table using SQLAlchemy. Returns a summary dict with counts of created/updated/skipped.</td></tr>
+          <tr><td><code>sync_grades_service(db)</code></td><td>Fetches all enrolled students, calls Moodle grades API for each course, transforms results, upserts into <code>grades</code> table.</td></tr>
+          <tr><td><code>push_to_zoho_service(db)</code></td><td>Reads students from the local DB that have changes since last push, calls <code>infra.zoho.client.search_contacts(email)</code> for each, then either creates a new Zoho contact or updates the existing one. Applies field mappings from the <code>field_mappings</code> table.</td></tr>
+          <tr><td><code>process_webhook_service(payload, db)</code></td><td>Receives a verified Zoho webhook payload, identifies the event type (contact updated, deal created, etc.), maps the Zoho field changes to local DB columns using the field mapping table, then updates the relevant local records.</td></tr>
+          <tr><td><code>full_sync_service(db)</code></td><td>Orchestrates a complete sync cycle: students → grades → enrolments → payments → push to Zoho. Called by the scheduler periodically and by the "Full Sync" button in the Admin Panel.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      <strong>طبقة الخدمات</strong> هي حيث يعيش منطق الأعمال. الخدمات هي دوال Python تنسّق بين
+      طبقة البنية التحتية وطبقة API. معالج API يجب أن يكون رقيقاً — يتحقق من المدخلات، يستدعي
+      دالة خدمة، يُعيد النتيجة. دالة الخدمة تقوم بالعمل الحقيقي.
+    </p>
+    <p class="ar">
+      لماذا نفصل الخدمات عن نقاط النهاية؟ لأن نفس منطق الأعمال قد يُحتاج في أماكن متعددة.
+      منطق "مزامنة الطلاب" يحتاج أن يعمل عند الضغط على الزر في لوحة التحكم وعند تشغيل المجدوّل
+      تلقائياً. بوضع المنطق في دالة خدمة، يمكن لكلٍّ منهما استدعاء نفس الدالة — بدون تكرار كود.
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 10: backend/admin/ ═══ -->
+  <div class="card">
+    <h2>10 — backend/admin/ — The Admin Panel</h2>
+    <h2 class="ar">١٠ — لوحة التحكم backend/admin/</h2>
+
+    <p>
+      The admin panel is a full, server-rendered web UI accessible at
+      <code>http://localhost:8001/admin</code>. It is built with <strong>FastAPI + Jinja2 templates</strong>
+      — the server renders HTML on each request and sends complete HTML pages to the browser.
+      This approach (server-side rendering) is simpler than building a single-page React app and
+      does not require a separate frontend build step or API authentication token management.
+    </p>
+
+    <p><strong>admin/ folder structure:</strong></p>
+    <pre class="code-block">admin/
+├── router.py          ← ~1200 lines of route handlers (one per page)
+├── auth.py            ← session-based login/logout logic
+└── templates/         ← Jinja2 HTML files
+    ├── base.html      ← shared sidebar/navbar layout
+    ├── login.html     ← login form
+    ├── dashboard.html ← overview: counts and recent activity
+    ├── sync.html      ← manual sync trigger buttons + results
+    ├── sync_history.html ← past sync event log table
+    ├── mappings.html  ← field mapping editor
+    ├── data.html      ← browse/search database records
+    ├── settings.html  ← edit .env values via web UI
+    ├── logs.html      ← live server log viewer
+    ├── users.html     ← admin user management
+    └── setup.html     ← first-time setup wizard</pre>
+
+    <p><strong>Admin panel pages and their URLs:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>URL</th><th>What you see</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/admin/login</code></td><td>Username and password form. On successful login, a session cookie is set and you are redirected to the dashboard.</td></tr>
+          <tr><td><code>/admin/dashboard</code></td><td>Overview cards: total students, total enrolments, total grades, last sync time, sync error count. Recent sync events listed below.</td></tr>
+          <tr><td><code>/admin/sync</code></td><td>Buttons to trigger each sync manually: "Sync Students", "Sync Grades", "Sync Enrolments", "Sync Payments", "Full Sync". Each button POSTs to the corresponding API endpoint and displays the result.</td></tr>
+          <tr><td><code>/admin/sync/history</code></td><td>Paginated table of all past sync operations: timestamp, type, records processed, duration, status (OK / ERROR), error message if any.</td></tr>
+          <tr><td><code>/admin/mappings</code></td><td>Field mapping editor: a table showing which Zoho CRM field (e.g., <code>Contacts.Email</code>) maps to which local database column (e.g., <code>students.email</code>). You can add, edit, and delete mappings here.</td></tr>
+          <tr><td><code>/admin/data</code></td><td>Browse database records: students list (with search by name/email), enrolment list, grades list. Each row shows all relevant fields. Useful for verifying sync is working correctly.</td></tr>
+          <tr><td><code>/admin/settings</code></td><td>Form to view and edit .env values through a web interface — no need to SSH to the server and manually edit a file. Changes are written back to the .env file and take effect after a server restart.</td></tr>
+          <tr><td><code>/admin/logs</code></td><td>Displays recent server log lines. Useful for diagnosing errors without SSH access. Refreshes automatically every 10 seconds.</td></tr>
+          <tr><td><code>/admin/users</code></td><td>Manage admin panel user accounts: view current users, add a new user (username + password), change password, delete user. Changes are written to admin_users.json.</td></tr>
+          <tr><td><code>/admin/setup</code></td><td>First-time setup wizard that walks through configuring Moodle URL and token, testing the Moodle connection, configuring Zoho credentials, and testing the Zoho OAuth2 connection.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      لوحة التحكم هي واجهة ويب كاملة يُعرض على المتصفح وهي في <code>http://localhost:8001/admin</code>.
+      مبنية باستخدام <strong>FastAPI + قوالب Jinja2</strong> — الخادم يُقدّم HTML جاهزاً عند كل طلب.
+      هذا أبسط من بناء تطبيق React منفصل ولا يحتاج خطوة build للواجهة الأمامية.
+    </p>
+    <p class="ar">
+      يحتوي مجلد <code>admin/</code> على: <code>router.py</code> (~1200 سطر من معالجات المسارات)،
+      <code>auth.py</code> (منطق تسجيل الدخول/الخروج بالجلسات)، و<code>templates/</code> (12 ملف HTML
+      Jinja2: base.html، login.html، dashboard.html، sync.html، sync_history.html، mappings.html،
+      data.html، settings.html، logs.html، users.html، setup.html).
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 11: backend/tests/ ═══ -->
+  <div class="card">
+    <h2>11 — backend/tests/ — Automated Tests</h2>
+    <h2 class="ar">١١ — الاختبارات التلقائية backend/tests/</h2>
+
+    <p>
+      <strong>Testing</strong> means writing code that automatically verifies your application
+      behaves correctly. Instead of manually clicking through the admin panel every time you make
+      a change and hoping nothing broke, you run the test suite and it checks everything
+      automatically in seconds.
+    </p>
+    <p>
+      This project uses <strong>pytest</strong> — the most popular Python testing framework. Test
+      files are named <code>test_*.py</code> and each testing function starts with <code>test_</code>.
+      Run all tests from inside <code>backend/</code>:
+    </p>
+    <pre class="code-block">pytest                          # run all tests
+pytest -v                       # verbose: show each test name
+pytest tests/test_sync.py       # run only one test file
+pytest -k "student"             # run only tests with "student" in the name</pre>
+
+    <p><strong>Key test files:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>File</th><th>What it tests</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>test_sync.py</code></td><td>Tests the sync service functions with a mocked Moodle client. Verifies that student data is correctly upserted, that duplicates are handled, and that the sync event log is written.</td></tr>
+          <tr><td><code>test_webhooks.py</code></td><td>Tests webhook endpoint with valid and invalid HMAC signatures. Verifies that tampered payloads are rejected with 401 and that valid payloads trigger the correct database updates.</td></tr>
+          <tr><td><code>test_zoho_client.py</code></td><td>Tests the Zoho API client with mocked HTTP responses. Verifies token refresh logic, contact search, and update logic.</td></tr>
+          <tr><td><code>test_mappings.py</code></td><td>Tests the field mapping CRUD endpoints.</td></tr>
+          <tr><td><code>test_admin_auth.py</code></td><td>Tests the admin panel login flow: correct credentials create a session cookie, wrong credentials return a 401, and protected pages redirect to login without a valid session.</td></tr>
+          <tr><td><code>conftest.py</code></td><td>pytest configuration: creates an in-memory SQLite test database and a FastAPI test client that all tests share. Fixtures (reusable setup/teardown) are defined here.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      <strong>الاختبار</strong> يعني كتابة كود يتحقق تلقائياً أن تطبيقك يتصرف بشكل صحيح.
+      بدلاً من النقر يدوياً عبر لوحة التحكم في كل مرة تجري تغييراً ومتمنياً ألا ينكسر شيء،
+      تعدم مجموعة الاختبارات وتتحقق من كل شيء تلقائياً في ثوانٍ.
+    </p>
+    <p class="ar">
+      يستخدم المشروع <strong>pytest</strong> — إطار اختبار Python الأكثر شيوعاً.
+      ملفات الاختبار تسمى <code>test_*.py</code> وكل دالة اختبار تبدأ بـ <code>test_</code>.
+      شغّل جميع الاختبارات من داخل <code>backend/</code>: <code>pytest</code>
+      أو بتفاصيل: <code>pytest -v</code>
+    </p>
+  </div>
+
+  <!-- ═══ SECTION 12: moodle_plugin/ ═══ -->
+  <div class="card">
+    <h2>12 — moodle_plugin/ — The Moodle PHP Plugin</h2>
+    <h2 class="ar">١٢ — إضافة PHP لـ Moodle</h2>
+
+    <p>
+      The Moodle plugin is a standard <strong>Moodle local plugin</strong> written in PHP. It is
+      installed on the Moodle server (not on the Python backend machine) and acts as the bridge
+      that triggers events from Moodle activity into the FastAPI backend.
+    </p>
+    <p>
+      When something happens in Moodle — a student enrols, a grade is posted, a payment is processed —
+      Moodle fires an internal event. The plugin listens for these events and, when one occurs, makes
+      an HTTP POST request to the FastAPI backend's corresponding endpoint.
+    </p>
+
+    <p><strong>Key files in the plugin:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>version.php</code></td>
+            <td>Required Moodle plugin manifest. Declares the plugin name (<code>local_zohosync</code>), version number, Moodle minimum version, and component string. Moodle reads this to register and track the plugin during installation and upgrade.</td>
+          </tr>
+          <tr>
+            <td><code>lib.php</code></td>
+            <td>Standard plugin library file. May contain hook implementations and utility functions used by the plugin. Required to exist even if mostly empty.</td>
+          </tr>
+          <tr>
+            <td><code>settings.php</code></td>
+            <td>Adds plugin configuration settings to the Moodle admin panel: the FastAPI backend URL and the shared webhook HMAC secret. Admins set these under Site Administration → Plugins → Local plugins → Zoho Sync.</td>
+          </tr>
+          <tr>
+            <td><code>classes/observer.php</code></td>
+            <td>The event observer class. Contains a static method for each Moodle event type being monitored (e.g., <code>user_enrolment_created</code>, <code>user_graded</code>). Each method builds a JSON payload from the event data and POSTs it to the FastAPI endpoint via PHP's <code>curl</code>.</td>
+          </tr>
+          <tr>
+            <td><code>db/events.php</code></td>
+            <td>A PHP array that registers which Moodle events the plugin listens to, and which observer class/method handles each one. Moodle reads this file at plugin installation time to wire up the event system.</td>
+          </tr>
+          <tr>
+            <td><code>ui/</code></td>
+            <td>Optional PHP UI pages that may appear under the Moodle admin panel for this plugin — for example, a connection test page that verifies the FastAPI backend is reachable from the Moodle server.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar">
+      إضافة Moodle هي <strong>إضافة محلية Moodle قياسية</strong> مكتوبة بـ PHP. تُثبَّت على خادم
+      Moodle (وليس على آلة Python) وتعمل كحلقة وصل تُطلق الأحداث من نشاط Moodle إلى FastAPI.
+    </p>
+    <p class="ar">
+      عندما يحدث شيء في Moodle — تسجيل طالب، إضافة درجة، معالجة دفعة — يُطلق Moodle حدثاً داخلياً.
+      الإضافة تستمع لهذه الأحداث، وعند حدوثها، ترسل POST HTTP إلى نقطة النهاية المقابلة في FastAPI.
+    </p>
+    <p class="ar">
+      الملفات المهمة: <code>version.php</code> (ملف بيانات الإضافة المطلوب من Moodle)،
+      <code>settings.php</code> (إعدادات في لوحة Moodle: رابط FastAPI والـ HMAC secret)،
+      <code>classes/observer.php</code> (الكلاس الذي يستقبل الأحداث ويرسل POST إلى FastAPI)،
+      <code>db/events.php</code> (يسجّل الأحداث التي تستمع لها الإضافة).
+    </p>
+  </div>
+
+  <nav class="lesson-nav">
+    <a href="lesson-00.html" class="nav-btn nav-btn-prev">← Lesson 00</a>
+    <a href="lesson-02.html" class="nav-btn nav-btn-next">Lesson 02 →</a>
+  </nav>
+
+</main>
 </body>
 </html>

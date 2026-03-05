@@ -1,454 +1,739 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 00 — Environment Setup | Zoho+Moodle Course</title>
+  <title>Lesson 00 — Environment Setup | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar, li.ar {
+      direction: rtl; text-align: right;
+      font-family: 'Tajawal', sans-serif;
+      background: #fefce8; border-right: 4px solid #f59e0b;
+      padding: 0.6rem 1rem; margin: 0.5rem 0 1rem;
+      border-radius: 0 6px 6px 0; color: #1c1917;
+      font-size: 0.97rem; line-height: 1.8;
+    }
+    h2.ar {
+      direction: rtl; text-align: right;
+      font-family: 'Tajawal', sans-serif;
+      color: #92400e; font-size: 1rem;
+      font-weight: 600; margin: -0.4rem 0 0.75rem;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html" class="active">L0</a>
+      <a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a>
+      <a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a>
+      <a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a>
+      <a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a>
+      <a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
 
-  <!-- MAIN -->
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 00</div>
-      <div class="lesson-number">Lesson 00</div>
-      <div class="lesson-title-en">Environment Setup</div>
-      <div class="lesson-title-ar">إعداد بيئة العمل</div>
-      <div class="lesson-meta">
-        <span>🕐 ~30 minutes</span>
-        <span>🎯 Beginner</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
+<main class="lesson-container">
 
-    <div class="lesson-body">
+  <div class="lesson-header">
+    <div class="lesson-number-badge">00</div>
+    <div>
+      <h1 class="lesson-title">Environment Setup</h1>
+      <p class="lesson-subtitle">Get your machine ready to run the Moodle-Zoho Integration v3 backend from scratch — no prior experience assumed.</p>
+      <p class="lesson-subtitle" style="direction:rtl;text-align:right;font-family:'Tajawal',sans-serif;color:#92400e;">إعداد بيئة العمل — خطوة بخطوة من الصفر</p>
+    </div>
+  </div>
 
-      <!-- OBJECTIVES -->
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Install Python 3.11+, FastAPI, and Uvicorn on your machine</li>
-          <li>Set up VS Code with the right extensions for Python development</li>
-          <li>Create a minimal "Hello World" FastAPI app and run it</li>
-          <li>Understand the full project folder structure before we write any logic</li>
-          <li>فهم هيكل المشروع الكامل وإعداد بيئة العمل من الصفر</li>
-        </ul>
-      </div>
+  <!-- ═══ SECTION 1: What is this project? ═══ -->
+  <div class="card">
+    <h2>1 — What Is This Project?</h2>
+    <h2 class="ar">١ — ما هو هذا المشروع؟</h2>
 
-      <!-- SECTION 1 -->
-      <div class="section">
-        <div class="section-title">1. Why These Tools? — لماذا هذه الأدوات؟</div>
-        <div class="section-divider"></div>
+    <p>
+      This project is an <strong>integration platform</strong> that connects two separate systems:
+      <strong>Moodle LMS</strong> (the learning management system where students enrol in courses,
+      receive grades, and make payments) and <strong>Zoho CRM</strong> (a customer-relationship
+      platform where student records, deals, and contacts are managed by staff). Without this
+      platform, staff would manually copy data between the two systems — a slow, error-prone process
+      that breaks down completely at any real scale.
+    </p>
+    <p>
+      The backend is a <strong>Python 3.11 FastAPI web server</strong> that sits between Moodle and
+      Zoho. It exposes REST API endpoints that Moodle calls (via a PHP plugin installed on the
+      Moodle server), and it also calls Zoho's API to read and write CRM records. All data is cached
+      locally in a <strong>SQLite database</strong> called <code>moodle_zoho_local.db</code> which
+      lives inside the <code>backend/</code> folder. The server listens on <strong>port 8001</strong>.
+    </p>
+    <p>
+      This course teaches you every layer of this stack — from setting up your local machine all the
+      way to understanding how a live sync event flows from a Moodle grade change into a Zoho CRM field
+      update. No prior knowledge of FastAPI, SQLAlchemy, or Zoho APIs is assumed.
+    </p>
 
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <p>We're building a <strong>middleware backend</strong> that sits between Zoho CRM and Moodle. We chose FastAPI because:</p>
-            <ul style="margin-top:10px; padding-left:20px;">
-              <li>It's the fastest Python web framework</li>
-              <li>Built-in data validation with Pydantic</li>
-              <li>Automatic Swagger documentation at <code class="inline">/docs</code></li>
-              <li>Native async/await support for handling multiple webhooks simultaneously</li>
-            </ul>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <p>نبني <strong>Backend وسيط</strong> بين Zoho CRM وMoodle. اخترنا FastAPI لأن:</p>
-            <ul style="margin-top:10px; padding-right:20px;">
-              <li>أسرع إطار عمل Python للويب</li>
-              <li>التحقق التلقائي من البيانات مع Pydantic</li>
-              <li>توثيق Swagger تلقائي على <code class="inline">/docs</code></li>
-              <li>دعم async/await لمعالجة عدة webhooks في آن واحد</li>
-            </ul>
-          </div>
-        </div>
+    <p class="ar">
+      هذا المشروع هو <strong>منصة تكامل</strong> تربط بين نظامين منفصلين:
+      <strong>Moodle LMS</strong> (نظام إدارة التعلّم الذي يسجّل فيه الطلاب في الدورات ويحصلون
+      على الدرجات ويدفعون الرسوم) و<strong>Zoho CRM</strong> (منصة إدارة علاقات العملاء التي
+      تحتفظ بسجلات الطلاب والصفقات وبيانات التواصل). بدون هذه المنصة، سيضطر الموظف إلى نسخ
+      البيانات يدوياً بين النظامين — عملية بطيئة وعرضة للأخطاء ومستحيلة على نطاق واسع.
+    </p>
+    <p class="ar">
+      الخادم الخلفي (backend) هو <strong>خادم Python 3.11 FastAPI</strong> يجلس بين Moodle وZoho.
+      يوفّر نقاط نهاية REST API يمكن لـ Moodle استدعاؤها (عبر إضافة PHP مثبّتة على خادم Moodle)،
+      كما يستدعي Zoho API لقراءة وكتابة سجلات CRM. تُخزَّن البيانات محلياً في قاعدة بيانات
+      <strong>SQLite</strong> تسمى <code>moodle_zoho_local.db</code> داخل مجلد <code>backend/</code>.
+      يعمل الخادم على المنفذ <strong>8001</strong>.
+    </p>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Tool</th><th>Version</th><th>Purpose</th><th>الاستخدام</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Python</td><td>3.11+</td><td>Backend language</td><td>لغة الـ Backend</td></tr>
-              <tr><td>FastAPI</td><td>0.110+</td><td>Web framework</td><td>إطار عمل الويب</td></tr>
-              <tr><td>Uvicorn</td><td>0.27+</td><td>ASGI server</td><td>خادم ASGI</td></tr>
-              <tr><td>SQLAlchemy</td><td>2.x</td><td>ORM / Database layer</td><td>طبقة قاعدة البيانات</td></tr>
-              <tr><td>PostgreSQL</td><td>15+</td><td>Production database</td><td>قاعدة بيانات الإنتاج</td></tr>
-              <tr><td>SQLite</td><td>built-in</td><td>Development database</td><td>قاعدة بيانات التطوير</td></tr>
-              <tr><td>ngrok</td><td>any</td><td>Expose local server to Zoho</td><td>تعريض الخادم المحلي لـ Zoho</td></tr>
-              <tr><td>VS Code</td><td>latest</td><td>IDE</td><td>بيئة التطوير</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div class="diagram-box">
+      <pre>
+  ┌──────────────────┐    HTTP POST      ┌────────────────────────────┐
+  │   Moodle LMS     │ ──────────────►   │  FastAPI Backend :8001     │
+  │   (PHP Plugin)   │                   │  backend/app/              │
+  └──────────────────┘                   │  SQLite: moodle_zoho.db   │
+                                         └────────────┬───────────────┘
+                                                      │  OAuth2 REST
+                                                      ▼
+                                         ┌────────────────────────────┐
+                                         │       Zoho CRM             │
+                                         │  (Contacts, Deals, etc.)   │
+                                         └────────────────────────────┘
+      </pre>
+    </div>
+  </div>
 
-      <!-- SECTION 2 -->
-      <div class="section">
-        <div class="section-title">2. Install Python &amp; Create Virtual Environment</div>
-        <div class="section-title-ar">تثبيت Python وإنشاء البيئة الافتراضية</div>
-        <div class="section-divider"></div>
+  <!-- ═══ SECTION 2: What is Python? ═══ -->
+  <div class="card">
+    <h2>2 — What Is Python?</h2>
+    <h2 class="ar">٢ — ما هو Python؟</h2>
 
-        <ol class="steps">
-          <li>
-            <div class="step-content">
-              <div class="step-title">Download Python 3.11+ from python.org</div>
-              <div class="step-ar">تحميل Python من موقع python.org — تأكد من تفعيل "Add to PATH" أثناء التثبيت</div>
-            </div>
-          </li>
-          <li>
-            <div class="step-content">
-              <div class="step-title">Create a project folder and virtual environment</div>
-              <div class="step-ar">إنشاء مجلد المشروع والبيئة الافتراضية</div>
-              <div class="code-block">
-                <div class="code-header">
-                  <span class="code-lang">bash</span>
-                  <span class="code-filename">Terminal</span>
-                  <button class="copy-btn">Copy</button>
-                </div>
-                <pre><code class="language-bash">mkdir my-integration
-cd my-integration
+    <p>
+      Python is a <strong>general-purpose programming language</strong> designed to be readable and
+      fast to write. It looks closer to plain English than most languages, which makes it popular
+      for beginners, data scientists, and web developers alike. When you write <code>print("Hello")</code>
+      in Python, it actually prints "Hello" — no boilerplate, no semicolons required.
+    </p>
+    <p>
+      This project requires <strong>Python 3.11 specifically</strong>. The version matters because:
+    </p>
+    <ul>
+      <li>Python 3.11 introduced improved exception messages that show exactly which variable caused an error.</li>
+      <li>Some libraries in <code>requirements.txt</code> declared minimum version compatibility of 3.11.</li>
+      <li>The SQLAlchemy 2.x type annotations used throughout the codebase require 3.10+.</li>
+    </ul>
+    <p>To check which version is installed, open a terminal and type:</p>
+    <pre class="code-block">python --version
+# Expected:  Python 3.11.x
 
-# Create virtual environment / إنشاء البيئة الافتراضية
-python -m venv .venv
+# On some systems you may need:
+python3 --version</pre>
 
-# Activate it / تفعيلها
-.venv\Scripts\activate        # Windows PowerShell
-source .venv/bin/activate     # macOS / Linux
+    <p>
+      If you see <code>Python 3.8</code> or older — or if the command is not found — install
+      Python 3.11:
+    </p>
+    <ul>
+      <li><strong>Windows:</strong> Download the installer from <code>https://python.org/downloads</code>. During installation, tick <em>"Add Python to PATH"</em> — without this, your terminal won't find the <code>python</code> command.</li>
+      <li><strong>macOS:</strong> <code>brew install python@3.11</code> (requires Homebrew).</li>
+      <li><strong>Ubuntu/Debian:</strong> <code>sudo apt install python3.11 python3.11-venv</code>.</li>
+    </ul>
 
-# You should see (.venv) in your prompt / يجب أن ترى (.venv) قبل المؤشر</code></pre>
-              </div>
-            </div>
-          </li>
-          <li>
-            <div class="step-content">
-              <div class="step-title">Install core dependencies</div>
-              <div class="step-ar">تثبيت المكتبات الأساسية</div>
-              <div class="code-block">
-                <div class="code-header">
-                  <span class="code-lang">bash</span>
-                  <span class="code-filename">Terminal (inside .venv)</span>
-                  <button class="copy-btn">Copy</button>
-                </div>
-                <pre><code class="language-bash">pip install fastapi uvicorn[standard] sqlalchemy pydantic-settings \
-            httpx python-dotenv jinja2 python-multipart aiofiles
+    <div class="warning-box">
+      <strong>Windows PATH gotcha:</strong> If the installer finishes successfully but
+      <code>python --version</code> still fails, close your terminal, open a new one, and try again.
+      Windows reads the PATH environment variable only at terminal startup.
+    </div>
 
-# Verify installation / التحقق من التثبيت
-pip show fastapi
-# → Name: fastapi
-# → Version: 0.110.x</code></pre>
-              </div>
-            </div>
-          </li>
-        </ol>
+    <p class="ar">
+      Python هو <strong>لغة برمجة عامة الأغراض</strong> صُمِّمت لتكون مقروءة وسريعة الكتابة.
+      تبدو أقرب إلى الإنجليزية السادة مقارنة بمعظم اللغات، مما يجعلها شائعة لدى المبتدئين
+      وعلماء البيانات ومطوري الويب على حدٍّ سواء.
+    </p>
+    <p class="ar">
+      يتطلب هذا المشروع <strong>Python 3.11 تحديداً</strong> لأن بعض الميزات والمكتبات تعتمد على هذا الإصدار.
+      للتحقق من الإصدار المثبّت: <code>python --version</code> — يجب أن يظهر <code>Python 3.11.x</code>.
+      إذا ظهر إصدار أقدم أو ظهرت رسالة خطأ، ثبّت Python 3.11 من python.org (ويندوز) وتأكد من
+      تحديد خيار "Add Python to PATH" أثناء التثبيت.
+    </p>
+  </div>
 
-        <div class="callout info">
-          <div class="callout-icon">💡</div>
-          <div class="callout-content">
-            <div class="callout-title">Why Virtual Environments?</div>
-            <p>A virtual environment isolates your project's dependencies. This prevents version conflicts when you work on multiple projects, and ensures your production server uses the exact same package versions as your development machine.</p>
-            <div class="callout-ar">البيئة الافتراضية تعزل مكتبات مشروعك — تمنع تعارض الإصدارات بين المشاريع المختلفة وتضمن أن الخادم يستخدم نفس إصدارات المكتبات.</div>
-          </div>
-        </div>
-      </div>
+  <!-- ═══ SECTION 3: What is a Virtual Environment? ═══ -->
+  <div class="card">
+    <h2>3 — What Is a Virtual Environment?</h2>
+    <h2 class="ar">٣ — ما هي البيئة الافتراضية (Virtual Environment)؟</h2>
 
-      <!-- SECTION 3 -->
-      <div class="section">
-        <div class="section-title">3. VS Code Setup</div>
-        <div class="section-title-ar">إعداد VS Code</div>
-        <div class="section-divider"></div>
+    <p>
+      Imagine you have two projects on your computer. Project A needs version 1.0 of a library, but
+      Project B needs version 2.0 of the same library. If you install both versions globally on your
+      system Python, they will conflict — only one can be "installed" at a time, and whichever project
+      runs last wins. The other project breaks.
+    </p>
+    <p>
+      A <strong>virtual environment</strong> solves this elegantly. Think of it like giving every
+      project its own separate backpack. Each backpack holds its own copy of Python and its own
+      collection of installed libraries. Project A's backpack has version 1.0; Project B's backpack
+      has version 2.0. They never interfere with each other because the computer always checks the
+      current project's backpack first.
+    </p>
+    <p>In Python, you create a virtual environment with the built-in <code>venv</code> module:</p>
+    <pre class="code-block"># Run this from the project root directory
+python -m venv .venv-2</pre>
+    <p>
+      This command creates a new folder called <code>.venv-2</code> at the location you run it from.
+      Inside, Python copies a minimal Python interpreter and pip. On Windows, the folder structure is:
+    </p>
+    <pre class="code-block">.venv-2/
+├── Scripts/
+│   ├── python.exe      ← the private Python interpreter
+│   ├── pip.exe         ← the private pip
+│   └── Activate.ps1    ← the activation script for PowerShell
+├── Lib/
+│   └── site-packages/  ← installed packages go here
+└── pyvenv.cfg          ← config file pointing to the base Python</pre>
 
-        <p>Install these VS Code extensions for the best development experience:</p>
-        <p style="font-family:'Tajawal',sans-serif;direction:rtl;margin:4px 0 16px;color:var(--gray-600);">ثبّت هذه الإضافات في VS Code للحصول على أفضل تجربة تطوير:</p>
+    <p>
+      <strong>Why the name <code>.venv-2</code>?</strong> It's a deliberate convention in this project
+      to avoid confusion with any older <code>.venv</code> folder that may exist from a previous setup
+      attempt. The leading dot makes it a hidden folder on Linux/macOS (cleaner directory listings).
+      The name is arbitrary — what matters is that it is listed in <code>.gitignore</code> so that
+      this machine-local binary folder is never committed to the git repository.
+    </p>
 
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Extension</th><th>Purpose</th><th>الوظيفة</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Python</strong> (ms-python)</td><td>IntelliSense, linting, debugging</td><td>ذكاء الكود والتصحيح</td></tr>
-              <tr><td><strong>Pylance</strong></td><td>Fast type checking</td><td>فحص الأنواع السريع</td></tr>
-              <tr><td><strong>REST Client</strong></td><td>Test HTTP requests in .http files</td><td>اختبار طلبات HTTP مباشرة</td></tr>
-              <tr><td><strong>GitLens</strong></td><td>Git blame, history</td><td>تتبع تاريخ الكود</td></tr>
-              <tr><td><strong>Thunder Client</strong></td><td>Built-in Postman alternative</td><td>بديل Postman داخل VS Code</td></tr>
-              <tr><td><strong>SQLite Viewer</strong></td><td>Browse SQLite DB visually</td><td>تصفح قاعدة البيانات بشكل مرئي</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <p class="ar">
+      تخيّل أنك تملك مشروعين. المشروع A يحتاج الإصدار 1.0 من مكتبة معينة، والمشروع B يحتاج الإصدار 2.0
+      من نفس المكتبة. لو ثبّتّهما في Python العالمي على جهازك سيتعارضان.
+    </p>
+    <p class="ar">
+      <strong>البيئة الافتراضية</strong> تحلّ هذا بمنح كل مشروع حقيبة ظهر خاصة به.
+      كل حقيبة تحتوي نسختها الخاصة من Python ومجموعتها الخاصة من المكتبات.
+      حقيبة المشروع A فيها الإصدار 1.0؛ حقيبة المشروع B فيها الإصدار 2.0. لا تتداخلان أبداً.
+    </p>
+    <p class="ar">
+      في Python، تنشئ بيئة افتراضية بوحدة <code>venv</code> المدمجة: <code>python -m venv .venv-2</code>
+      هذا ينشئ مجلد <code>.venv-2</code> يحتوي نسخة Python خاصة وpip خاص وحزم مثبّتة معزولة.
+      لماذا الاسم <code>.venv-2</code>؟ اتفاقية في هذا المشروع تُميّزه عن أي <code>.venv</code> قديمة.
+      الاسم اختياري لكنه مدرج في <code>.gitignore</code> حتى لا يُرفع إلى مستودع الكود.
+    </p>
+  </div>
 
-      <!-- SECTION 4 -->
-      <div class="section">
-        <div class="section-title">4. Project Structure</div>
-        <div class="section-title-ar">هيكل المشروع الكامل</div>
-        <div class="section-divider"></div>
+  <!-- ═══ SECTION 4: Activating the Virtual Environment ═══ -->
+  <div class="card">
+    <h2>4 — Activating the Virtual Environment</h2>
+    <h2 class="ar">٤ — تفعيل البيئة الافتراضية</h2>
 
-        <p>This is the <strong>exact folder structure</strong> we will build throughout the course:</p>
-        <p style="font-family:'Tajawal',sans-serif;direction:rtl;margin:4px 0 16px;color:var(--gray-600);">هذا هو هيكل المجلدات الكامل الذي سنبنيه خلال الدورة:</p>
+    <p>
+      Creating the virtual environment folder is just the first step. You must also
+      <strong>activate</strong> it in your terminal session. Activation sets several environment
+      variables (primarily <code>PATH</code>) so that when you type <code>python</code> or
+      <code>pip</code>, your terminal uses the <em>private</em> copies inside <code>.venv-2/</code>
+      rather than the system-wide Python.
+    </p>
+    <p>Activation commands by platform:</p>
 
-        <div class="arch-diagram">my-integration/
-├── backend/                         ← FastAPI Application
-│   ├── app/
-│   │   ├── main.py                  ← App entry point (FastAPI instance)
-│   │   ├── core/
-│   │   │   └── config.py            ← Settings loaded from .env
-│   │   ├── api/
-│   │   │   └── v1/
-│   │   │       ├── router.py        ← Registers all endpoints
-│   │   │       └── endpoints/
-│   │   │           ├── health.py    ← GET /health
-│   │   │           ├── sync_students.py   ← POST /sync/students
-│   │   │           └── webhooks_dashboard_sync.py  ← Zoho webhook handlers
-│   │   ├── infra/
-│   │   │   ├── db/
-│   │   │   │   ├── base.py          ← SQLAlchemy engine + Base
-│   │   │   │   ├── session.py       ← DB session factory
-│   │   │   │   └── models/
-│   │   │   │       ├── student.py
-│   │   │   │       ├── registration.py
-│   │   │   │       ├── grade.py
-│   │   │   │       └── payment.py
-│   │   │   └── zoho/
-│   │   │       └── auth.py          ← Zoho OAuth2 client
-│   │   └── services/                ← Business logic layer
-│   ├── admin/                       ← Admin HTML panel (Jinja2)
-│   │   ├── router.py
-│   │   └── templates/
-│   ├── .env                         ← 🔒 SECRET — never commit!
-│   ├── .env.example                 ← Template for .env
-│   ├── requirements.txt
-│   └── start_server.py              ← Uvicorn launcher
-│
-├── moodle_plugin/                   ← PHP Moodle Plugin
-│   ├── version.php
-│   ├── lib.php
-│   ├── db/
-│   │   ├── install.xml
-│   │   ├── upgrade.php
-│   │   └── services.xml
-│   ├── classes/external/
-│   ├── lang/en/
-│   └── amd/src/
-│
-└── course/                          ← This tutorial!</div>
+    <p><strong>Windows — PowerShell (recommended):</strong></p>
+    <pre class="code-block"># Using a relative path (from the project root):
+& .\.venv-2\Scripts\Activate.ps1
 
-        <div class="callout warning">
-          <div class="callout-icon">⚠️</div>
-          <div class="callout-content">
-            <div class="callout-title">Important: .env and .gitignore</div>
-            <p>The <code class="inline">.env</code> file contains your API keys and passwords. <strong>Never commit it to Git.</strong> Add it to <code class="inline">.gitignore</code> immediately.</p>
-            <div class="callout-ar">ملف <code class="inline">.env</code> يحتوي على كلمات سر وتوكنات سرية. <strong>لا تضعه أبداً في Git.</strong> أضفه إلى <code class="inline">.gitignore</code> فوراً.</div>
-          </div>
-        </div>
-      </div>
+# Or using the full absolute path:
+& "c:\Users\MohyeddineFarhat\Documents\GitHub\moodle-zoho-integration-v3\.venv-2\Scripts\Activate.ps1"</pre>
 
-      <!-- SECTION 5 -->
-      <div class="section">
-        <div class="section-title">5. Hello World FastAPI App</div>
-        <div class="section-title-ar">أول تطبيق FastAPI</div>
-        <div class="section-divider"></div>
+    <p><strong>Windows — Command Prompt (cmd.exe):</strong></p>
+    <pre class="code-block">.venv-2\Scripts\activate.bat</pre>
 
-        <p>Let's build the simplest possible FastAPI app and run it:</p>
+    <p><strong>Linux / macOS — bash or zsh:</strong></p>
+    <pre class="code-block">source .venv-2/bin/activate</pre>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/main.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from fastapi import FastAPI
+    <p>
+      After successful activation, your terminal prompt changes to include the environment name in
+      parentheses at the start:
+    </p>
+    <pre class="code-block">(.venv-2) PS C:\Users\MohyeddineFarhat\Documents\GitHub\moodle-zoho-integration-v3&gt;</pre>
+    <p>
+      That <code>(.venv-2)</code> prefix is your constant reminder and confirmation that the virtual
+      environment is active. Every <code>python</code> and <code>pip</code> command now uses the
+      project-local versions. To deactivate the environment and return to the system Python, simply
+      type <code>deactivate</code>.
+    </p>
 
-# إنشاء التطبيق / Create the app
-app = FastAPI(
-    title="Moodle-Zoho Integration",
-    description="API middleware between Zoho CRM and Moodle"
-)
+    <div class="warning-box">
+      <strong>Windows ExecutionPolicy Error:</strong> If PowerShell refuses to run <code>Activate.ps1</code>
+      with a message like <em>"...cannot be loaded because running scripts is disabled on this system"</em>,
+      you need to relax the execution policy. Run this <strong>once</strong> in PowerShell
+      (no administrator required for CurrentUser scope):
+      <pre class="code-block">Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</pre>
+      <code>RemoteSigned</code> means: local scripts can run freely; downloaded scripts must be
+      digitally signed by a trusted publisher. This is a safe and common setting for developer machines.
+    </div>
 
+    <p class="ar">
+      إنشاء مجلد البيئة الافتراضية ليس كافياً — يجب <strong>تفعيلها</strong> في جلسة التيرمينال الحالية.
+      التفعيل يضبط متغيرات البيئة (خاصةً <code>PATH</code>) لكي يستخدم التيرمينال النسخ الخاصة من
+      Python وpip الموجودة داخل <code>.venv-2/</code> بدلاً من Python المثبّت على مستوى النظام.
+    </p>
+    <p class="ar">
+      على ويندوز PowerShell: <code>&amp; .\.venv-2\Scripts\Activate.ps1</code>
+      على لينوكس/macOS: <code>source .venv-2/bin/activate</code>
+      بعد التفعيل يتغيّر سطر التيرمينال ليظهر <code>(.venv-2)</code> في البداية — تأكيد مرئي أن البيئة نشطة.
+      لإلغاء التفعيل والعودة لـ Python النظام: اكتب <code>deactivate</code>.
+    </p>
+    <p class="ar">
+      <strong>خطأ ExecutionPolicy على ويندوز:</strong> إذا رفض PowerShell تشغيل Activate.ps1،
+      شغّل هذا الأمر مرة واحدة (لا يحتاج صلاحيات مدير):
+      <code>Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</code>
+    </p>
+  </div>
 
-@app.get("/")
-def root():
-    """
-    الصفحة الرئيسية / Root endpoint
-    """
-    return {
-        "message": "Welcome to the Moodle-Zoho Integration API",
-        "docs": "/docs",
-        "health": "/health"
-    }
+  <!-- ═══ SECTION 5: Installing Dependencies ═══ -->
+  <div class="card">
+    <h2>5 — Installing Dependencies</h2>
+    <h2 class="ar">٥ — تثبيت التبعيات (Dependencies)</h2>
 
+    <p>
+      <strong>pip</strong> (Pip Installs Packages) is Python's official package manager. It downloads
+      libraries from <strong>PyPI</strong> (the Python Package Index — think of it as an app store for
+      Python libraries with over 500,000 packages) and installs them into your active virtual environment.
+    </p>
+    <p>
+      A <strong><code>requirements.txt</code></strong> file is a plain text document listing every
+      package your project depends on, one per line, optionally with a pinned version number
+      (e.g., <code>fastapi==0.111.0</code>). Pinning versions ensures everyone on the team — and every
+      deployment environment — installs exactly the same version, preventing "works on my machine" bugs.
+    </p>
+    <p>Install everything with one command (run from the project root, with the venv active):</p>
+    <pre class="code-block">pip install -r backend/requirements.txt</pre>
+    <p>
+      The <code>-r</code> flag means "read the requirements from this file". pip reads every line and
+      installs each package and its own sub-dependencies in turn. You will see a stream of download
+      and installation messages. When it finishes, type <code>pip list</code> to see all installed
+      packages.
+    </p>
 
-@app.get("/health")
-def health_check():
-    """
-    فحص الصحة — يُستخدم للتأكد أن الخادم يعمل
-    Health check — used to verify the server is running
-    """
-    return {"status": "ok", "message": "API is healthy"}</code></pre>
-        </div>
+    <p><strong>Key packages in this project and what they do:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Package</th>
+            <th>Category</th>
+            <th>What it does in this project</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>fastapi</code></td>
+            <td>Web Framework</td>
+            <td>Defines all API routes using Python functions and decorators. Automatically validates request data using Pydantic models. Generates /docs and /redoc automatically.</td>
+          </tr>
+          <tr>
+            <td><code>uvicorn</code></td>
+            <td>ASGI Server</td>
+            <td>The actual HTTP server that listens on port 8001. ASGI (Asynchronous Server Gateway Interface) is the protocol between an async Python web app and the server. Uvicorn is the engine powering FastAPI at runtime.</td>
+          </tr>
+          <tr>
+            <td><code>sqlalchemy</code></td>
+            <td>ORM</td>
+            <td>ORM = Object-Relational Mapper. Instead of writing raw SQL like <code>SELECT * FROM students</code>, you write Python like <code>db.query(Student).all()</code>. SQLAlchemy translates Python objects into SQL statements and back.</td>
+          </tr>
+          <tr>
+            <td><code>pydantic-settings</code></td>
+            <td>Config Management</td>
+            <td>Reads variables from the <code>.env</code> file into a typed Python <code>Settings</code> class. If a required variable is missing or has the wrong type, it raises an error immediately at startup — not buried in a crash at runtime.</td>
+          </tr>
+          <tr>
+            <td><code>httpx</code></td>
+            <td>HTTP Client</td>
+            <td>Makes outbound HTTP requests to Moodle's REST API and Zoho's REST API. Supports both synchronous and async usage. More modern replacement for the older <code>requests</code> library.</td>
+          </tr>
+          <tr>
+            <td><code>apscheduler</code></td>
+            <td>Job Scheduler</td>
+            <td>Advanced Python Scheduler. Runs background tasks on a schedule (e.g., "sync all students from Moodle every 15 minutes") while the FastAPI server continues handling requests normally. No separate worker process needed.</td>
+          </tr>
+          <tr>
+            <td><code>jinja2</code></td>
+            <td>Template Engine</td>
+            <td>Renders HTML pages for the Admin Panel. Python data (like a list of 200 students) is injected into HTML templates using <code>{{ variable }}</code> and <code>{% for item in list %}</code> syntax. FastAPI serves these as real HTML pages.</td>
+          </tr>
+          <tr>
+            <td><code>cryptography</code></td>
+            <td>Security</td>
+            <td>Provides Fernet symmetric encryption (for encrypting tokens in the DB), and HMAC-SHA256 utilities for verifying webhook signatures from Zoho.</td>
+          </tr>
+          <tr>
+            <td><code>python-multipart</code></td>
+            <td>Form Handling</td>
+            <td>Enables FastAPI to receive HTML form submissions (the Admin Panel login form uses standard HTML form POST). Required by FastAPI for form data parsing.</td>
+          </tr>
+          <tr>
+            <td><code>alembic</code></td>
+            <td>DB Migrations</td>
+            <td>Database schema migration tool for SQLAlchemy. Tracks schema changes over time and applies them to the database — like version control for your database structure.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Terminal</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash">cd backend
-uvicorn app.main:app --reload --port 8001
+    <p class="ar">
+      <strong>pip</strong> هو مدير الحزم الرسمي لـ Python. يحمّل المكتبات من <strong>PyPI</strong>
+      (مستودع حزم Python — كمتجر تطبيقات يحتوي 500,000+ حزمة) ويثبّتها في بيئتك الافتراضية النشطة.
+    </p>
+    <p class="ar">
+      ملف <strong>requirements.txt</strong> هو قائمة نصية تحتوي اسم كل حزمة يحتاجها المشروع،
+      حزمة في كل سطر، مع رقم الإصدار اختيارياً. تثبيتها جميعاً بأمر واحد:
+      <code>pip install -r backend/requirements.txt</code>
+    </p>
+    <p class="ar">
+      <strong>ORM</strong> (رسّام الكائنات-العلاقات): بدلاً من كتابة SQL خام مثل
+      <code>SELECT * FROM students</code>، تكتب Python مثل <code>db.query(Student).all()</code>.
+      SQLAlchemy يترجم كائنات Python إلى SQL تلقائياً.
+      <strong>ASGI</strong>: البروتوكول بين تطبيق Python غير المتزامن وخادم HTTP.
+      <code>uvicorn</code> هو المحرّك الذي ينفّذ هذا البروتوكول ويشغّل FastAPI على المنفذ 8001.
+    </p>
+  </div>
 
-# Output / الناتج:
-# INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
-# INFO:     Started reloader process
-# INFO:     Application startup complete.</code></pre>
-        </div>
+  <!-- ═══ SECTION 6: The .env File ═══ -->
+  <div class="card">
+    <h2>6 — The .env File — Secrets and Configuration</h2>
+    <h2 class="ar">٦ — ملف الإعدادات السرية (.env)</h2>
 
-        <p>Now open your browser and visit:</p>
-        <ul style="margin:12px 0 0 20px; line-height:2.2;">
-          <li><code class="inline">http://localhost:8001/</code> → Root endpoint JSON</li>
-          <li><code class="inline">http://localhost:8001/health</code> → Health check</li>
-          <li><code class="inline">http://localhost:8001/docs</code> → 🎉 Interactive Swagger UI</li>
-          <li><code class="inline">http://localhost:8001/redoc</code> → ReDoc documentation</li>
-        </ul>
+    <p>
+      A <strong>.env file</strong> is a plain text file that stores <em>environment variables</em> —
+      key=value pairs that configure how your application behaves. Variables fall into two categories:
+    </p>
+    <ul>
+      <li><strong>Configuration</strong> — values that differ between environments, like <code>LOG_LEVEL=DEBUG</code> locally vs <code>LOG_LEVEL=WARNING</code> in production.</li>
+      <li><strong>Secrets</strong> — sensitive credentials like API keys, tokens, and cryptographic keys that must never be shared publicly.</li>
+    </ul>
+    <p>
+      <strong>Why are secrets not committed to Git?</strong> Once something is committed to a git
+      repository and pushed, it is in the git history permanently — even if you delete the file in
+      a later commit, an attacker can check out old commits and find it. If the repository is public
+      or is ever made public, your Zoho credentials, Moodle token, and encryption key are all
+      compromised instantly.
+    </p>
+    <p>
+      The solution: a <code>.env</code> file is listed in <code>.gitignore</code> so git never sees it.
+      A safe template called <code>.env.example</code> is committed instead — it lists all variable
+      names with placeholder or empty values, serving as documentation of what you need to fill in.
+    </p>
 
-        <div class="callout success">
-          <div class="callout-icon">✅</div>
-          <div class="callout-content">
-            <div class="callout-title">The --reload flag</div>
-            <p>The <code class="inline">--reload</code> flag tells Uvicorn to automatically restart whenever you save a Python file. Use it <strong>only during development</strong> — never in production.</p>
-            <div class="callout-ar">خيار <code class="inline">--reload</code> يجعل Uvicorn يعيد التشغيل تلقائياً عند حفظ أي ملف Python. استخدمه <strong>فقط أثناء التطوير</strong> — ليس في الإنتاج.</div>
-          </div>
-        </div>
-      </div>
+    <p><strong>Create your .env from the example:</strong></p>
+    <pre class="code-block"># Windows PowerShell:
+Copy-Item backend\.env.example backend\.env
 
-      <!-- SECTION 6 -->
-      <div class="section">
-        <div class="section-title">6. The .env File</div>
-        <div class="section-title-ar">ملف الإعدادات السرية</div>
-        <div class="section-divider"></div>
+# Windows Command Prompt:
+copy backend\.env.example backend\.env
 
-        <p>Create these two files in the <code class="inline">backend/</code> folder:</p>
+# Linux / macOS:
+cp backend/.env.example backend/.env
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">backend/.env.example</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash"># ============================================================
-# Application Settings
-# ============================================================
-APP_NAME="Moodle Zoho Integration"
-ENV=development
+# Then open and fill in your real values:
+notepad backend\.env   # Windows
+nano backend/.env      # Linux/macOS</pre>
 
-# Database — use SQLite for dev, PostgreSQL for prod
-DATABASE_URL=sqlite:///./moodle_zoho_local.db
-# DATABASE_URL=postgresql://user:password@localhost:5432/mzi_db
+    <p><strong>Every variable in this project explained:</strong></p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Example Value</th><th>Explanation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>DATABASE_URL</code></td>
+            <td><code>sqlite:///./moodle_zoho_local.db</code></td>
+            <td>SQLAlchemy database connection string. The format is <code>dialect:///path</code>. The <code>sqlite:///./</code> prefix means "SQLite file in the current working directory". The <code>./</code> is relative — this is the entire reason you must <code>cd backend</code> before starting the server. If you start from the project root, SQLAlchemy looks for the .db file in the wrong folder.</td>
+          </tr>
+          <tr>
+            <td><code>APP_NAME</code></td>
+            <td><code>Moodle-Zoho Integration v3</code></td>
+            <td>Human-readable application name used in the Swagger UI title bar and the Admin Panel header.</td>
+          </tr>
+          <tr>
+            <td><code>ENV</code></td>
+            <td><code>development</code></td>
+            <td>Runtime environment flag. Set to <code>development</code> locally and <code>production</code> on the live server. The app uses this to toggle features like detailed error tracebacks (shown in development, hidden in production).</td>
+          </tr>
+          <tr>
+            <td><code>LOG_LEVEL</code></td>
+            <td><code>DEBUG</code></td>
+            <td>Verbosity of server logs. <code>DEBUG</code> prints everything including routine HTTP requests. <code>INFO</code> prints normal flow. <code>WARNING</code> and <code>ERROR</code> only print problems. Use <code>DEBUG</code> locally and <code>INFO</code> or <code>WARNING</code> in production.</td>
+          </tr>
+          <tr>
+            <td><code>ENCRYPTION_KEY</code></td>
+            <td><em>(32-byte base64 key)</em></td>
+            <td>A Fernet symmetric encryption key used to encrypt sensitive values before storing them in the SQLite database. Generate a fresh key with: <code>python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"</code>. Keep this secret — losing it means you cannot decrypt stored values.</td>
+          </tr>
+          <tr>
+            <td><code>MOODLE_BASE_URL</code></td>
+            <td><code>https://your-moodle.com</code></td>
+            <td>The root URL of your Moodle installation (no trailing slash). The backend appends <code>/webservice/rest/server.php</code> to build every API call to Moodle.</td>
+          </tr>
+          <tr>
+            <td><code>MOODLE_TOKEN</code></td>
+            <td><em>(40-char hex string)</em></td>
+            <td>A Moodle Web Services token granting API access to read students, courses, grades, and enrolments. Created in Moodle under Site Administration → Web Services → Manage tokens. The token is associated with a specific Moodle user account that must have the required web service permissions.</td>
+          </tr>
+          <tr>
+            <td><code>ZOHO_CLIENT_ID</code></td>
+            <td><em>(from Zoho Developer Console)</em></td>
+            <td>OAuth2 Client ID for the server-based Zoho application. Created at <code>https://accounts.zoho.com/developerconsole</code>. This identifies your application to Zoho's OAuth2 system.</td>
+          </tr>
+          <tr>
+            <td><code>ZOHO_CLIENT_SECRET</code></td>
+            <td><em>(secret)</em></td>
+            <td>The secret paired with the Client ID. Never share this or commit it. Together with the Client ID, this proves to Zoho that your server is the legitimate application — not an impersonator.</td>
+          </tr>
+          <tr>
+            <td><code>ZOHO_REFRESH_TOKEN</code></td>
+            <td><em>(from OAuth2 grant)</em></td>
+            <td>A long-lived OAuth2 token used to obtain fresh short-lived access tokens without requiring a user to log in again. Obtained once via the OAuth2 authorization code flow, then stored here permanently. The backend uses it automatically behind the scenes.</td>
+          </tr>
+          <tr>
+            <td><code>ZOHO_REGION</code></td>
+            <td><code>com</code></td>
+            <td>Zoho data centre region. Determines which API base URL to use. Values: <code>com</code> (US/global), <code>eu</code> (Europe), <code>in</code> (India), <code>com.au</code> (Australia), <code>jp</code> (Japan). Must match where your Zoho account was registered.</td>
+          </tr>
+          <tr>
+            <td><code>ZOHO_WEBHOOK_HMAC_SECRET</code></td>
+            <td><em>(any random string)</em></td>
+            <td>A shared secret used to verify incoming webhook calls from Zoho CRM. Zoho signs each webhook payload with HMAC-SHA256 using this secret and includes the signature in the request header. The backend recomputes the signature and rejects any request where they don't match — preventing spoofed webhook calls.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-# ============================================================
-# Moodle Configuration
-# ============================================================
-MOODLE_BASE_URL=https://your-moodle.com
-MOODLE_TOKEN=your_moodle_webservice_token_here
-MOODLE_ENABLED=false   # Set to true when ready
+    <p class="ar">
+      ملف <strong>.env</strong> هو ملف نصي يحتوي على أزواج مفتاح=قيمة لتهيئة تطبيقك.
+      ينقسم المتغيرات إلى قسمين: <strong>إعدادات</strong> (قيم تختلف بين البيئات) و<strong>أسرار</strong>
+      (بيانات حساسة كمفاتيح API والتوكنات التي يجب ألا تُشارك علنياً).
+    </p>
+    <p class="ar">
+      لماذا لا نرفع الأسرار إلى Git؟ لأن أي شيء يُرفع إلى مستودع git يبقى في تاريخه للأبد —
+      حتى لو حذفت الملف لاحقاً، يمكن لأي شخص استعادة النسخ القديمة ورؤية الأسرار.
+      الحل: إدراج <code>.env</code> في <code>.gitignore</code> ورفع ملف آمن يسمى
+      <code>.env.example</code> يحتوي أسماء المتغيرات بقيم وهمية فقط.
+    </p>
+  </div>
 
-# ============================================================
-# Zoho CRM Configuration
-# ============================================================
-ZOHO_CLIENT_ID=your_zoho_client_id
-ZOHO_CLIENT_SECRET=your_zoho_client_secret
-ZOHO_REFRESH_TOKEN=your_zoho_refresh_token
-ZOHO_REGION=com   # or eu, in, au
+  <!-- ═══ SECTION 7: Starting the Server ═══ -->
+  <div class="card">
+    <h2>7 — Starting the Server</h2>
+    <h2 class="ar">٧ — تشغيل الخادم</h2>
 
-# ============================================================
-# Webhook
-# ============================================================
-WEBHOOK_BASE_URL=https://your-ngrok-url.ngrok-free.app</code></pre>
-        </div>
+    <p>
+      Two rules before every server start: <strong>(1)</strong> the virtual environment must be
+      active, and <strong>(2)</strong> your working directory must be <code>backend/</code>.
+    </p>
+    <p>
+      Why must you be inside <code>backend/</code>? The <code>DATABASE_URL</code> in your <code>.env</code>
+      is <code>sqlite:///./moodle_zoho_local.db</code>. The <code>./</code> means "current directory when
+      the server starts". The <code>.db</code> file lives at <code>backend/moodle_zoho_local.db</code>.
+      If you start the server from the project root, Python looks for (and attempts to create)
+      the database in the project root instead — in the wrong folder, with wrong relative imports.
+    </p>
+    <pre class="code-block"># Full startup sequence from the project root:
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">text</span>
-            <span class="code-filename">backend/.gitignore</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-text">.env
-*.db
-__pycache__/
-.venv/
-*.pyc
-*.log
-.pytest_cache/</code></pre>
-        </div>
-      </div>
+# Step 1: activate venv (skip if already showing (.venv-2) prompt)
+& .\.venv-2\Scripts\Activate.ps1
 
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 00 Quiz</div>
-        <div class="section-title-ar">اختبار الدرس الأول</div>
-        <div class="section-divider"></div>
+# Step 2: move into backend
+cd backend
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">What URL shows the interactive Swagger documentation automatically generated by FastAPI?</div>
-          <div class="quiz-question-ar">ما هو الرابط الذي يعرض توثيق Swagger التلقائي في FastAPI؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> /swagger</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> /docs</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> /api</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> /openapi</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! FastAPI automatically serves Swagger UI at <code>/docs</code> — no extra configuration needed.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+# Step 3: launch the server
+python start_server.py</pre>
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">Why should <code>.env</code> never be committed to Git?</div>
-          <div class="quiz-question-ar">لماذا يجب ألا يُضاف ملف <code>.env</code> إلى Git؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because it's too large</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because Git doesn't support .env files</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> Because it contains API keys and passwords that would be exposed publicly</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because it causes merge conflicts</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! The .env file contains secrets like ZOHO_CLIENT_SECRET and MOODLE_TOKEN. If pushed to a public repository, anyone could access your Zoho CRM and Moodle instance.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+    <p><strong>What start_server.py does:</strong></p>
+    <p>
+      It calls <code>uvicorn.run("app.main:app", host="0.0.0.0", port=8001, reload=False)</code>
+      which imports <code>app/main.py</code>, creates the FastAPI application object, binds it to
+      all network interfaces on port 8001, and starts the event loop.
+    </p>
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">What does the <code>--reload</code> flag do when running Uvicorn?</div>
-          <div class="quiz-question-ar">ماذا يفعل خيار <code>--reload</code> عند تشغيل Uvicorn؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Restarts the server every hour</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Automatically reloads the server when Python files change</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Reloads the .env file on every request</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Enables hot-reloading of the database</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! --reload watches for file changes and automatically restarts the server. This is a development-only feature — never use it in production!</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-      </div>
+    <p><strong>Expected startup output (healthy server):</strong></p>
+    <pre class="code-block">INFO:     Started server process [12345]
+INFO:     Waiting for application startup.
+INFO:     Creating database tables if not exist...
+INFO:     Database tables ready.
+INFO:     Scheduler started. Next sync in 15 minutes.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)</pre>
 
-    </div><!-- /.lesson-body -->
+    <p><strong>URLs available once running:</strong></p>
+    <ul>
+      <li><strong><code>http://localhost:8001</code></strong> — API root. Returns a JSON status object: <code>{"name": "Moodle-Zoho Integration v3", "status": "running", "version": "3.0.0"}</code></li>
+      <li><strong><code>http://localhost:8001/docs</code></strong> — Swagger UI: fully interactive API documentation. Every endpoint is listed with its parameters. You can send test requests directly from your browser — no Postman or curl required.</li>
+      <li><strong><code>http://localhost:8001/redoc</code></strong> — ReDoc: alternative API docs in a cleaner read-only format, useful for sharing documentation with non-technical stakeholders.</li>
+      <li><strong><code>http://localhost:8001/admin</code></strong> — Admin Panel: the full web-based management interface. Requires login (see lesson-02 for the admin panel walkthrough).</li>
+      <li><strong><code>http://localhost:8001/health</code></strong> — Health check: returns <code>{"status": "ok", "database": "connected"}</code> and is used by deployment monitoring tools (systemd, uptime monitors) to verify the service is alive.</li>
+    </ul>
 
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
+    <div class="tip-box">
+      <strong>Keyboard shortcut:</strong> Press <code>Ctrl+C</code> in the terminal to stop the
+      server gracefully. It will finish any in-progress request before shutting down.
+    </div>
 
-</div>
+    <p class="ar">
+      قبل تشغيل الخادم، قاعدتان: <strong>(١)</strong> البيئة الافتراضية يجب أن تكون نشطة،
+      <strong>(٢)</strong> مجلد العمل يجب أن يكون <code>backend/</code>.
+    </p>
+    <p class="ar">
+      لماذا يجب الانتقال إلى <code>backend/</code>؟ لأن <code>DATABASE_URL</code> في <code>.env</code>
+      يحتوي <code>sqlite:///./moodle_zoho_local.db</code> والـ <code>./</code> تعني "المجلد الحالي
+      عند تشغيل الخادم". ملف قاعدة البيانات موجود في <code>backend/moodle_zoho_local.db</code>.
+      لو شغّلت الخادم من المجلد الجذر، سيبحث SQLAlchemy عن قاعدة البيانات في المكان الخطأ.
+    </p>
+    <pre class="code-block">cd backend
+python start_server.py</pre>
+    <p class="ar">
+      عند بدء التشغيل الناجح ستظهر رسالة <em>Uvicorn running on http://0.0.0.0:8001</em>.
+      يمكنك بعدها الوصول إلى: <code>/docs</code> (توثيق تفاعلي)، <code>/admin</code> (لوحة التحكم)،
+      <code>/health</code> (التحقق من السلامة). لإيقاف الخادم: <code>Ctrl+C</code>.
+    </p>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
-<script src="course.js"></script>
-<script>initLesson(0);</script>
+  <!-- ═══ SECTION 8: The SQLite Database ═══ -->
+  <div class="card">
+    <h2>8 — The SQLite Database</h2>
+    <h2 class="ar">٨ — قاعدة بيانات SQLite</h2>
+
+    <p>
+      <strong>SQLite</strong> is a <em>serverless, embedded</em> relational database engine. Unlike
+      MySQL or PostgreSQL — which run as separate server processes you connect to over a socket or
+      network — SQLite stores the entire database in a single ordinary file on disk. The Python
+      standard library includes a <code>sqlite3</code> module, so no external software needs to be
+      installed at all.
+    </p>
+    <p>
+      In this project the database file is <code>backend/moodle_zoho_local.db</code>. On first
+      startup, if this file does not exist, SQLAlchemy runs:
+    </p>
+    <pre class="code-block">Base.metadata.create_all(bind=engine)</pre>
+    <p>
+      This inspects every Python class decorated with <code>@mapper_registry.mapped</code> or
+      inheriting from <code>Base</code> (defined in <code>backend/app/infra/db/base.py</code>) and
+      creates the corresponding SQL tables if they don't already exist. You never have to write a
+      <code>CREATE TABLE</code> statement manually during development.
+    </p>
+
+    <p><strong>Why SQLite (and not PostgreSQL or MySQL)?</strong></p>
+    <ul>
+      <li><strong>Zero installation:</strong> No database server to install, configure, or keep running. Perfect for local development and for a single-server deployment.</li>
+      <li><strong>Zero configuration:</strong> No users, passwords, ports, or connection pools to manage for the database itself.</li>
+      <li><strong>Portability:</strong> The entire database is a single file — copy it to another machine and everything works. Useful for backups and migrations.</li>
+      <li><strong>Sufficient for this workload:</strong> Syncing a few thousand students and grades per day is well within SQLite's capabilities. It handles concurrent reads well and is used in production by many systems handling millions of rows.</li>
+    </ul>
+
+    <div class="warning-box">
+      <strong>No Docker, No PostgreSQL:</strong> This project deliberately does not use Docker or
+      PostgreSQL. The <code>DATABASE_URL</code> is always a SQLite file path. If you see any
+      documentation referring to <code>postgres://</code> — it does not apply to this project.
+    </div>
+
+    <p><strong>Inspecting the database from Python:</strong></p>
+    <pre class="code-block">import sqlite3
+
+# Run this script from inside backend/ so the relative path works
+conn = sqlite3.connect("moodle_zoho_local.db")
+cur = conn.cursor()
+
+# See all tables:
+cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+print("Tables:", [row[0] for row in cur.fetchall()])
+
+# Count students:
+cur.execute("SELECT COUNT(*) FROM students;")
+print("Total students:", cur.fetchone()[0])
+
+# Preview first 3 students:
+cur.execute("SELECT id, moodle_id, firstname, lastname, email FROM students LIMIT 3;")
+for row in cur.fetchall():
+    print(row)
+
+conn.close()</pre>
+
+    <p>
+      For a more comfortable experience, use a free GUI tool called
+      <strong>DB Browser for SQLite</strong> (available at <code>https://sqlitebrowser.org</code>).
+      Open <code>backend/moodle_zoho_local.db</code> in it and you get a full table browser, SQL
+      editor, and data explorer — no command-line needed.
+    </p>
+
+    <p class="ar">
+      <strong>SQLite</strong> هو محرك قاعدة بيانات علائقية <em>مدمج ولا يحتاج خادماً منفصلاً</em>.
+      بخلاف MySQL أو PostgreSQL (اللذَين يعملان كعملية خادم منفصلة)، يخزّن SQLite قاعدة البيانات
+      كاملةً في ملف واحد على القرص. مكتبة Python القياسية تتضمّن <code>sqlite3</code>، لذا لا حاجة
+      لتثبيت أي برنامج خارجي.
+    </p>
+    <p class="ar">
+      في هذا المشروع يوجد الملف هنا: <code>backend/moodle_zoho_local.db</code>.
+      عند أول تشغيل، إذا لم يكن الملف موجوداً، يشغّل SQLAlchemy
+      <code>Base.metadata.create_all(bind=engine)</code> الذي يفحص كل نماذج Python وينشئ
+      الجداول المقابلة تلقائياً. لا تحتاج أبداً لكتابة <code>CREATE TABLE</code> يدوياً.
+    </p>
+    <p class="ar">
+      <strong>لماذا SQLite (وليس PostgreSQL أو MySQL)؟</strong> لأنه لا يحتاج تثبيتاً أو إعداداً،
+      قابل للنقل كملف واحد، وكافٍ لعبء العمل (مزامنة آلاف الطلاب والدرجات يومياً).
+      هذا المشروع لا يستخدم Docker ولا PostgreSQL — رابط قاعدة البيانات دائماً مسار ملف SQLite.
+    </p>
+    <p class="ar">
+      لفحص قاعدة البيانات استخدم وحدة <code>sqlite3</code> المدمجة في Python (كما في المثال أعلاه)،
+      أو استخدم أداة رسومية مجانية مثل <strong>DB Browser for SQLite</strong> من sqlitebrowser.org.
+    </p>
+  </div>
+
+  <!-- ═══ QUICK REFERENCE ═══ -->
+  <div class="card">
+    <h2>Quick Reference — Full Setup Sequence</h2>
+    <h2 class="ar">المرجع السريع — التسلسل الكامل للإعداد</h2>
+
+    <pre class="code-block"># ── 1. Verify Python version ──
+python --version          # Must show Python 3.11.x
+
+# ── 2. Create the virtual environment ──
+python -m venv .venv-2
+
+# ── 3. Activate it (Windows PowerShell) ──
+& .\.venv-2\Scripts\Activate.ps1
+# Prompt should now start with (.venv-2)
+
+# ── 4. Install all dependencies ──
+pip install -r backend/requirements.txt
+
+# ── 5. Create .env from the example ──
+Copy-Item backend\.env.example backend\.env
+# Open backend\.env and fill in ALL variables
+
+# ── 6. Start the server ──
+cd backend
+python start_server.py
+
+# ── 7. Verify it works ──
+# Open: http://localhost:8001/health   → {"status":"ok"}
+# Open: http://localhost:8001/docs     → Swagger UI
+# Open: http://localhost:8001/admin    → Admin Panel login</pre>
+
+    <p class="ar">
+      هذا هو التسلسل الكامل من الصفر. تذكّر دائماً:
+      <strong>(١)</strong> تفعيل البيئة الافتراضية قبل أي أمر pip أو python.
+      <strong>(٢)</strong> الانتقال إلى مجلد <code>backend/</code> قبل تشغيل <code>start_server.py</code>.
+      <strong>(٣)</strong> ملء جميع متغيرات <code>.env</code> قبل التشغيل.
+    </p>
+  </div>
+
+  <nav class="lesson-nav">
+    <a href="index.html" class="nav-btn nav-btn-prev">← Home</a>
+    <a href="lesson-01.html" class="nav-btn nav-btn-next">Lesson 01 →</a>
+  </nav>
+
+</main>
 </body>
 </html>

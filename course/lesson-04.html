@@ -1,451 +1,296 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 04 — Moodle Plugin | Zoho+Moodle Course</title>
+  <title>Lesson 04 — Zoho CRM Integration | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html" class="active">L4</a><a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a><a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
+<main class="lesson-container">
+  <div class="lesson-header">
+    <span class="lesson-tag">Lesson 04</span>
+    <h1>Zoho CRM Integration &amp; OAuth 2.0</h1>
+    <h2 class="ar">التكامل مع Zoho CRM ونظام OAuth 2.0</h2>
+    <p>This lesson explains what Zoho CRM is, how the project authenticates with it using OAuth 2.0, and how it reads and writes data to Zoho API calls.</p>
+    <p class="ar">يشرح هذا الدرس ما هو Zoho CRM، كيف يتم التحقق من الهوية باستخدام OAuth 2.0، وكيف يقرأ المشروع البيانات ويكتبها عبر Zoho API.</p>
+  </div>
 
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 04</div>
-      <div class="lesson-number">Lesson 04</div>
-      <div class="lesson-title-en">The Moodle PHP Plugin</div>
-      <div class="lesson-title-ar">المكوّن الإضافي لـ Moodle بلغة PHP</div>
-      <div class="lesson-meta">
-        <span>🕐 ~55 minutes</span>
-        <span>🎯 Advanced</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
+  <div class="card">
+    <h2>1. What is Zoho CRM?</h2>
+    <h2 class="ar">١. ما هو Zoho CRM؟</h2>
+    <p>Zoho CRM is cloud software used by the institute to manage student academic records. This project uses <strong>8 custom BTEC modules</strong> — not the standard "Contacts" or "Deals". Student enrichment data lives in <code>BTEC_Students</code>, payment records in <code>BTEC_Payments</code>, class schedules in <code>BTEC_Classes</code>, and so on. Our backend reads from these modules and syncs into Moodle.</p>
+    <p class="ar">Zoho CRM برنامج سحابي يستخدمه المعهد لإدارة سجلات الطلاب الأكاديمية. يستخدم هذا المشروع <strong>8 وحدات BTEC مخصصة</strong> — وليس "Contacts" أو "Deals" القياسية. بيانات الطالب التكميلية في <code>BTEC_Students</code>، المدفوعات في <code>BTEC_Payments</code>، الجداول في <code>BTEC_Classes</code>، وهكذا. يقرأ الباك-إند من هذه الوحدات ويزامن البيانات إلى Moodle.</p>
+    <div class="diagram-box"><pre>
+Zoho CRM Modules we use (all 8 BTEC custom modules):
+  ┌─────────────────┐  ┌──────────────────────┐  ┌───────────────────┐
+  │  BTEC_Students  │  │  BTEC_Registrations  │  │  BTEC_Payments    │
+  │ (student photo, │  │ (programme signup)   │  │ (fee payments)    │
+  │  dept, branch)  │  └──────────┬───────────┘  └────────┬──────────┘
+  └────────┬────────┘             │                       │
+           │              ┌───────┴────────┐     ┌────────┴─────────┐
+           │              │ BTEC_Classes   │     │ BTEC_Enrollments │
+           │              │ (schedules)    │     │ (student+class)  │
+           │              └───────┬────────┘     └──────────────────┘
+           │              ┌───────┴────────┐     ┌──────────────────┐
+           │              │ BTEC_Grades    │     │BTEC_Student_Reqs │
+           │              │ (unit results) │     │(change requests) │
+           │              └───────┬────────┘     └──────────────────┘
+           │              ┌───────┴────────┐
+           │              │  BTEC (Units)  │
+           │              │ api_name=BTEC  │
+           │              └────────────────┘
+           ▼
+  All synced into local SQLite via FastAPI ingress/parser/mapper/service pipeline
+    </pre></div>
+  </div>
 
-    <div class="lesson-body">
+  <div class="card">
+    <h2>2. What is OAuth 2.0? (For Complete Beginners)</h2>
+    <h2 class="ar">٢. ما هو OAuth 2.0؟ (للمبتدئين تماماً)</h2>
+    <p>OAuth 2.0 is a secure login system for apps. Instead of giving your username and password to our backend, Zoho gives a special short-lived <strong>access token</strong>. Our backend uses this token to prove it is allowed to read/write your Zoho data. When the token expires (usually every hour), the backend automatically gets a new one using a <strong>refresh token</strong>.</p>
+    <p class="ar">OAuth 2.0 نظام تسجيل دخول آمن للتطبيقات. بدلاً من إعطاء اسم المستخدم وكلمة المرور، يمنح Zoho رمزاً مؤقتاً خاصاً يسمى <strong>access token</strong>. يستخدمه الباك-إند لإثبات صلاحيته. عندما ينتهي صلاحية الرمز (عادةً كل ساعة)، يحصل الباك-إند تلقائياً على رمز جديد عبر <strong>refresh token</strong>.</p>
+    <div class="diagram-box"><pre>
+OAUTH 2.0 TOKEN FLOW
+====================
+1. Developer visits api-console.zoho.com
+2. Creates a "Self Client" — gets: CLIENT_ID + CLIENT_SECRET
+3. Generates a one-time AUTHORIZATION_CODE (valid 5 mins)
+4. Exchanges code → gets REFRESH_TOKEN (valid for months)
+   Store REFRESH_TOKEN in .env file!
+5. When backend starts:
+   REFRESH_TOKEN + CLIENT_ID + CLIENT_SECRET
+        ↓  (POST to accounts.zoho.eu/oauth/v2/token)
+   ACCESS_TOKEN (valid 1 hour)
+        ↓
+   All API calls: Authorization: Zoho-oauthtoken {ACCESS_TOKEN}
+6. When ACCESS_TOKEN expires → auto repeat step 5
+    </pre></div>
+    <div class="warning-box">
+      <strong>Never share</strong> your CLIENT_SECRET or REFRESH_TOKEN. They give full access to your Zoho account. Keep them only in your <code>.env</code> file, which is in <code>.gitignore</code> and never committed to GitHub.<br/>
+      <strong>لا تشارك</strong> CLIENT_SECRET أو REFRESH_TOKEN أبداً. يمنحان وصولاً كاملاً لحساب Zoho. احتفظ بهما فقط في ملف <code>.env</code>، الذي يوجد في <code>.gitignore</code> ولا يُرفع إلى GitHub.
+    </div>
+  </div>
 
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Understand Moodle plugin architecture and required files</li>
-          <li>Declare Web Service functions in <code>db/services.php</code> and <code>db/functions.php</code></li>
-          <li>Implement the external PHP class with parameter definitions and execution logic</li>
-          <li>Call Moodle Web Service functions from Python using token authentication</li>
-          <li>Handle errors and debug plugin issues</li>
-        </ul>
-      </div>
+  <div class="card">
+    <h2>3. Step-by-Step: Getting OAuth Credentials from Zoho</h2>
+    <h2 class="ar">٣. خطوة بخطوة: الحصول على بيانات OAuth من Zoho</h2>
+    <ol>
+      <li>Go to <a href="https://api-console.zoho.eu" target="_blank">https://api-console.zoho.eu</a> (use .eu if your Zoho account is in Europe)</li>
+      <li>Click <strong>Add Client</strong> → choose <strong>Self Client</strong> (for server-to-server scripts)</li>
+      <li>Copy the <strong>Client ID</strong> → paste as <code>ZOHO_CLIENT_ID</code> in <code>.env</code></li>
+      <li>Copy the <strong>Client Secret</strong> → paste as <code>ZOHO_CLIENT_SECRET</code> in <code>.env</code></li>
+      <li>Click <strong>Generate Code</strong> tab. In the Scope field enter:<br/><code>ZohoCRM.modules.ALL,ZohoCRM.settings.ALL</code></li>
+      <li>Set <strong>Time Duration</strong> to 10 minutes. Click Create.</li>
+      <li>You get a <strong>Grant Token</strong> (the Authorization Code). Copy it — it expires in 5-10 minutes!</li>
+      <li>Open a terminal and run this command (replace placeholders):<br/>
+      <pre><code>curl -X POST https://accounts.zoho.eu/oauth/v2/token \
+  -d grant_type=authorization_code \
+  -d client_id=YOUR_CLIENT_ID \
+  -d client_secret=YOUR_CLIENT_SECRET \
+  -d redirect_uri=https://www.zoho.com \
+  -d code=YOUR_GRANT_TOKEN</code></pre>
+      </li>
+      <li>The response JSON contains <code>"refresh_token": "1000.xxxx..."</code>. Copy it → paste as <code>ZOHO_REFRESH_TOKEN</code> in <code>.env</code></li>
+    </ol>
+    <p class="ar">اتبع الخطوات أعلاه بالترتيب. الخطوة 7 مهمة: الـ Grant Token ينتهي خلال دقائق، نفّذ الأمر في التيرمينال فوراً. بعد الحصول على <code>refresh_token</code> أضفه في <code>.env</code> وأعد تشغيل السيرفر.</p>
+    <div class="tip-box">
+      The <code>ZOHO_API_DOMAIN</code> in <code>.env</code> is <code>https://www.zohoapis.eu</code> for EU accounts, or <code>https://www.zohoapis.com</code> for US/global accounts. Check your Zoho account datacenter in Zoho Settings → Data Centers.
+      <br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif">الـ <code>ZOHO_API_DOMAIN</code> في <code>.env</code> يكون <code>https://www.zohoapis.eu</code> للحسابات الأوروبية. تحقق من منطقتك في إعدادات Zoho → Data Centers.</span>
+    </div>
+  </div>
 
-      <!-- PLUGIN STRUCTURE -->
-      <div class="section">
-        <div class="section-title">1. Plugin Directory Structure</div>
-        <div class="section-title-ar">هيكل مجلدات المكوّن الإضافي</div>
-        <div class="section-divider"></div>
-
-        <div class="arch-diagram">
-          <div class="arch-title">moodle/local/zoho_sync/ — Plugin Root</div>
-          <div class="arch-item level-0">local/zoho_sync/</div>
-          <div class="arch-item level-1">version.php          <span style="color:#94a3b8;font-size:.8rem;">← Plugin version + metadata (REQUIRED)</span></div>
-          <div class="arch-item level-1">lang/</div>
-          <div class="arch-item level-2">en/</div>
-          <div class="arch-item level-3">local_zoho_sync.php  <span style="color:#94a3b8;font-size:.8rem;">← English language strings</span></div>
-          <div class="arch-item level-1">db/</div>
-          <div class="arch-item level-2">services.php         <span style="color:#94a3b8;font-size:.8rem;">← Declares web service and its functions</span></div>
-          <div class="arch-item level-2">functions.php        <span style="color:#94a3b8;font-size:.8rem;">← Maps function names to PHP classes</span></div>
-          <div class="arch-item level-2">upgrade.php          <span style="color:#94a3b8;font-size:.8rem;">← DB migration steps per version</span></div>
-          <div class="arch-item level-1">classes/</div>
-          <div class="arch-item level-2">external/</div>
-          <div class="arch-item level-3">update_user.php      <span style="color:#94a3b8;font-size:.8rem;">← PHP external function class</span></div>
-          <div class="arch-item level-3">get_user_info.php    <span style="color:#94a3b8;font-size:.8rem;">← Another external function class</span></div>
-        </div>
-
-        <div class="callout info">
-          <div class="callout-icon">💡</div>
-          <div class="callout-content">
-            <div class="callout-title">Plugin Name Convention</div>
-            <p>Our plugin is named <strong>local_zoho_sync</strong>. "local" = its type (local plugin, vs block, mod, auth, etc). "zoho_sync" = our unique identifier. This name is used everywhere: folder name, function prefixes, language strings, database tables.</p>
-            <div class="callout-ar">اسم المكوّن <strong>local_zoho_sync</strong>. "local" = نوعه (مكوّن محلي). "zoho_sync" = معرّفنا الفريد. يُستخدم هذا الاسم في كل مكان: اسم المجلد، بادئات الدوال، السلاسل النصية، جداول قاعدة البيانات.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VERSION.PHP -->
-      <div class="section">
-        <div class="section-title">2. version.php — Plugin Identity</div>
-        <div class="section-title-ar">ملف <code class="inline">version.php</code> — هوية المكوّن</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">php</span>
-            <span class="code-filename">local/zoho_sync/version.php</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-php">&lt;?php
-/**
- * Version details for local_zoho_sync plugin.
- * Moodle reads this file to know the plugin's version and upgrade needs.
- *
- * Moodle يقرأ هذا الملف لمعرفة إصدار المكوّن ومتطلبات الترقية.
- */
-
-defined('MOODLE_INTERNAL') || die();
-// The line above prevents direct access to this file.
-// Moodle must set MOODLE_INTERNAL constant first.
-// يمنع الوصول المباشر لهذا الملف
-
-$plugin->component  = 'local_zoho_sync'; // Must match folder name exactly!
-$plugin->version    = 2024120100;         // YYYYMMDD + 2-digit serial (today's date)
-$plugin->requires   = 2022041900;         // Moodle 4.0+ required
-$plugin->maturity   = MATURITY_STABLE;    // MATURITY_ALPHA | MATURITY_BETA | MATURITY_STABLE
-$plugin->release    = '1.0.0';
-$plugin->dependencies = [];               // Other plugins this depends on</code></pre>
-        </div>
-      </div>
-
-      <!-- DB/SERVICES.PHP -->
-      <div class="section">
-        <div class="section-title">3. db/services.php — Declare Web Services</div>
-        <div class="section-title-ar">ملف <code class="inline">db/services.php</code> — إعلان خدمات الويب</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">php</span>
-            <span class="code-filename">local/zoho_sync/db/services.php</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-php">&lt;?php
-/**
- * Declares the web service and which functions belong to it.
- * يعلن عن خدمة الويب والدوال المنتمية إليها
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-/*
- * $functions: Register each individual web service function.
- * Each key is the function name used in API calls.
- * المفتاح = اسم الدالة المستخدم في استدعاءات API
- */
-$functions = [
-    'local_zoho_sync_update_user' => [
-        'classname'     => 'local_zoho_sync\\external\\update_user',
-        'methodname'    => 'execute',
-        'description'   => 'Update a Moodle user profile with data from Zoho.',
-        'type'          => 'write',    // 'read' or 'write'
-        'ajax'          => true,       // Callable from JavaScript (AJAX)
-        'loginrequired' => true,       // Requires authenticated token
-    ],
-    'local_zoho_sync_get_user_info' => [
-        'classname'     => 'local_zoho_sync\\external\\get_user_info',
-        'methodname'    => 'execute',
-        'description'   => 'Get Moodle user info by Zoho ID.',
-        'type'          => 'read',
-        'ajax'          => true,
-        'loginrequired' => true,
-    ],
-    'local_zoho_sync_enroll_user' => [
-        'classname'     => 'local_zoho_sync\\external\\enroll_user',
-        'methodname'    => 'execute',
-        'description'   => 'Enroll/unenroll a user in a Moodle course.',
-        'type'          => 'write',
-        'ajax'          => true,
-        'loginrequired' => true,
-    ],
-];
-
-/*
- * $services: Create a named API service that groups the functions above.
- * Clients authenticate with a TOKEN issued to this service.
- * العملاء يصادقون بتوكن صادر لهذه الخدمة
- */
-$services = [
-    'Zoho Sync Service' => [
-        'functions'       => array_keys($functions),  // Include all functions
-        'restrictedusers' => 0,       // 0 = any authorised user can use
-        'enabled'         => 1,       // Enabled immediately on install
-        'shortname'       => 'zoho_sync_ws',
-    ],
-];</code></pre>
-        </div>
-      </div>
-
-      <!-- EXTERNAL CLASS -->
-      <div class="section">
-        <div class="section-title">4. The External Function PHP Class</div>
-        <div class="section-title-ar">كلاس الدالة الخارجية PHP</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">php</span>
-            <span class="code-filename">local/zoho_sync/classes/external/update_user.php</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-php">&lt;?php
-namespace local_zoho_sync\external;
-
-use core_external\external_function_parameters;
-use core_external\external_single_structure;
-use core_external\external_value;
-use core_external\external_api;
-use PARAM_INT;
-use PARAM_TEXT;
-use PARAM_ALPHA;
-
-/**
- * Update a Moodle user profile with data from Zoho.
- * تحديث ملف مستخدم Moodle ببيانات من Zoho
- */
-class update_user extends external_api {
-
-    /**
-     * Declare what parameters this function accepts.
-     * Moodle validates + sanitises input automatically.
-     *
-     * إعلان المعاملات المقبولة — Moodle يتحقق منها ويُعقّمها تلقائياً
-     */
-    public static function execute_parameters(): external_function_parameters {
-        return new external_function_parameters([
-            'userid'      => new external_value(PARAM_INT,  'Moodle User ID'),
-            'firstname'   => new external_value(PARAM_TEXT, 'First name',   VALUE_OPTIONAL, null),
-            'lastname'    => new external_value(PARAM_TEXT, 'Last name',    VALUE_OPTIONAL, null),
-            'email'       => new external_value(PARAM_TEXT, 'Email',        VALUE_OPTIONAL, null),
-            'phone'       => new external_value(PARAM_TEXT, 'Phone number', VALUE_OPTIONAL, null),
-            'city'        => new external_value(PARAM_TEXT, 'City',         VALUE_OPTIONAL, null),
-            'country'     => new external_value(PARAM_ALPHA,'Country code', VALUE_OPTIONAL, null),
-            'profileimageurl' => new external_value(PARAM_TEXT, 'Photo URL', VALUE_OPTIONAL, null),
-        ]);
-    }
-
-    /**
-     * The actual function that runs when the WS is called.
-     * الدالة الفعلية التي تُنفَّذ عند استدعاء خدمة الويب
-     */
-    public static function execute(
-        int    $userid,
-        ?string $firstname = null,
-        ?string $lastname  = null,
-        ?string $email     = null,
-        ?string $phone     = null,
-        ?string $city      = null,
-        ?string $country   = null,
-        ?string $profileimageurl = null
-    ): array {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . '/user/lib.php');
-
-        // Validate parameters (Moodle's requirement)
-        self::validate_parameters(self::execute_parameters(), [
-            'userid'      => $userid,
-            'firstname'   => $firstname,
-            'lastname'    => $lastname,
-            'email'       => $email,
-            'phone'       => $phone,
-            'city'        => $city,
-            'country'     => $country,
-            'profileimageurl' => $profileimageurl,
-        ]);
-
-        // Check user exists
-        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
-
-        // Build update object — only update provided fields
-        $update = (object)['id' => $userid];
-        if ($firstname !== null) $update->firstname = $firstname;
-        if ($lastname  !== null) $update->lastname  = $lastname;
-        if ($email     !== null) $update->email     = $email;
-        if ($phone     !== null) $update->phone1    = $phone;
-        if ($city      !== null) $update->city      = $city;
-        if ($country   !== null) $update->country   = $country;
-
-        user_update_user($update, false, false);
-
-        // Handle profile photo upload
-        if ($profileimageurl) {
-            // Download and set as profile image
-            require_once($CFG->dirroot . '/lib/filelib.php');
-            $userid_context = \context_user::instance($userid);
-            $imagecontent   = file_get_contents($profileimageurl);
-            if ($imagecontent !== false) {
-                $tempfile = tempnam(sys_get_temp_dir(), 'zoho_photo_');
-                file_put_contents($tempfile, $imagecontent);
-                process_new_icon($userid_context, 'user', 'icon', 0, $tempfile);
-                @unlink($tempfile);
-            }
-        }
-
-        return [
-            'success' => true,
-            'userid'  => $userid,
-            'message' => 'User updated successfully',
-        ];
-    }
-
-    /**
-     * Declare what the function returns.
-     * إعلان ما تُعيده الدالة
-     */
-    public static function execute_returns(): external_single_structure {
-        return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'Was update successful?'),
-            'userid'  => new external_value(PARAM_INT,  'Updated user ID'),
-            'message' => new external_value(PARAM_TEXT, 'Status message'),
-        ]);
-    }
-}</code></pre>
-        </div>
-      </div>
-
-      <!-- CALLING FROM PYTHON -->
-      <div class="section">
-        <div class="section-title">5. Calling Moodle WS from Python</div>
-        <div class="section-title-ar">استدعاء خدمة Moodle من Python</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/integrations/moodle/client.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">import httpx
+  <div class="card">
+    <h2>4. The ZohoClient Class — Auto Token Refresh</h2>
+    <h2 class="ar">٤. كلاس ZohoClient — التجديد التلقائي للرمز</h2>
+    <p>The file <code>backend/app/integrations/zoho/client.py</code> contains a <code>ZohoClient</code> class that handles all communication with Zoho. Its most important job is automatically refreshing the access token behind the scenes.</p>
+    <p class="ar">ملف <code>backend/app/integrations/zoho/client.py</code> يحتوي على كلاس <code>ZohoClient</code> يتعامل مع كل الاتصالات مع Zoho. أهم وظيفته: تجديد الـ access token تلقائياً في الخلفية دون تدخل يدوي.</p>
+    <pre><code class="language-python">import requests
+from datetime import datetime, timedelta
 from app.core.config import settings
 
+class ZohoClient:
+    def __init__(self):
+        self.access_token = None
+        self.token_expires_at = datetime.utcnow()  # expired by default → forces refresh
 
-def call_moodle_ws(function_name: str, params: dict) -> dict:
-    """
-    Call any Moodle Web Service function.
-
-    استدعاء أي دالة من خدمات الويب في Moodle.
-
-    Args:
-        function_name: e.g. "local_zoho_sync_update_user"
-        params:        Dict of parameters matching the PHP execute() signature
-
-    Returns:
-        Parsed JSON response from Moodle
-    """
-    url = f"{settings.MOODLE_URL}/webservice/rest/server.php"
-
-    payload = {
-        "wstoken":       settings.MOODLE_TOKEN,       # Auth token from Moodle admin
-        "wsfunction":    function_name,                # PHP function name
-        "moodlewsrestformat": "json",                  # Always use JSON format
-        **params,                                       # All function parameters
-    }
-
-    response = httpx.post(url, data=payload, timeout=30)
-    response.raise_for_status()
-
-    result = response.json()
-
-    # Moodle returns errors inside the JSON, not via HTTP status codes!
-    # Moodle يُعيد الأخطاء داخل JSON وليس عبر رموز حالة HTTP
-    if isinstance(result, dict) and "exception" in result:
-        raise RuntimeError(
-            f"Moodle WS error for {function_name}: "
-            f"{result.get('message', 'Unknown error')} "
-            f"(errorcode: {result.get('errorcode', 'N/A')})"
+    def _refresh_token(self):
+        """Get a new access token using the refresh token."""
+        resp = requests.post(
+            f"{settings.ZOHO_ACCOUNTS_DOMAIN}/oauth/v2/token",
+            params={
+                "grant_type":    "refresh_token",
+                "refresh_token": settings.ZOHO_REFRESH_TOKEN,
+                "client_id":     settings.ZOHO_CLIENT_ID,
+                "client_secret": settings.ZOHO_CLIENT_SECRET,
+            }
         )
+        data = resp.json()
+        self.access_token = data["access_token"]
+        # Zoho tokens last 3600 seconds (1 hour); refresh 5 min early to be safe
+        self.token_expires_at = datetime.utcnow() + timedelta(seconds=3500)
+        print("Zoho access token refreshed.")
 
-    return result
+    def _get_headers(self) -> dict:
+        """Return Authorization headers, refreshing token if expired."""
+        if datetime.utcnow() >= self.token_expires_at:
+            self._refresh_token()  # auto-refresh!
+        return {
+            "Authorization": f"Zoho-oauthtoken {self.access_token}",
+            "Content-Type": "application/json",
+        }
 
+    def get(self, endpoint: str, params: dict = None) -> dict:
+        """Send a GET request to Zoho API."""
+        url = f"{settings.ZOHO_API_DOMAIN}/crm/v6/{endpoint}"
+        resp = requests.get(url, headers=self._get_headers(), params=params)
+        resp.raise_for_status()   # throws exception if HTTP error (4xx, 5xx)
+        return resp.json()
 
-# ── Helper wrappers for common operations ─────────────────────────────────────
+    def post(self, endpoint: str, data: dict) -> dict:
+        """Send a POST request to Zoho API."""
+        url = f"{settings.ZOHO_API_DOMAIN}/crm/v6/{endpoint}"
+        resp = requests.post(url, headers=self._get_headers(), json={"data": [data]})
+        resp.raise_for_status()
+        return resp.json()
 
-def moodle_update_user(userid: int, **fields) -> dict:
-    return call_moodle_ws("local_zoho_sync_update_user",
-                          {"userid": userid, **fields})
+# Single shared instance used throughout the backend
+zoho_client = ZohoClient()</code></pre>
+    <p>The pattern <code>zoho_client = ZohoClient()</code> at module level creates ONE instance shared by all services. The first API call triggers a token refresh; subsequent calls reuse it until it expires.</p>
+    <p class="ar">إنشاء نسخة واحدة <code>zoho_client = ZohoClient()</code> على مستوى الموديول يعني أن جميع الخدمات تشترك في نفس الاتصال. أول استدعاء API يُجدّد الرمز؛ الاستدعاءات التالية تعيد استخدامه حتى انتهاء صلاحيته.</p>
+  </div>
 
+  <div class="card">
+    <h2>5. Fetching Records from Zoho — Paginated API Calls</h2>
+    <h2 class="ar">٥. جلب السجلات من Zoho — استدعاءات API المُقسَّمة</h2>
+    <p>Zoho API returns at most <strong>200 records per page</strong>. If there are 800 students, you need 4 API calls (page 1, 2, 3, 4). The sync service handles this automatically:</p>
+    <p class="ar">Zoho API يعيد كحد أقصى <strong>200 سجل في كل صفحة</strong>. إذا كان عندك 800 طالب تحتاج 4 استدعاءات (صفحة 1, 2, 3, 4). خدمة المزامنة تتعامل مع هذا تلقائياً:</p>
+    <pre><code class="language-python">def fetch_all_btec_students() -> list[dict]:
+    """Fetch ALL records from BTEC_Students module, handling pagination."""
+    all_students = []
+    page = 1
+    per_page = 200   # Zoho maximum (200 records per page)
 
-def moodle_enroll_user(userid: int, courseid: int, roleid: int = 5) -> dict:
-    """roleid=5 is the default 'student' role in most Moodle installations."""
-    return call_moodle_ws("local_zoho_sync_enroll_user", {
-        "userid":   userid,
-        "courseid": courseid,
-        "roleid":   roleid,
-    })
+    while True:
+        response = zoho_client.get(
+            "BTEC_Students",   # <-- the actual custom module API name
+            params={
+                "page": page,
+                "per_page": per_page,
+                "fields": "id,Student,Profile_Image,Department,Student_ID_Number,Branch_ID,Status"
+                # Only fetch the fields we actually need — saves API quota!
+            }
+        )
+        records = response.get("data", [])
+        if not records:
+            break   # no more pages — stop
 
+        all_students.extend(records)
 
-def moodle_get_user(userid: int) -> dict:
-    return call_moodle_ws("local_zoho_sync_get_user_info", {"userid": userid})</code></pre>
-        </div>
+        # Check if Zoho says there are more pages
+        if not response.get("info", {}).get("more_records", False):
+            break
 
-        <div class="callout warning">
-          <div class="callout-icon">⚠️</div>
-          <div class="callout-content">
-            <div class="callout-title">Moodle Errors Are Hidden in 200 OK Responses</div>
-            <p>Even when a Moodle WS call fails (wrong token, wrong parameter, missing capability), Moodle returns HTTP 200. The error is inside the JSON body as an <code>"exception"</code> key. Always check for it — don't assume a 200 OK means success.</p>
-            <div class="callout-ar">حتى عند فشل الاستدعاء، يُعيد Moodle HTTP 200. الخطأ يكون داخل JSON كمفتاح <code>"exception"</code>. تحقق منه دائماً.</div>
-          </div>
-        </div>
-      </div>
+        page += 1
 
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 04 Quiz</div>
-        <div class="section-divider"></div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">In a Moodle plugin, what is the purpose of <code>db/services.php</code>?</div>
-          <div class="quiz-question-ar">ما الغرض من ملف <code>db/services.php</code> في مكوّن Moodle؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It stores SQL queries used by the plugin</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It defines database table schemas</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> It declares web service functions and creates named API services</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> It is the PHP class that handles the actual logic</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! <code>db/services.php</code> tells Moodle: "these are my web service functions and this is the named service that groups them". Without it, Moodle doesn't know the functions exist.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">Why must <code>self::validate_parameters()</code> be called at the start of every external function's <code>execute()</code> method?</div>
-          <div class="quiz-question-ar">لماذا يجب استدعاء <code>self::validate_parameters()</code> في بداية كل دالة <code>execute()</code>؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To log the function call to the Moodle event log</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> Moodle requires it to sanitise inputs and enforce the declared parameter types and constraints</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It automatically checks user permissions</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It converts parameters to the correct PHP types</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Moodle enforces a strict contract: parameters must be validated against the <code>execute_parameters()</code> declaration. This provides automatic input sanitisation (using PARAM_* constants) and type enforcement.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">Our Python <code>call_moodle_ws()</code> function checks for an <code>"exception"</code> key in the response even when the HTTP status is 200. Why?</div>
-          <div class="quiz-question-ar">لماذا يتحقق <code>call_moodle_ws()</code> من مفتاح <code>"exception"</code> حتى عند HTTP 200؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Moodle returns 200 only for partial successes</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> It's a bug in Moodle's API implementation</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Moodle always returns HTTP 200; actual errors are reported in the JSON body via the <code>"exception"</code> key</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To handle Moodle maintenance mode responses</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Moodle's Web Service REST API always returns HTTP 200. Errors like wrong token, missing capability, or invalid data are returned as <code>{"exception": "...", "errorcode": "...", "message": "..."}</code> inside the response body.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-      </div>
+    print(f"Fetched {len(all_students)} records from BTEC_Students")
+    return all_students</code></pre>
+    <div class="tip-box">
+      Always specify the <code>fields</code> parameter! Fetching all 50+ Zoho fields when you only need 6 wastes API quota, memory, and time. Zoho gives you a limited number of API calls per day (the daily limit depends on your plan).<br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif">دائماً حدّد الـ <code>fields</code>! جلب كل 50+ حقل من Zoho عندما تحتاج 6 فقط يُضيّع حصتك اليومية من API والذاكرة والوقت.</span>
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+  <div class="card">
+    <h2>6. Zoho Field Names — API Name vs Display Name</h2>
+    <h2 class="ar">٦. أسماء حقول Zoho — الاسم التقني مقابل اسم العرض</h2>
+    <p>In the Zoho web interface the field might be labelled "Student ID". But in the API it is called <code>Student_ID__c</code> (the <code>__c</code> suffix means it is a custom field). You must use the <em>API name</em>, not the display name, in all code.</p>
+    <p class="ar">في واجهة Zoho الرسومية قد يظهر الحقل باسم "Student ID". لكن في الـ API اسمه <code>Student_ID__c</code> (اللاحقة <code>__c</code> تعني حقل مخصص). يجب استخدام <em>اسم API</em> وليس اسم العرض في كل الكود.</p>
+    <table class="info-table">
+      <thead><tr><th>Display Name in Zoho UI</th><th>API Name (use in code)</th></tr></thead>
+      <tbody>
+        <tr><td>First Name</td><td>First_Name</td></tr>
+        <tr><td>Last Name</td><td>Last_Name</td></tr>
+        <tr><td>Email</td><td>Email</td></tr>
+        <tr><td>Student ID</td><td>Student_ID__c</td></tr>
+        <tr><td>Programme</td><td>Program__c</td></tr>
+        <tr><td>Moodle User ID</td><td>Moodle_User_ID__c</td></tr>
+        <tr><td>Grade</td><td>Grade__c</td></tr>
+        <tr><td>Passed</td><td>Passed__c</td></tr>
+      </tbody>
+    </table>
+    <p>To find API names: In Zoho CRM, go to <strong>Setup → Developer Space → APIs → API Names</strong> and find the module fields list.</p>
+    <p class="ar">لإيجاد أسماء الـ API: في Zoho CRM اذهب إلى <strong>Setup → Developer Space → APIs → API Names</strong> وابحث في قائمة حقول الوحدة التي تريدها.</p>
+  </div>
+
+  <div class="card">
+    <h2>7. Writing Data Back to Zoho</h2>
+    <h2 class="ar">٧. كتابة البيانات مرة أخرى إلى Zoho</h2>
+    <p>When a student's grade is updated in Moodle, the grade sync service pushes it back to Zoho. This updates the student's Contact record in Zoho CRM so the admin can see the grade without logging into Moodle.</p>
+    <p class="ar">عند تحديث درجات الطالب في Moodle، تدفع خدمة مزامنة الدرجات البيانات مرة أخرى إلى Zoho. هذا يُحدّث سجل الطالب في Zoho CRM ليتمكن المسؤول من رؤية الدرجة دون الدخول إلى Moodle.</p>
+    <pre><code class="language-python">def push_grade_to_zoho(zoho_id: str, grade_data: dict):
+    """
+    Update a Contact record in Zoho with grade information.
+    zoho_id: the Contact's ID in Zoho (stored in our students table)
+    grade_data: dict with grade_value, grade_letter, passed fields
+    """
+    payload = {
+        "Grade__c":  grade_data["grade_letter"],   # e.g. "Merit"
+        "Passed__c": grade_data["passed"],           # True or False
+        "Grade_Value__c": grade_data["grade_value"], # e.g. 72.5
+        "Last_Grade_Sync__c": datetime.utcnow().isoformat()
+    }
+    try:
+        result = zoho_client.post(f"BTEC_Grades/{zoho_id}", data=payload)
+        print(f"Grade pushed to Zoho BTEC_Grades record {zoho_id}")
+        return result
+    except Exception as e:
+        # Log error but do not crash — grades are pushed on best-effort basis
+        log_event("push_grade_to_zoho", "error", entity_id=zoho_id, error=str(e))
+        raise</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>8. Common Zoho API Errors and How to Fix Them</h2>
+    <h2 class="ar">٨. الأخطاء الشائعة في Zoho API وكيفية إصلاحها</h2>
+    <table class="info-table">
+      <thead><tr><th>Error / Message</th><th>Cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>INVALID_TOKEN</td><td>Access token expired or wrong</td><td>Check ZOHO_REFRESH_TOKEN in .env; restart server to force re-auth</td></tr>
+        <tr><td>INVALID_CLIENT</td><td>Wrong CLIENT_ID or CLIENT_SECRET</td><td>Copy-paste from api-console.zoho.eu again carefully</td></tr>
+        <tr><td>AUTHENTICATION_FAILURE</td><td>Refresh token revoked</td><td>Generate a new refresh token from api-console.zoho.eu</td></tr>
+        <tr><td>INVALID_MODULE</td><td>Module name wrong (case sensitive)</td><td>Use exact API name: <code>BTEC_Students</code> not <code>btec_students</code>. The Units module API name is <code>BTEC</code> not <code>BTEC_Units</code>.</td></tr>
+        <tr><td>INVALID_DATA: Field not found</td><td>Wrong field API name</td><td>Check field API names in Zoho Setup → APIs → API Names</td></tr>
+        <tr><td>429 Too Many Requests</td><td>Daily API limit reached</td><td>Wait until midnight (Zoho time) or upgrade plan</td></tr>
+      </tbody>
+    </table>
+    <p class="ar">أغلب الأخطاء تكون بسبب انتهاء صلاحية الـ refresh token أو خطأ في نسخ البيانات. الحل الأول دائماً: راجع ملف <code>.env</code> وأعد تشغيل السيرفر. إذا استمر المشكلة أنشئ refresh token جديداً من api-console.zoho.eu.</p>
+  </div>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;">
+    <a href="lesson-03.html" class="btn-secondary">&#8592; Lesson 03: Database</a>
+    <a href="lesson-05.html" class="btn-primary">Lesson 05: Moodle Plugin &#8594;</a>
+  </div>
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 — Developer Course</p></footer>
 <script src="course.js"></script>
-<script>initLesson(4);</script>
 </body>
 </html>

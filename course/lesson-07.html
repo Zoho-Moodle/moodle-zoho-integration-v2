@@ -1,411 +1,234 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 07 — Production Deployment | Zoho+Moodle Course</title>
+  <title>Lesson 07 — Webhooks Architecture | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a><a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a><a href="lesson-07.html" class="active">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
+<main class="lesson-container">
+  <div class="lesson-header">
+    <span class="lesson-tag">Lesson 07</span>
+    <h1>Webhooks Architecture</h1>
+    <h2 class="ar">هندسة الـ Webhooks</h2>
+    <p>This lesson explains what a webhook is, why it is better than polling, how HMAC-SHA256 signature verification works, and a full walkthrough of how Zoho and Moodle webhooks are processed by the backend.</p>
+    <p class="ar">يشرح هذا الدرس ما هو الـ webhook، لماذا هو أفضل من الاستطلاع الدوري، كيف يعمل التحقق من التوقيع HMAC-SHA256، واستعراض كامل لكيفية معالجة الـ webhooks من Zoho و Moodle.</p>
+  </div>
 
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 07</div>
-      <div class="lesson-number">Lesson 07</div>
-      <div class="lesson-title-en">Production Deployment</div>
-      <div class="lesson-title-ar">النشر على بيئة الإنتاج</div>
-      <div class="lesson-meta">
-        <span>🕐 ~60 minutes</span>
-        <span>🎯 Advanced</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
+  <div class="card">
+    <h2>1. Push vs Pull — Why Webhooks Exist</h2>
+    <h2 class="ar">١. الدفع مقابل السحب — لماذا الـ Webhooks؟</h2>
+    <p>There are two ways for our backend to know when something changes in Zoho or Moodle:</p>
+    <p class="ar">هناك طريقتان لمعرفة الباك-إند بأن شيئاً تغيّر في Zoho أو Moodle:</p>
+    <div class="diagram-box"><pre>
+PULL (Polling) — like constantly checking your phone for messages:
+  Our server → asks Zoho "any new students?" → Zoho replies
+  Our server → asks Zoho "any new students?" → Zoho replies "no"
+  Our server → asks Zoho "any new students?" → Zoho replies "no"
+  (repeat every 5 minutes, even when nothing changed)
+  Cons: wastes API quota, wastes bandwidth, not instant (5 min delay)
 
-    <div class="lesson-body">
+PUSH (Webhook) — like receiving a notification when a message arrives:
+  Zoho detects new student is saved → Zoho sends POST request to our URL
+  Our server receives it → processes it INSTANTLY
+  Pros: real-time, zero wasted API calls when nothing changes
+    </pre></div>
+    <p>This project uses <strong>webhooks for real-time events</strong> (new student saved, grade updated) and <strong>scheduled pull sync</strong> as a safety net (nightly full sync catches anything missed).</p>
+    <p class="ar">هذا المشروع يستخدم <strong>webhooks للأحداث الفورية</strong> (طالب جديد، تحديث درجة) و<strong>مزامنة مجدوَلة</strong> كشبكة أمان (مزامنة ليلية كاملة لالتقاط أي شيء فات).</p>
+  </div>
 
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
+  <div class="card">
+    <h2>2. What is HMAC-SHA256? Verifying the Sender</h2>
+    <h2 class="ar">٢. ما هو HMAC-SHA256؟ التحقق من المُرسِل</h2>
+    <p>When Zoho (or our Moodle plugin) sends a webhook to our server, anyone on the internet could potentially send a fake request to the same URL. HMAC-SHA256 is a cryptographic signature that proves the request is genuinely from Zoho/Moodle and not from an attacker.</p>
+    <p class="ar">عندما يُرسل Zoho أو إضافة Moodle webhook لسيرفرنا، يستطيع أي شخص على الإنترنت إرسال طلب مزيّف لنفس الرابط. HMAC-SHA256 هو توقيع تشفيري يُثبت أن الطلب حقيقي من Zoho/Moodle وليس من مهاجم.</p>
+    <div class="diagram-box"><pre>
+HOW HMAC SIGNATURE WORKS:
+=========================
+Sender side (Zoho or Moodle plugin):
+  payload  = '{"event":"student_saved","id":"123"}'
+  secret   = "our-shared-secret-from-.env"
+  signature = HMAC-SHA256(payload, secret)
+  → sends: HTTP POST with header "X-Zoho-Signature: abc123def456..."
+
+Receiver side (our FastAPI backend):
+  received_body = request.body()
+  secret = settings.WEBHOOK_SECRET  (same secret from .env)
+  expected_signature = HMAC-SHA256(received_body, secret)
+  if received_signature == expected_signature:
+    ✅ VALID — process the webhook
+  else:
+    ❌ REJECT — return 401 Unauthorized (possible attack)
+
+The magic: HMAC can only be computed by someone who knows the SECRET.
+Zoho knows it (you configured it there). We know it (.env).
+An attacker does NOT know it → cannot forge the signature.
+    </pre></div>
+    <pre><code class="language-python">import hmac, hashlib
+
+def verify_signature(body: bytes, received_sig: str, secret: str) -> bool:
+    """
+    Verify that the webhook request came from a trusted sender.
+    body         = raw request bytes (MUST be bytes, not string!)
+    received_sig = value of the X-Zoho-Signature (or X-Moodle-Signature) header
+    secret       = WEBHOOK_SECRET from .env
+    """
+    expected = hmac.new(
+        key    = secret.encode("utf-8"),
+        msg    = body,
+        digestmod = hashlib.sha256
+    ).hexdigest()
+
+    # Use hmac.compare_digest — prevents timing attacks
+    # (a plain == comparison could leak info via timing differences)
+    return hmac.compare_digest(expected, received_sig)</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>3. The Zoho Webhook Endpoint</h2>
+    <h2 class="ar">٣. نقطة نهاية Zoho Webhook</h2>
+    <p>Zoho sends a POST to <code>/webhooks/zoho</code> when a Contact is created or updated. Here is how the endpoint works in <code>backend/app/routers/webhooks.py</code>:</p>
+    <p class="ar">Zoho يُرسل POST إلى <code>/webhooks/zoho</code> عند إنشاء أو تحديث جهة اتصال. إليك كيف تعمل نقطة النهاية في <code>backend/app/routers/webhooks.py</code>:</p>
+    <pre><code class="language-python">from fastapi import APIRouter, Request, HTTPException, Depends
+from sqlalchemy.orm import Session
+from app.infra.db.session import get_db
+from app.core.config import settings
+from app.integrations.zoho.mapper import zoho_contact_to_student
+import json
+
+router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
+
+@router.post("/zoho")
+async def zoho_webhook(request: Request, db: Session = Depends(get_db)):
+    # Step 1: Read raw body bytes BEFORE parsing JSON
+    # (must use raw bytes for HMAC — JSON parsing would lose byte-exact content)
+    body = await request.body()
+
+    # Step 2: Verify the HMAC signature
+    received_sig = request.headers.get("X-Zoho-Signature", "")
+    if not verify_signature(body, received_sig, settings.WEBHOOK_SECRET):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    # Step 3: Parse JSON payload
+    payload = json.loads(body)
+    event_type = payload.get("event")
+    contact    = payload.get("data", {})
+
+    # Step 4: Process based on event type
+    if event_type in ("contact_created", "contact_updated"):
+        student_data = zoho_contact_to_student(contact)
+        student = upsert_student(db, student_data)
+        log_event(db, "webhook_zoho", "success", entity_id=student.zoho_id)
+        return {"status": "processed", "student_id": student.id}
+
+    # Unknown event type — acknowledge but don't process (prevents Zoho retries)
+    return {"status": "ignored", "event": event_type}</code></pre>
+    <div class="tip-box">
+      Always return HTTP 200 quickly! If your server takes more than 10 seconds, Zoho considers the delivery failed and retries. Lengthy operations should be dispatched to a background task with <code>BackgroundTasks</code> and the endpoint should return immediately.<br/><br/>
+      <span style="direction:rtl;display:block;font-family:"Tajawal",sans-serif">دائماً أرجع HTTP 200 بسرعة! إذا تأخر السيرفر أكثر من 10 ثوانٍ، يعتبر Zoho أن الإرسال فشل ويُعيد المحاولة. العمليات الطويلة يجب تشغيلها كـ background task.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>4. Setting Up the 16 Zoho Workflow Rules — Auto-Setup</h2>
+    <h2 class="ar">٤. إعداد الـ 16 Workflow Rule في Zoho — الإعداد التلقائي</h2>
+    <p>The project uses <strong>8 custom BTEC modules</strong>, each needing 2 Workflow Rules (upsert + delete) = <strong>16 rules total</strong>.
+    Instead of creating them manually in the Zoho UI, the backend does it automatically:</p>
+    <p class="ar">يستخدم المشروع <strong>8 وحدات BTEC مخصصة</strong>، كل وحدة تحتاج Workflow Rule اثنين (upsert + delete) = <strong>16 rule إجمالاً</strong>.
+    بدلاً من إنشائها يدوياً في واجهة Zoho، ينشئها الباك-إند تلقائياً:</p>
+    <ol>
+      <li>Make sure <code>WEBHOOK_BASE_URL</code> in <code>.env</code> points to your public server URL
+          (use ngrok for local dev: <code>ngrok http 8001</code>)</li>
+      <li>Call <strong>POST /api/v1/webhooks/setup</strong> from Swagger or curl</li>
+      <li>The backend's <code>ZohoWorkflowService</code> in <code>zoho_workflow_service.py</code>:
         <ul>
-          <li>Deploy the FastAPI backend on a Linux server with Gunicorn + Nginx</li>
-          <li>Create a <code>systemd</code> service for auto-start on reboot</li>
-          <li>Switch from SQLite to PostgreSQL for production</li>
-          <li>Secure the application with HTTPS using Let's Encrypt / Certbot</li>
-          <li>Install the Moodle plugin via the web interface or CLI</li>
-          <li>Configure Zoho webhooks to point to the production URL</li>
+          <li>Creates 16 Zoho Webhook entities (one per module/trigger combination)</li>
+          <li>Creates 16 Workflow Rules that reference those webhooks by ID</li>
+          <li>Saves all IDs to <code>zoho_rules_state.json</code> for cleanup/re-setup</li>
         </ul>
-      </div>
-
-      <!-- PRODUCTION ARCHITECTURE -->
-      <div class="section">
-        <div class="section-title">1. Production Architecture Overview</div>
-        <div class="section-title-ar">نظرة عامة على معمارية الإنتاج</div>
-        <div class="section-divider"></div>
-
-        <div class="arch-diagram">
-          <div class="arch-title">Linux VPS — Production Stack</div>
-          <div class="arch-item level-0">Internet Request → HTTPS :443</div>
-          <div class="arch-item level-1">↓</div>
-          <div class="arch-item level-1">Nginx (Reverse Proxy)</div>
-          <div class="arch-item level-2">→ Static files served directly</div>
-          <div class="arch-item level-2">→ /api/* proxied to Gunicorn :8001</div>
-          <div class="arch-item level-1">↓</div>
-          <div class="arch-item level-1">Gunicorn (WSGI/ASGI Server)</div>
-          <div class="arch-item level-2">→ 4 Uvicorn workers</div>
-          <div class="arch-item level-2">→ Managed by systemd</div>
-          <div class="arch-item level-1">↓</div>
-          <div class="arch-item level-1">FastAPI Application</div>
-          <div class="arch-item level-2">→ Reads .env config</div>
-          <div class="arch-item level-2">→ Connects to PostgreSQL</div>
-          <div class="arch-item level-1">↓</div>
-          <div class="arch-item level-1">PostgreSQL :5432</div>
-          <div class="arch-item level-2">→ Persistent data storage</div>
-        </div>
-      </div>
-
-      <!-- GUNICORN + SYSTEMD -->
-      <div class="section">
-        <div class="section-title">2. Gunicorn + systemd Service</div>
-        <div class="section-title-ar">خدمة Gunicorn مع systemd</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Install Gunicorn</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash">cd /opt/moodle-zoho-integration/backend
-source .venv-1/bin/activate
-pip install gunicorn uvicorn[standard]
-
-# Test gunicorn manually first
-gunicorn app.main:app \
-  --workers 4 \
-  --worker-class uvicorn.workers.UvicornWorker \
-  --bind 0.0.0.0:8001 \
-  --timeout 120 \
-  --keepalive 5</code></pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">ini</span>
-            <span class="code-filename">/etc/systemd/system/zoho-sync.service</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-ini">[Unit]
-Description=Zoho-Moodle FastAPI Integration Server
-After=network.target postgresql.service
-Wants=postgresql.service
-
-[Service]
-Type=exec
-User=www-data
-Group=www-data
-WorkingDirectory=/opt/moodle-zoho-integration/backend
-
-# Load environment variables from .env file
-EnvironmentFile=/opt/moodle-zoho-integration/backend/.env
-
-# The actual command: Gunicorn with Uvicorn workers
-# الأمر الفعلي: Gunicorn مع عمال Uvicorn
-ExecStart=/opt/moodle-zoho-integration/backend/.venv-1/bin/gunicorn app.main:app \
-    --workers 4 \
-    --worker-class uvicorn.workers.UvicornWorker \
-    --bind 0.0.0.0:8001 \
-    --timeout 120 \
-    --keepalive 5 \
-    --access-logfile /var/log/zoho-sync/access.log \
-    --error-logfile /var/log/zoho-sync/error.log
-
-Restart=always
-RestartSec=5
-StandardOutput=append:/var/log/zoho-sync/output.log
-StandardError=append:/var/log/zoho-sync/error.log
-
-[Install]
-WantedBy=multi-user.target</code></pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Enable and start the service</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash"># Create log directory
-mkdir -p /var/log/zoho-sync
-chown www-data:www-data /var/log/zoho-sync
-
-# Reload systemd, enable + start
-systemctl daemon-reload
-systemctl enable zoho-sync           # Auto-start on boot / تشغيل تلقائي عند الإقلاع
-systemctl start zoho-sync
-
-# Verify it's running
-systemctl status zoho-sync
-
-# View live logs
-journalctl -u zoho-sync -f</code></pre>
-        </div>
-      </div>
-
-      <!-- NGINX CONFIG -->
-      <div class="section">
-        <div class="section-title">3. Nginx Reverse Proxy Configuration</div>
-        <div class="section-title-ar">إعداد Nginx كـ Reverse Proxy</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">nginx</span>
-            <span class="code-filename">/etc/nginx/sites-available/zoho-sync</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-nginx">server {
-    listen 80;
-    server_name api.yourschool.com;
-
-    # Redirect all HTTP to HTTPS
-    # توجيه كل HTTP إلى HTTPS
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name api.yourschool.com;
-
-    # SSL certificate (installed by Certbot)
-    ssl_certificate     /etc/letsencrypt/live/api.yourschool.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.yourschool.com/privkey.pem;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-
-    # Increase body size limit for webhook payloads
-    # خفّف حد حجم الجسم لدعم payload كبير من Zoho
-    client_max_body_size 10M;
-
-    # Timeouts for long-running sync operations
-    proxy_connect_timeout 60s;
-    proxy_read_timeout    120s;
-    proxy_send_timeout    60s;
-
-    # Security headers
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
-
-    location / {
-        proxy_pass         http://127.0.0.1:8001;
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade $http_upgrade;
-        proxy_set_header   Connection "upgrade";
-
-        # Pass real client IP through
-        proxy_set_header   Host            $host;
-        proxy_set_header   X-Real-IP       $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto https;
-    }
-}
-</code></pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Enable site and install SSL with Certbot</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash"># Enable the site
-ln -s /etc/nginx/sites-available/zoho-sync /etc/nginx/sites-enabled/
-nginx -t       # Test config for syntax errors
-systemctl reload nginx
-
-# Install Certbot and get a free SSL certificate from Let's Encrypt
-# تثبيت Certbot والحصول على شهادة SSL مجانية
-apt install certbot python3-certbot-nginx
-certbot --nginx -d api.yourschool.com --email admin@yourschool.com --agree-tos
-
-# Certbot auto-renews — verify the renewal timer exists
-systemctl status certbot.timer</code></pre>
-        </div>
-      </div>
-
-      <!-- POSTGRESQL -->
-      <div class="section">
-        <div class="section-title">4. Switch to PostgreSQL</div>
-        <div class="section-title-ar">التحويل إلى PostgreSQL</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">PostgreSQL setup</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash">apt install postgresql postgresql-contrib
-
-# Create DB and user
-sudo -u postgres psql
-
-# Inside psql:
-CREATE USER zoho_user WITH PASSWORD 'strong-password-here';
-CREATE DATABASE zoho_sync OWNER zoho_user;
-GRANT ALL PRIVILEGES ON DATABASE zoho_sync TO zoho_user;
-\q</code></pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Update .env for PostgreSQL</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash"># /opt/moodle-zoho-integration/backend/.env
-
-# Development (SQLite)
-# DATABASE_URL=sqlite:///./moodle_zoho_local.db
-
-# Production (PostgreSQL) — update this line:
-DATABASE_URL=postgresql://zoho_user:strong-password-here@localhost:5432/zoho_sync
-
-# The rest of the .env stays the same
-ZOHO_CLIENT_ID=...
-ZOHO_CLIENT_SECRET=...
-ZOHO_REFRESH_TOKEN=...
-MOODLE_URL=https://yourmoodle.com
-MOODLE_TOKEN=...</code></pre>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Install psycopg2 and recreate tables</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash">pip install psycopg2-binary
-
-# Tables are auto-created by main.py lifespan on startup
-# الجداول تُنشأ تلقائياً عند بدء تشغيل التطبيق
-systemctl restart zoho-sync
-journalctl -u zoho-sync -n 50  # Check startup logs</code></pre>
-        </div>
-      </div>
-
-      <!-- MOODLE PLUGIN INSTALL -->
-      <div class="section">
-        <div class="section-title">5. Installing the Moodle Plugin</div>
-        <div class="section-title-ar">تثبيت المكوّن الإضافي في Moodle</div>
-        <div class="section-divider"></div>
-
-        <div class="steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <strong>Copy the plugin folder</strong> to your Moodle server:
-              <pre style="background:#f8fafc;padding:8px;border-radius:5px;margin-top:6px;font-size:.82rem;">cp -r moodle_plugin/zoho_sync /var/www/moodle/local/</pre>
-              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">الغرض: نسخ مجلد المكوّن إلى مسار local في Moodle | <em>Place the plugin inside: moodle/local/</em></div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <strong>Set permissions</strong>:
-              <pre style="background:#f8fafc;padding:8px;border-radius:5px;margin-top:6px;font-size:.82rem;">chown -R www-data:www-data /var/www/moodle/local/zoho_sync</pre>
-              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">تعيين صلاحيات الملفات بشكل صحيح</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <strong>Run the upgrade</strong> — visit Moodle as admin:
-              <code class="inline">https://yourmoodle.com/admin/index.php</code>
-              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">Moodle will detect the new plugin and run the installation wizard. Click "Upgrade Moodle database now".</div>
-              <div style="color:#64748b;font-size:.85rem;">Moodle سيكتشف المكوّن الجديد وسيطلب تشغيل معالج التثبيت. انقر "Upgrade Moodle database now".</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-content">
-              <strong>Create a Web Service token</strong>:
-              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">Site Admin → Plugins → Web Services → Manage Tokens → Add Token → Select the "Zoho Sync Service" → Copy the generated token → paste it into <code>.env</code> as <code>MOODLE_TOKEN</code>.</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">5</div>
-            <div class="step-content">
-              <strong>Configure Zoho Webhooks</strong>:
-              <div style="color:#64748b;font-size:.85rem;margin-top:4px;">Zoho CRM → Setup → Automation → Workflow Rules → Create Rule for each module → Webhook Action → URL: <code>https://api.yourschool.com/api/v1/webhooks/students</code> (etc. for each entity).</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 07 Quiz</div>
-        <div class="section-divider"></div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">Why do we use Gunicorn with Uvicorn workers instead of running <code>uvicorn app.main:app</code> directly?</div>
-          <div class="quiz-question-ar">لماذا نستخدم Gunicorn مع عمال Uvicorn بدلاً من تشغيل <code>uvicorn</code> مباشرة؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Uvicorn doesn't support async endpoints</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Gunicorn is a process manager that runs multiple Uvicorn worker processes, providing multi-core utilisation and automatic worker restart on crash</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Uvicorn doesn't work with HTTPS</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Gunicorn is faster than Uvicorn</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Uvicorn is single-process by default. Gunicorn spawns multiple Uvicorn worker processes that each handle requests independently, using all CPU cores. It also restarts crashed workers automatically.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">What is the role of Nginx in the production stack?</div>
-          <div class="quiz-question-ar">ما دور Nginx في بيئة الإنتاج؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It runs the FastAPI application</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It manages the database connections</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> It acts as a reverse proxy: handles HTTPS/SSL, serves static files, and forwards API requests to Gunicorn on the internal port</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> It is the WSGI server that runs Python code</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Nginx sits in front and handles public internet traffic. It terminates SSL (decrypts HTTPS), serves any static files directly, and forwards API requests to Gunicorn which runs on an internal port (8001) not accessible from outside.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">To switch from SQLite to PostgreSQL, what is the only change needed in <code>.env</code>?</div>
-          <div class="quiz-question-ar">للتحويل من SQLite إلى PostgreSQL، ما التغيير الوحيد المطلوب في <code>.env</code>؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Change <code>DB_TYPE=postgresql</code></li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> Update <code>DATABASE_URL</code> to use <code>postgresql://user:password@host/dbname</code></li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Add <code>POSTGRES_HOST</code> and <code>POSTGRES_PORT</code> variables</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Rewrite all SQLAlchemy model classes</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Because we use SQLAlchemy with a single <code>DATABASE_URL</code>, switching databases is just changing the connection string in <code>.env</code>. SQLAlchemy handles both SQLite and PostgreSQL with the same Python code.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-      </div>
+      </li>
+    </ol>
+    <p>The 8 modules and their webhook endpoints:</p>
+    <p class="ar">الـ 8 وحدات ومسميات الـ webhook endpoints الخاصة بها:</p>
+    <table class="info-table">
+      <thead><tr><th>Zoho Module</th><th>Upsert Endpoint</th><th>Delete Endpoint</th></tr></thead>
+      <tbody>
+        <tr><td><code>BTEC_Students</code></td><td>student_updated</td><td>student_deleted</td></tr>
+        <tr><td><code>BTEC_Registrations</code></td><td>registration_created</td><td>registration_deleted</td></tr>
+        <tr><td><code>BTEC_Payments</code></td><td>payment_recorded</td><td>payment_deleted</td></tr>
+        <tr><td><code>BTEC_Classes</code></td><td>class_created</td><td>class_deleted</td></tr>
+        <tr><td><code>BTEC_Enrollments</code></td><td>enrollment_updated</td><td>enrollment_deleted</td></tr>
+        <tr><td><code>BTEC_Grades</code></td><td>grade_submitted</td><td>grade_deleted</td></tr>
+        <tr><td><code>BTEC_Student_Requests</code></td><td>request_status_changed</td><td>request_deleted</td></tr>
+        <tr><td><code>BTEC</code> (Units)</td><td>btec_definition_updated</td><td>btec_definition_deleted</td></tr>
+      </tbody>
+    </table>
+    <div class="tip-box">
+      For local development the server is only reachable on localhost, but Zoho needs a <strong>public HTTPS URL</strong> to POST webhooks to.
+      Use <code>ngrok http 8001</code> to create a temporary public tunnel, then set <code>WEBHOOK_BASE_URL=https://xxxx.ngrok.io</code> in .env and re-run setup.<br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif">للتطوير المحلي يجب استخدام ngrok لأن Zoho يحتاج رابط HTTPS عام لإرسال الـ webhooks. شغّل <code>ngrok http 8001</code> وضع الرابط في WEBHOOK_BASE_URL ثم أعد تشغيل setup.</span>
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+  <div class="card">
+    <h2>5. Idempotency — Safe to Receive the Same Webhook Twice</h2>
+    <h2 class="ar">٥. الأمان من التكرار — استقبال نفس الـ Webhook مرتين بأمان</h2>
+    <p>Webhooks are not guaranteed to be delivered exactly once. Network issues can cause Zoho to retry a webhook that was already processed. <strong>Idempotency</strong> means processing the same event multiple times produces the same result — no duplicate records.</p>
+    <p class="ar">وصول الـ webhook مضمون ليس تماماً مرة واحدة. مشاكل الشبكة تجعل Zoho يُعيد إرسال webhook تمت معالجته بالفعل. <strong>الأمان من التكرار</strong> يعني أن معالجة نفس الحدث مرات متعددة تُنتج نفس النتيجة — بدون سجلات مكررة.</p>
+    <p>The <strong>upsert pattern</strong> (from Lesson 03) is what makes our webhooks idempotent. Because we always do "find existing record by zoho_id → update if found, create if not found", processing the same BTEC record twice just runs two identical updates — never creates a duplicate.</p>
+    <p class="ar">نمط الـ <strong>upsert</strong> (من الدرس 03) هو ما يجعل webhooks آمنة من التكرار. لأننا دائماً نبحث بـ zoho_id ونُحدّث إن وُجد وننشئ إن لم يوجد، معالجة نفس سجل BTEC مرتين تُجري تحديثين متطابقين — لا تُنشئ نسخة مكررة أبداً.</p>
+    <div class="tip-box">
+      Best practice: also store a <code>webhook_event_id</code> (unique ID that Zoho includes in each webhook payload) in your <code>event_log</code> table. If you see the same event_id twice, skip processing immediately.<br/><br/>
+      <span style="direction:rtl;display:block;font-family:"Tajawal",sans-serif">أفضل ممارسة: خزّن الـ <code>webhook_event_id</code> (المعرّف الفريد الذي يُضمّنه Zoho في كل payload) في جدول <code>event_log</code>. إذا رأيت نفس المعرّف مرتين، تخطَّ المعالجة فوراً.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>6. The Moodle Plugin Webhook Flow</h2>
+    <h2 class="ar">٦. تدفق Webhook من إضافة Moodle</h2>
+    <p>The Moodle plugin sends webhooks to <code>/webhooks/moodle</code>. The flow is similar to the Zoho webhook but the trigger is Moodle events (enrollment, grade update).</p>
+    <p class="ar">إضافة Moodle ترسل webhooks إلى <code>/webhooks/moodle</code>. التدفق مشابه لـ webhook Zoho لكن المُحرِّك هو أحداث Moodle (التسجيل، تحديث الدرجة).</p>
+    <div class="diagram-box"><pre>
+MOODLE WEBHOOK FLOW:
+====================
+1. Student gets enrolled in a Moodle course
+2. Moodle fires event: user_enrolment_created
+3. Our plugin's observer.php catches this
+4. observer.php computes HMAC signature using shared secret
+5. observer.php sends POST to: {BACKEND_URL}/webhooks/moodle
+6. FastAPI /webhooks/moodle endpoint:
+   a. Verifies HMAC signature
+   b. Reads event type + user_id + course_id
+   c. Finds student in local DB by moodle_id
+   d. Creates/updates Enrollment record in local DB
+   e. Returns {"status": "ok"} so Moodle does not retry
+    </pre></div>
+  </div>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;">
+    <a href="lesson-06.html" class="btn-secondary">&#8592; Lesson 06: Data Sync</a>
+    <a href="lesson-08.html" class="btn-primary">Lesson 08: Testing &#8594;</a>
+  </div>
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 — Developer Course</p></footer>
 <script src="course.js"></script>
-<script>initLesson(7);</script>
 </body>
 </html>

@@ -332,17 +332,22 @@ async def sync_history(request: Request):
 @router.get("/logs", response_class=HTMLResponse)
 async def logs_page(
     request: Request,
-    source: str = Query(default=""),
-    status: str = Query(default=""),
-    search: str = Query(default=""),
-    page: int = Query(default=1, ge=1),
+    method:   str = Query(default=""),
+    category: str = Query(default=""),
+    status:   str = Query(default=""),
+    search:   str = Query(default=""),
+    page:     int = Query(default=1, ge=1),
 ):
     user = get_current_user(request)
     if not user:
         return _redirect_login("/admin/logs")
 
-    logs, total = _fetch_logs(source=source, status=status, search=search, page=page, per_page=50)
-    total_pages = max(1, (total + 49) // 50)
+    from app.core.access_log import get_entries
+    logs, total = get_entries(
+        method=method, category=category, status_class=status,
+        search=search, page=page, per_page=100,
+    )
+    total_pages = max(1, (total + 99) // 100)
 
     return templates.TemplateResponse(
         "logs.html",
@@ -353,10 +358,10 @@ async def logs_page(
             "total": total,
             "page": page,
             "total_pages": total_pages,
-            "source": source,
+            "method": method,
+            "category": category,
             "status": status,
             "search": search,
-            "ts": _ts_to_str,
         },
     )
 
@@ -364,18 +369,23 @@ async def logs_page(
 @router.get("/logs/partial", response_class=HTMLResponse)
 async def logs_partial(
     request: Request,
-    source: str = Query(default=""),
-    status: str = Query(default=""),
-    search: str = Query(default=""),
-    page: int = Query(default=1, ge=1),
+    method:   str = Query(default=""),
+    category: str = Query(default=""),
+    status:   str = Query(default=""),
+    search:   str = Query(default=""),
+    page:     int = Query(default=1, ge=1),
 ):
     """HTMX partial — returns the logs table only."""
     user = get_current_user(request)
     if not user:
         return HTMLResponse("", status_code=401)
 
-    logs, total = _fetch_logs(source=source, status=status, search=search, page=page, per_page=50)
-    total_pages = max(1, (total + 49) // 50)
+    from app.core.access_log import get_entries
+    logs, total = get_entries(
+        method=method, category=category, status_class=status,
+        search=search, page=page, per_page=100,
+    )
+    total_pages = max(1, (total + 99) // 100)
 
     return templates.TemplateResponse(
         "partials/logs_table.html",
@@ -385,45 +395,12 @@ async def logs_partial(
             "total": total,
             "page": page,
             "total_pages": total_pages,
-            "source": source,
+            "method": method,
+            "category": category,
             "status": status,
             "search": search,
-            "ts": _ts_to_str,
         },
     )
-
-
-def _fetch_logs(source: str, status: str, search: str, page: int, per_page: int):
-    from app.infra.db.session import SessionLocal
-    from app.infra.db.models.event_log import EventLog
-    from sqlalchemy import or_
-
-    try:
-        db = SessionLocal()
-        q = db.query(EventLog)
-        if source:
-            q = q.filter(EventLog.source == source)
-        if status:
-            q = q.filter(EventLog.status == status)
-        if search:
-            q = q.filter(
-                or_(
-                    EventLog.record_id.ilike(f"%{search}%"),
-                    EventLog.module.ilike(f"%{search}%"),
-                    EventLog.event_type.ilike(f"%{search}%"),
-                )
-            )
-        total = q.count()
-        logs = (
-            q.order_by(EventLog.created_at.desc())
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
-        )
-        db.close()
-        return logs, total
-    except Exception:
-        return [], 0
 
 
 # ─── DATA BROWSER ─────────────────────────────────────────────────────────────
@@ -734,7 +711,7 @@ async def users_page(request: Request, msg: str = Query(default=""), error: str 
     users = list_users()
     return templates.TemplateResponse(
         "users.html",
-        {"request": request, "user": user, "users": users, "msg": msg, "error": error},
+        {"request": request, "user": user, "users": users, "msg": msg, "error": error, "ts": _ts_to_str},
     )
 
 

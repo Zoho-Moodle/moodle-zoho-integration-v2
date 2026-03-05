@@ -4,5 +4,11 @@
     "role": "admin",
     "full_name": "Administrator",
     "created_at": 1771675032
+  },
+  "Ahmad": {
+    "password_hash": "a1808d9e2c02500e15506cf3689c4dfca63cd1ebc302ffc18ce664faeb99e91c",
+    "role": "operator",
+    "full_name": "Hasan",
+    "created_at": 1772697952
   }
 }

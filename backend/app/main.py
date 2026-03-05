@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # from app.core.logging import setup_logging
 from app.api.v1.router import router as api_router
 from app.core.config import settings
+from app.core.access_log import AccessLogMiddleware
 from admin.router import router as admin_router
 from app.infra.db.base import Base, engine
 import app.infra.db.models  # noqa: F401 — ensure all models are registered
@@ -32,6 +33,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# HTTP access log middleware (in-memory ring buffer, newest-first)
+app.add_middleware(AccessLogMiddleware)
 
 app.include_router(api_router, prefix="/api/v1")
 

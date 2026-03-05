@@ -1,504 +1,426 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 03 — Zoho API & Webhooks | Zoho+Moodle Course</title>
+  <title>Lesson 03 — Database Design | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html" class="active">L3</a>
+      <a href="lesson-04.html">L4</a><a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html">L6</a><a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
-
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 03</div>
-      <div class="lesson-number">Lesson 03</div>
-      <div class="lesson-title-en">Zoho API, OAuth2 & Webhooks</div>
-      <div class="lesson-title-ar">واجهة Zoho API، بروتوكول OAuth2 والـ Webhooks</div>
-      <div class="lesson-meta">
-        <span>🕐 ~50 minutes</span>
-        <span>🎯 Advanced</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
-
-    <div class="lesson-body">
-
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Understand OAuth2 Client Credentials flow used by Zoho</li>
-          <li>Manage access tokens and automatic refresh without manual intervention</li>
-          <li>Fetch records from any Zoho module using the REST API</li>
-          <li>Handle incoming webhook payloads from Zoho</li>
-          <li>Parse the 3 different Zoho payload formats your system receives</li>
-          <li>Store and dispatch webhook events to the correct endpoint handler</li>
-        </ul>
-      </div>
-
-      <!-- OAUTH2 FLOW -->
-      <div class="section">
-        <div class="section-title">1. OAuth2 — How Zoho Authentication Works</div>
-        <div class="section-title-ar">كيف يعمل بروتوكول OAuth2 مع Zoho</div>
-        <div class="section-divider"></div>
-
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <p>Our system uses <strong>OAuth2 Client Credentials</strong> flow. There is no user login. The backend authenticates directly with Zoho using a Client ID and Client Secret. The flow:</p>
-            <ol style="margin-top:10px;padding-left:1.2rem;">
-              <li>Send POST to <code class="inline">https://accounts.zoho.com/oauth/v2/token</code></li>
-              <li>Include <code class="inline">client_id</code>, <code class="inline">client_secret</code>, <code class="inline">refresh_token</code>, <code class="inline">grant_type=refresh_token</code></li>
-              <li>Receive <code class="inline">access_token</code> (valid ~1 hour)</li>
-              <li>Use <code class="inline">Authorization: Zoho-oauthtoken &lt;token&gt;</code> on every API call</li>
-              <li>When token expires, repeat from step 1 automatically</li>
-            </ol>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <p>نظامنا يستخدم تدفق <strong>OAuth2 Client Credentials</strong> — لا يوجد تسجيل دخول مستخدم. الـ backend يُصادق مباشرة مع Zoho باستخدام Client ID و Client Secret. الخطوات:</p>
-            <ol style="margin-top:10px;padding-right:1.2rem;">
-              <li>أرسل POST إلى خادم حسابات Zoho</li>
-              <li>أدرج <code class="inline">client_id</code> و <code class="inline">refresh_token</code> وغيرها</li>
-              <li>استلم <code class="inline">access_token</code> صالح لمدة ساعة تقريباً</li>
-              <li>استخدم التوكن في كل مكالمة API</li>
-              <li>عند انتهاء صلاحية التوكن، كرر الخطوات تلقائياً</li>
-            </ol>
-          </div>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/integrations/zoho/auth_client.py (core logic)</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">import httpx
-import time
-from app.core.config import settings
-
-
-class ZohoAuthClient:
-    """
-    Smart token manager for Zoho API.
-    Caches the access token and refreshes automatically when it expires.
-
-    مدير توكن ذكي — يخزن التوكن ويجدده تلقائياً عند انتهاء صلاحيته.
-    """
-
-    TOKEN_URL = "https://accounts.zoho.com/oauth/v2/token"
-    SAFETY_MARGIN = 300   # Refresh 5 minutes early (seconds) / تجديد قبل 5 دقائق
-
-    def __init__(self):
-        self._access_token: str | None = None
-        self._expires_at: float = 0.0   # Unix timestamp when token expires
-
-    def _is_expired(self) -> bool:
-        """True if token is missing or about to expire."""
-        return time.time() >= (self._expires_at - self.SAFETY_MARGIN)
-
-    def _fetch_new_token(self) -> None:
-        """Call Zoho token endpoint and store result."""
-        response = httpx.post(
-            self.TOKEN_URL,
-            data={
-                "grant_type":    "refresh_token",
-                "client_id":     settings.ZOHO_CLIENT_ID,
-                "client_secret": settings.ZOHO_CLIENT_SECRET,
-                "refresh_token": settings.ZOHO_REFRESH_TOKEN,
-            },
-            timeout=15,
-        )
-        response.raise_for_status()
-        payload = response.json()
-
-        if "access_token" not in payload:
-            raise RuntimeError(f"Zoho token error: {payload}")
-
-        self._access_token = payload["access_token"]
-        # expires_in is in seconds (usually 3600 = 1 hour)
-        self._expires_at   = time.time() + payload.get("expires_in", 3600)
-
-    def get_token(self) -> str:
-        """Return a valid access token, refreshing first if needed."""
-        if self._is_expired():
-            self._fetch_new_token()
-        return self._access_token   # type: ignore
-
-    def get_headers(self) -> dict:
-        """Return ready-to-use Authorization headers for Zoho API calls."""
-        return {
-            "Authorization": f"Zoho-oauthtoken {self.get_token()}",
-            "Content-Type":  "application/json",
-        }
-
-
-# Singleton instance — one client for the whole app
-# كائن واحد لجميع أرجاء التطبيق
-zoho_auth = ZohoAuthClient()</code></pre>
-        </div>
-      </div>
-
-      <!-- FETCH RECORDS -->
-      <div class="section">
-        <div class="section-title">2. Fetching Records from Zoho Modules</div>
-        <div class="section-title-ar">جلب السجلات من وحدات Zoho</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/integrations/zoho/client.py (fetch functions)</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">import httpx
-from app.integrations.zoho.auth_client import zoho_auth
-
-
-ZOHO_API_BASE = "https://www.zohoapis.com/crm/v6"
-
-
-def fetch_zoho_records(module: str, page: int = 1, per_page: int = 200) -> list[dict]:
-    """
-    Fetch a page of records from a Zoho CRM module.
-
-    جلب صفحة من سجلات وحدة Zoho.
-
-    Args:
-        module:   Zoho module API name e.g. "BTEC_Students", "BTEC_Registrations"
-        page:     Page number (1-based)
-        per_page: Records per page (max 200 allowed by Zoho)
-
-    Returns:
-        List of record dicts, or empty list if no records found
-    """
-    url = f"{ZOHO_API_BASE}/{module}"
-    params = {"page": page, "per_page": per_page}
-
-    response = httpx.get(url, headers=zoho_auth.get_headers(),
-                         params=params, timeout=30)
-    response.raise_for_status()
-
-    data = response.json()
-    return data.get("data", [])   # Zoho wraps records in a "data" key
-
-
-def fetch_zoho_full_record(module: str, zoho_id: str) -> dict | None:
-    """
-    Fetch a single complete record from Zoho by its ID.
-    Useful when a webhook sends minimal data and you need the full record.
-
-    جلب سجل كامل من Zoho باستخدام معرّف Zoho.
-    مفيد عندما يرسل الـ webhook بيانات ناقصة وتحتاج للسجل الكامل.
-    """
-    url = f"{ZOHO_API_BASE}/{module}/{zoho_id}"
-
-    response = httpx.get(url, headers=zoho_auth.get_headers(), timeout=30)
-
-    if response.status_code == 404:
-        return None   # Record deleted in Zoho / السجل محذوف في Zoho
-
-    response.raise_for_status()
-    data = response.json()
-
-    records = data.get("data", [])
-    return records[0] if records else None
-
-
-def fetch_all_zoho_records(module: str, per_page: int = 200) -> list[dict]:
-    """
-    Fetch ALL records from a Zoho module, handling pagination automatically.
-    Zoho paginates at 200 records/page max.
-
-    جلب جميع سجلات وحدة Zoho مع التعامل مع الصفحات تلقائياً.
-    """
-    all_records = []
-    page = 1
-
-    while True:
-        records = fetch_zoho_records(module, page=page, per_page=per_page)
-        if not records:
-            break   # No more pages / لا مزيد من الصفحات
-
-        all_records.extend(records)
-        page += 1
-
-        # Safety: Zoho won't return more than 200 per page
-        # if we got fewer than per_page, we've hit the last page
-        if len(records) < per_page:
-            break
-
-    return all_records</code></pre>
-        </div>
-      </div>
-
-      <!-- WEBHOOKS -->
-      <div class="section">
-        <div class="section-title">3. Receiving Webhooks from Zoho</div>
-        <div class="section-title-ar">استقبال الـ Webhooks من Zoho</div>
-        <div class="section-divider"></div>
-
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <p>Zoho sends HTTP POST requests to your server when records change. The payload format depends on how the webhook was configured in Zoho. Our system handles <strong>3 different payload structures</strong>:</p>
-            <ol style="margin-top:10px;padding-left:1.2rem;">
-              <li><strong>Wrapped format</strong>: <code class="inline">{"BTEC_Students": [{"id": ..., "Name": ...}]}</code></li>
-              <li><strong>Flat format</strong>: <code class="inline">{"id": "123", "Name": "Ahmed", ...}</code></li>
-              <li><strong>Deluge format</strong>: <code class="inline">{"entityId": "123", "module": "BTEC_Students", ...}</code></li>
-            </ol>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <p>Zoho يرسل طلبات HTTP POST إلى خادمك عند تغيير السجلات. يعتمد شكل البيانات على كيفية إعداد الـ webhook في Zoho. نظامنا يتعامل مع <strong>3 أشكال مختلفة</strong>:</p>
-            <ol style="margin-top:10px;padding-right:1.2rem;">
-              <li><strong>الشكل المُغلَّف</strong>: البيانات داخل مفتاح باسم الوحدة</li>
-              <li><strong>الشكل المسطّح</strong>: البيانات مباشرة في الجذر</li>
-              <li><strong>شكل Deluge</strong>: يُرسل من دوال Zoho البرمجية</li>
-            </ol>
-          </div>
-        </div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_shared.py — payload resolution</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">import json
-from fastapi import Request
-
-
-async def read_zoho_body(request: Request) -> dict:
-    """
-    Read the raw request body and parse it as JSON.
-    Zoho sometimes sends form-encoded data, sometimes JSON.
-    Handles both transparently.
-
-    قراءة جسم الطلب الخام وتحليله كـ JSON.
-    Zoho يرسل أحياناً JSON وأحياناً form-encoded data.
-    """
-    content_type = request.headers.get("Content-Type", "")
-    raw = await request.body()
-
-    if not raw:
-        return {}
-
-    # Try pure JSON first
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        pass
-
-    # Zoho sometimes sends application/x-www-form-urlencoded
-    if "form" in content_type:
-        from urllib.parse import parse_qs
-        parsed = parse_qs(raw.decode("utf-8"))
-        # parse_qs returns {"key": ["value"]} — flatten to {"key": "value"}
-        return {k: v[0] if len(v) == 1 else v for k, v in parsed.items()}
-
-    return {}
-
-
-def resolve_zoho_payload(raw: dict, module: str) -> tuple[str, dict]:
-    """
-    Normalise any of the 3 Zoho payload formats into (zoho_id, data_dict).
-
-    دالة لتوحيد أي من أشكال الـ payload الـ 3 إلى (zoho_id, بيانات).
-
-    Returns:
-        (zoho_id, fields_dict) — zoho_id is the Zoho record ID
-                                 fields_dict contains all field values
-    """
-    # ── Format 1: Wrapped {"BTEC_Students": [{"id": ..., "Name": ...}]}
-    if module in raw:
-        records = raw[module]
-        if isinstance(records, list) and records:
-            record = records[0]
-            return record.get("id", ""), record
-
-    # ── Format 2: Flat {"id": "123", "Name": "Ahmed", ...}
-    if "id" in raw:
-        return raw["id"], raw
-
-    # ── Format 3: Deluge {"entityId": "123", "module": "BTEC_Students", ...}
-    if "entityId" in raw:
-        entity_id = raw["entityId"]
-        return entity_id, raw
-
-    # Unknown format — log and return empty
-    return "", raw</code></pre>
-        </div>
-
-        <div class="callout warning">
-          <div class="callout-icon">⚠️</div>
-          <div class="callout-content">
-            <div class="callout-title">Defensive Parsing is Critical</div>
-            <p>Zoho's webhook documentation doesn't guarantee a single fixed format. Different trigger configurations (Workflow Rules vs. Custom Functions vs. Blueprints) produce different payload structures. Always verify both the outer wrapper AND the inner fields before accessing them. Never assume a key exists.</p>
-            <div class="callout-ar">توثيق Zoho لا يضمن شكلاً ثابتاً واحداً. إعدادات مختلفة تنتج هياكل مختلفة. تحقق دائماً من وجود المفاتيح قبل الوصول إليها.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- WEBHOOK ENDPOINT -->
-      <div class="section">
-        <div class="section-title">4. Webhook Endpoint — Full Request Handler</div>
-        <div class="section-title-ar">نقطة نهاية الـ Webhook — معالج الطلب الكامل</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_students.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlalchemy.orm import Session
-from app.infra.db.session import get_db
-from app.infra.db.models.student import Student
-from app.api.v1.endpoints.webhooks_shared import (
-    read_zoho_body,
-    resolve_zoho_payload,
-    FIELD_MAPPINGS,
-    transform_zoho_to_moodle,
+  </nav>
+</header>
+<main class="lesson-container">
+  <div class="lesson-header">
+    <span class="lesson-tag">Lesson 03</span>
+    <h1>Database Design with SQLite &amp; SQLAlchemy</h1>
+    <h2 class="ar">تصميم قاعدة البيانات باستخدام SQLite و SQLAlchemy</h2>
+    <p>This lesson explains how the project stores its data — what a database is, what SQLite is, what an ORM is, and a walkthrough of all 10 tables in the project.</p>
+    <p class="ar">هذا الدرس يشرح كيف يخزّن المشروع بياناته — ما هي قاعدة البيانات، ما هو SQLite، ما هو الـ ORM، واستعراض لكل الجداول العشرة في المشروع.</p>
+  </div>
+
+  <div class="card">
+    <h2>1. What is a Database?</h2>
+    <h2 class="ar">١. ما هي قاعدة البيانات؟</h2>
+    <p>A database is a structured place to store data. Think of it like a collection of Excel tables — each table has columns (fields) and rows (records). A database lets you store, find, update, and delete data efficiently.</p>
+    <p class="ar">قاعدة البيانات هي مكان منظَّم لتخزين البيانات. تخيّلها كمجموعة من جداول Excel — كل جدول له أعمدة (حقول) وصفوف (سجلات). تسمح لك بتخزين البيانات والبحث فيها وتحديثها وحذفها بكفاءة عالية. في هذا المشروع، قاعدة البيانات تخزّن الطلاب، التسجيلات، الدرجات، المدفوعات، وسجل كل عملية مزامنة.</p>
+    <div class="diagram-box"><pre>
+Table: students
++----+------------+-----------+---------------------+------------+
+| id | first_name | last_name | email               | program    |
++----+------------+-----------+---------------------+------------+
+|  1 | Ahmad      | Ali       | ahmad@example.com   | BTEC L3    |
+|  2 | Sara       | Hassan    | sara@example.com    | BTEC L2    |
+|  3 | Khalid     | Omar      | khalid@example.com  | BTEC L3    |
++----+------------+-----------+---------------------+------------+
+Each row = one student record     Each column = one piece of information
+    </pre></div>
+  </div>
+
+  <div class="card">
+    <h2>2. What is SQLite? Why No Database Server is Needed</h2>
+    <h2 class="ar">٢. ما هو SQLite؟ لماذا لا نحتاج سيرفر قاعدة بيانات؟</h2>
+    <p>SQLite is a database that lives in a <strong>single file</strong>. No server process to start. No installation. No port number. No username or password. Just a file: <code>moodle_zoho_local.db</code> in the <code>backend/</code> folder.</p>
+    <p class="ar">SQLite هو قاعدة بيانات تعيش في <strong>ملف واحد</strong>. لا يوجد سيرفر منفصل تحتاج لتشغيله. لا تثبيت إضافي. لا رقم بورت. لا اسم مستخدم أو كلمة مرور. فقط ملف واحد: <code>moodle_zoho_local.db</code> داخل مجلد <code>backend/</code>.</p>
+    <div class="tip-box">
+      <strong>Analogy</strong>: If MySQL is a filing cabinet with a dedicated librarian (a separate server process), then SQLite is a notebook in your bag — always accessible, portable, no overhead.<br/>
+      <strong>تشبيه</strong>: إذا كان MySQL خزانة ملفات مع موظف مخصص (سيرفر)، فإن SQLite مثل دفتر ملاحظات في حقيبتك — دائماً متاح، محمول، بدون أي تعقيد.
+    </div>
+    <p>The file is <strong>automatically created</strong> when your server starts for the first time. You never run a "CREATE DATABASE" command.</p>
+    <p class="ar">الملف يُنشأ <strong>تلقائياً</strong> عند تشغيل السيرفر للمرة الأولى. لا تحتاج أن تكتب أي أمر "CREATE DATABASE".</p>
+    <pre><code class="language-bash"># After running "python start_server.py", verify the file was created:
+ls backend/moodle_zoho_local.db
+# You will see the file — its size grows as data is synced</code></pre>
+    <div class="warning-box">
+      <strong>Important — Back it up!</strong> The database is just a file. Deleting or corrupting it loses ALL synced data. Copy it regularly to a backup location.<br/>
+      <strong>مهم — احتفظ بنسخة احتياطية!</strong> قاعدة البيانات مجرد ملف. حذفه أو تلفه يعني ضياع جميع البيانات. انسخه بانتظام إلى مكان آمن.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. What is SQLAlchemy? The ORM Concept</h2>
+    <h2 class="ar">٣. ما هو SQLAlchemy؟ مفهوم الـ ORM</h2>
+    <p>An <strong>ORM (Object Relational Mapper)</strong> is a tool that lets you work with a database using Python classes instead of writing raw SQL. SQLAlchemy is Python's most popular ORM.</p>
+    <p class="ar">الـ <strong>ORM (Object Relational Mapper)</strong> أداة تتيح لك التعامل مع قاعدة البيانات باستخدام كلاسات Python بدلاً من كتابة SQL مباشرة. SQLAlchemy هو الـ ORM الأكثر شعبية في Python.</p>
+    <div class="diagram-box"><pre>
+Without ORM — you write raw SQL:
+  cursor.execute("INSERT INTO students (first_name, email) VALUES ('Ahmad', 'a@b.com')")
+
+With SQLAlchemy ORM — you write Python:
+  student = Student(first_name="Ahmad", email="a@b.com")
+  db.add(student)
+  db.commit()
+  
+SQLAlchemy writes the SQL for you behind the scenes!
+    </pre></div>
+    <p>Benefits: you get Python code completion, type safety, easier joins, and protection from SQL injection attacks.</p>
+    <p class="ar">فوائد الـ ORM: اكتمال تلقائي في المحرر، أمان من هجمات SQL injection، كود أنظف وأسهل قراءةً وصيانةً، ولا تضطر لتعلم SQL متقدم.</p>
+    <p>The SQLAlchemy engine is set up in <code>backend/app/infra/db/base.py</code>:</p>
+    <pre><code class="language-python">from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase
+
+# "sqlite:///" means use SQLite file-based database
+# "./moodle_zoho_local.db" is the file path, relative to where server runs (backend/)
+engine = create_engine(
+    "sqlite:///./moodle_zoho_local.db",
+    connect_args={"check_same_thread": False}
+    # check_same_thread=False is needed because FastAPI uses multiple threads
 )
-from app.integrations.zoho.client import fetch_zoho_full_record
-from app.integrations.moodle.client import call_moodle_ws
-import logging
 
-router = APIRouter()
-logger = logging.getLogger(__name__)
-MODULE = "BTEC_Students"
+class Base(DeclarativeBase):
+    pass
+# All our model classes will inherit from Base</code></pre>
+    <p>The database session (connection) is managed per-request in <code>backend/app/infra/db/session.py</code>:</p>
+    <pre><code class="language-python">from sqlalchemy.orm import sessionmaker
 
+# SessionLocal creates new database sessions
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@router.post("/students")
-async def webhook_students(request: Request, db: Session = Depends(get_db)):
+def get_db():
     """
-    Receive a Zoho webhook for Student record changes.
-    Pipeline:
-      1. Parse raw body → resolve payload format
-      2. Fetch full record from Zoho (webhook data is often incomplete)
-      3. Map Zoho fields to Moodle fields using FIELD_MAPPINGS
-      4. Upsert DB record
-      5. Call Moodle WS to update the user
-
-    استقبال webhook للطالب.
-    خط الأنابيب:
-      1. تحليل الجسم → معرفة الشكل
-      2. جلب السجل الكامل من Zoho (البيانات الواردة ناقصة عادة)
-      3. تحويل الحقول
-      4. تحديث قاعدة البيانات
-      5. استدعاء Moodle WS
+    FastAPI dependency — provides a DB session for each request.
+    The 'finally' block ensures the session is ALWAYS closed,
+    even if an error occurs mid-request.
     """
-    # Step 1: Parse body
-    raw = await read_zoho_body(request)
-    if not raw:
-        raise HTTPException(status_code=400, detail="Empty payload")
+    db = SessionLocal()
+    try:
+        yield db        # hand the session to the endpoint function
+    finally:
+        db.close()      # always close when done</code></pre>
+    <p class="ar">الـ session هو "الاتصال" بقاعدة البيانات. في FastAPI، نُنشئ session جديد لكل طلب HTTP ونُغلقه بعد انتهائه. هذا يمنع تسرّب الاتصالات.</p>
+  </div>
 
-    # Step 2: Resolve into (zoho_id, data)
-    zoho_id, zoho_data = resolve_zoho_payload(raw, MODULE)
-    if not zoho_id:
-        logger.warning("Could not extract zoho_id from payload: %s", raw)
-        raise HTTPException(status_code=422, detail="Could not resolve zoho_id")
+  <div class="card">
+    <h2>4. How a Model (Table) is Defined in Code</h2>
+    <h2 class="ar">٤. كيف يُعرَّف النموذج (الجدول) في الكود</h2>
+    <p>Each database table is defined as a Python class that inherits from <code>Base</code>. Here is what the <code>Student</code> model looks like (simplified):</p>
+    <p class="ar">كل جدول في قاعدة البيانات يُعرَّف ككلاس Python يرث من <code>Base</code>. إليك شكل نموذج <code>Student</code> المبسط مع شرح كل سطر:</p>
+    <pre><code class="language-python">from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from datetime import datetime
+from app.infra.db.base import Base
 
-    # Step 3: Fetch the full record (webhook may only contain changed fields)
-    full_record = fetch_zoho_full_record(MODULE, zoho_id) or zoho_data
+class Student(Base):
+    __tablename__ = "students"   # the actual name of the table in SQLite
 
-    # Step 4: Map to our student schema
-    mappings = FIELD_MAPPINGS.get("students", {})
-    moodle_data = transform_zoho_to_moodle(full_record, mappings)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    # primary_key=True  → this column uniquely identifies each row
+    # autoincrement=True→ SQLite automatically assigns 1, 2, 3...
 
-    # Step 5: Upsert into DB
-    db_student = db.query(Student).filter(Student.zoho_id == zoho_id).first()
-    if db_student:
-        for k, v in moodle_data.items():
-            setattr(db_student, k, v)
-        db_student.sync_status = "pending_moodle"
+    zoho_id = Column(String, unique=True, nullable=True, index=True)
+    # unique=True  → no two rows can have the same zoho_id
+    # nullable=True→ this field is allowed to be empty (None)
+    # index=True   → database creates a fast lookup index for this column
+
+    moodle_id  = Column(Integer, nullable=True)
+    first_name = Column(String, nullable=False)   # required — cannot be empty
+    last_name  = Column(String, nullable=False)   # required
+    email      = Column(String, unique=True, nullable=False)
+    student_id = Column(String, nullable=True)    # academic number e.g. A01B1234C
+    program    = Column(String, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    # default=datetime.utcnow → automatically set to current time when INSERT runs
+
+    updated_at = Column(DateTime, onupdate=datetime.utcnow)
+    # onupdate=datetime.utcnow → automatically set to current time when UPDATE runs</code></pre>
+    <p>When the server starts, SQLAlchemy reads all these class definitions and executes <code>CREATE TABLE IF NOT EXISTS students (...)</code> for you.</p>
+    <p class="ar">عند تشغيل السيرفر، SQLAlchemy يقرأ كل هذه الكلاسات وينفّذ <code>CREATE TABLE IF NOT EXISTS students (...)</code> تلقائياً. إذا كان الجدول موجوداً فعلاً، لا يفعل شيئاً ولا يمس البيانات الموجودة.</p>
+  </div>
+
+  <div class="card">
+    <h2>5. All 10 Database Tables — Purpose and Key Fields</h2>
+    <h2 class="ar">٥. الجداول العشرة — الغرض والحقول الأساسية</h2>
+
+    <h3>📋 students — الطلاب</h3>
+    <p>The central table. Links each Moodle user to their Zoho Contact. All other tables reference students. The <code>email</code> column is the matching key between Moodle and Zoho.</p>
+    <p class="ar">الجدول المحوري. يربط كل مستخدم في Moodle بجهة اتصاله في Zoho. جميع الجداول الأخرى تشير إليه. الإيميل هو مفتاح المطابقة بين النظامين.</p>
+    <table class="info-table">
+      <thead><tr><th>Column</th><th>Type</th><th>What it stores</th></tr></thead>
+      <tbody>
+        <tr><td>zoho_id</td><td>String</td><td>The ID of the Contact record in Zoho CRM</td></tr>
+        <tr><td>moodle_id</td><td>Integer</td><td>The user ID inside Moodle</td></tr>
+        <tr><td>email</td><td>String unique</td><td>Primary matching field across both systems</td></tr>
+        <tr><td>first_name, last_name</td><td>String</td><td>Student name</td></tr>
+        <tr><td>student_id</td><td>String</td><td>Academic number (e.g. A01B1234C)</td></tr>
+        <tr><td>program</td><td>String</td><td>Qualification programme (e.g. BTEC L3)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>📋 enrollments — التسجيلات في المواد</h3>
+    <p>Records which student is enrolled in which Moodle course. Created when a Moodle enrollment event arrives via webhook, OR when synced from Zoho registrations.</p>
+    <p class="ar">يسجّل أي طالب مسجّل في أي مادة/كورس في Moodle. يُنشأ إما عند وصول حدث تسجيل من Moodle عبر webhook، أو عند المزامنة من Zoho.</p>
+    <table class="info-table">
+      <thead><tr><th>Column</th><th>What it stores</th></tr></thead>
+      <tbody>
+        <tr><td>student_id (FK)</td><td>Foreign key pointing to the students table</td></tr>
+        <tr><td>moodle_course_id</td><td>Moodle's numeric ID for the course</td></tr>
+        <tr><td>zoho_enrollment_id</td><td>Corresponding record ID in Zoho</td></tr>
+        <tr><td>status</td><td>active / completed / suspended</td></tr>
+        <tr><td>enrolled_at</td><td>Timestamp when enrollment occurred</td></tr>
+      </tbody>
+    </table>
+
+    <h3>📋 grades — الدرجات</h3>
+    <p>Stores grade and completion data pulled from Moodle. After being stored here, the grade sync service pushes them to Zoho CRM.</p>
+    <p class="ar">يخزّن بيانات الدرجات والإكمال المجلوبة من Moodle. بعد تخزينها هنا، تقوم خدمة مزامنة الدرجات بدفعها إلى Zoho CRM.</p>
+    <table class="info-table">
+      <thead><tr><th>Column</th><th>What it stores</th></tr></thead>
+      <tbody>
+        <tr><td>student_id (FK)</td><td>Which student</td></tr>
+        <tr><td>moodle_course_id</td><td>Which course</td></tr>
+        <tr><td>grade_value</td><td>Numeric grade 0-100</td></tr>
+        <tr><td>grade_letter</td><td>Pass / Fail / Merit / Distinction</td></tr>
+        <tr><td>passed</td><td>Boolean: did the student pass?</td></tr>
+        <tr><td>synced_to_zoho</td><td>Boolean: has this been pushed to Zoho?</td></tr>
+      </tbody>
+    </table>
+
+    <h3>📋 payments — المدفوعات</h3>
+    <p>Fee payment records from Zoho Deals. Allows checking if a student has paid before certain actions are taken (like enrolling in a course).</p>
+    <p class="ar">سجلات مدفوعات الرسوم من وحدة Deals في Zoho. تُستخدم للتحقق من أن الطالب قد سدّد رسومه قبل تنفيذ إجراءات معينة كالتسجيل في كورس.</p>
+    <table class="info-table">
+      <thead><tr><th>Column</th><th>What it stores</th></tr></thead>
+      <tbody>
+        <tr><td>zoho_deal_id</td><td>Zoho Deal record ID</td></tr>
+        <tr><td>amount</td><td>Payment amount</td></tr>
+        <tr><td>currency</td><td>GBP / USD / etc.</td></tr>
+        <tr><td>status</td><td>pending / paid / refunded</td></tr>
+        <tr><td>payment_date</td><td>When payment was received</td></tr>
+      </tbody>
+    </table>
+
+    <h3>📋 registrations — تسجيلات البرامج الدراسية</h3>
+    <p>Programme-level intake registrations from Zoho. A student registers for a BTEC programme (e.g., starts September 2024). Then individual course unit enrollments are created from this.</p>
+    <p class="ar">تسجيلات الدفعة الدراسية على مستوى البرنامج من Zoho. الطالب يسجّل في برنامج BTEC (مثل: يبدأ سبتمبر 2024)، ثم تُنشأ تسجيلات الوحدات الفردية من هذا السجل.</p>
+
+    <h3>📋 classes — الحصص / الفصول</h3>
+    <p>Physical or virtual class session records from Zoho. Stores the session name, date/time schedule, and maximum capacity.</p>
+    <p class="ar">سجلات الحصص أو الجلسات (حضورية أو افتراضية) من Zoho. تخزّن اسم الجلسة، الجدول الزمني، والسعة القصوى للمجموعة.</p>
+
+    <h3>📋 units — الوحدات التعليمية</h3>
+    <p>Individual learning unit records (e.g. BTEC units). Each has a unit code, name, credit value, and links to its parent class or programme.</p>
+    <p class="ar">سجلات الوحدات التعليمية الفردية (مثل وحدات BTEC). لكل وحدة: كود، اسم، قيمة ائتمانية (credits)، ورابط للحصة أو البرنامج الأب.</p>
+
+    <h3>📋 programs — البرامج الدراسية</h3>
+    <p>Master list of qualifications the institution offers. Examples: "BTEC Level 2 Business", "BTEC Level 3 IT". Referenced by students and registration records.</p>
+    <p class="ar">القائمة الرئيسية للمؤهلات التي تقدمها المؤسسة. أمثلة: "BTEC Level 2 Business"، "BTEC Level 3 IT". يرجع إليها الطلاب وسجلات التسجيل.</p>
+
+    <h3>📋 event_log — سجل الأحداث (Audit Trail)</h3>
+    <p>The most important table for debugging. Every sync operation writes a record here — whether it succeeded or failed. If something goes wrong, this table tells you when, what, and why. Never delete records from this table.</p>
+    <p class="ar">أهم جدول للتصحيح والمراجعة. كل عملية مزامنة تكتب سجلاً هنا — سواء نجحت أم فشلت. إذا حدث خطأ ما، هذا الجدول يخبرك متى، وماذا، ولماذا. لا تحذف منه أبداً.</p>
+    <table class="info-table">
+      <thead><tr><th>Column</th><th>What it stores / example values</th></tr></thead>
+      <tbody>
+        <tr><td>event_type</td><td>"sync_students", "webhook_zoho", "sync_grades"</td></tr>
+        <tr><td>status</td><td>"success" / "error" / "started"</td></tr>
+        <tr><td>entity_type</td><td>"student" / "enrollment" / "grade"</td></tr>
+        <tr><td>entity_id</td><td>The specific record ID that was processed</td></tr>
+        <tr><td>error_message</td><td>Full error text if status is "error"</td></tr>
+        <tr><td>created_at</td><td>Timestamp — when did this event happen?</td></tr>
+      </tbody>
+    </table>
+
+    <h3>📋 btec_templates — قوالب BTEC</h3>
+    <p>Templates defining the structure of BTEC qualifications — which units belong to which programme, their credit values, assessment criteria. Used to auto-populate unit lists when a new class is created.</p>
+    <p class="ar">قوالب تُعرِّف هيكل مؤهلات BTEC — أي وحدات تنتمي لأي برنامج، قيمها الائتمانية، ومعايير تقييمها. تُستخدم لملء قوائم الوحدات تلقائياً عند إنشاء حصة جديدة.</p>
+  </div>
+
+  <div class="card">
+    <h2>6. How Tables Are Created on Server Startup</h2>
+    <h2 class="ar">٦. كيف تُنشأ الجداول عند تشغيل السيرفر</h2>
+    <p>In <code>backend/app/main.py</code> there is a startup function that runs once when the server starts:</p>
+    <p class="ar">في <code>backend/app/main.py</code> يوجد كود يشتغل مرة واحدة عند بدء تشغيل السيرفر:</p>
+    <pre><code class="language-python">from contextlib import asynccontextmanager
+from app.infra.db.base import Base, engine
+import app.infra.db.models  # must import models so SQLAlchemy "knows" them
+
+@asynccontextmanager
+async def lifespan(app):
+    # Runs ONCE right after server starts
+    Base.metadata.create_all(bind=engine)
+    # This reads all model classes and runs:
+    # CREATE TABLE IF NOT EXISTS students (...)
+    # CREATE TABLE IF NOT EXISTS enrollments (...)
+    # ... for every model
+    print("Database tables created/verified.")
+    yield  # server is now running and handling requests
+
+app = FastAPI(lifespan=lifespan)</code></pre>
+    <p><code>create_all()</code> uses <code>IF NOT EXISTS</code> — perfectly safe to call every startup. Existing tables and data are never modified.</p>
+    <p class="ar"><code>create_all()</code> يستخدم <code>IF NOT EXISTS</code> — آمن تماماً للاستدعاء في كل مرة. الجداول والبيانات الموجودة لا تُعدَّل أبداً.</p>
+    <p>You will see this in the terminal output when starting the server:</p>
+    <pre><code class="language-bash">INFO:     Started server process
+INFO:     database tables created/verified.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>7. Reading and Writing Data — Query Examples</h2>
+    <h2 class="ar">٧. قراءة وكتابة البيانات — أمثلة على الاستعلامات</h2>
+    <p>Inside endpoint functions, a SQLAlchemy Session is injected via <code>Depends(get_db)</code>. Here are the most common operations:</p>
+    <p class="ar">داخل دوال الـ endpoints، يُحقَن session من SQLAlchemy عبر <code>Depends(get_db)</code>. إليك أكثر العمليات شيوعاً:</p>
+    <pre><code class="language-python">from app.infra.db.models.student import Student
+
+# ━━━ READ OPERATIONS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Get all students (returns a Python list)
+students = db.query(Student).all()
+
+# Filter: get students in a specific program
+btec3_students = db.query(Student).filter(Student.program == "BTEC L3").all()
+
+# Find one student by email (returns None if not found)
+student = db.query(Student).filter(Student.email == "ahmad@example.com").first()
+
+# Count total records
+total = db.query(Student).count()
+
+# Sort alphabetically by last name
+sorted_students = db.query(Student).order_by(Student.last_name).all()
+
+# Pagination (page 2, 20 per page)
+page2 = db.query(Student).offset(20).limit(20).all()
+
+# ━━━ WRITE OPERATIONS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Create a new student
+new_student = Student(
+    first_name="Ahmad",
+    last_name="Ali",
+    email="ahmad@example.com",
+    program="BTEC L3"
+)
+db.add(new_student)        # stage the INSERT
+db.commit()                 # write to disk
+db.refresh(new_student)     # reload from DB (to get auto-generated id)
+print(new_student.id)       # now has its database ID
+
+# Update an existing student
+student = db.query(Student).filter(Student.email == "ahmad@example.com").first()
+student.program = "BTEC L2"   # change the field
+db.commit()                    # save the change
+
+# Delete a record (rarely done in this project — we keep history)
+db.delete(student)
+db.commit()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>8. The Upsert Pattern — How Sync Services Work</h2>
+    <h2 class="ar">٨. نمط الـ Upsert — كيف تعمل خدمات المزامنة</h2>
+    <p>When data arrives from Zoho, it might be a new student (never seen before) or an existing one (already in the database from a previous sync). The upsert pattern handles both cases elegantly: try to find the existing record — if found, update it; if not found, create a new one.</p>
+    <p class="ar">عند وصول بيانات من Zoho، قد تكون لطالب جديد أو طالب موجود بالفعل من مزامنة سابقة. نمط الـ "upsert" يتعامل مع الحالتين: ابحث عن السجل الموجود — إن وُجد، حدِّثه؛ وإن لم يوجد، أنشئ سجلاً جديداً.</p>
+    <pre><code class="language-python">def upsert_student(db: Session, zoho_data: dict) -> Student:
+    """
+    Insert a new student or update an existing one.
+    Uses zoho_id as the unique key to detect duplicates.
+    """
+    zoho_id = zoho_data["id"]  # Zoho's unique ID for this contact
+
+    # Step 1: Search for an existing record with this zoho_id
+    existing = db.query(Student).filter(Student.zoho_id == zoho_id).first()
+
+    if existing:
+        # ✅ Student already exists — update their data
+        existing.first_name = zoho_data.get("First_Name", existing.first_name)
+        existing.last_name  = zoho_data.get("Last_Name",  existing.last_name)
+        existing.email      = zoho_data.get("Email",      existing.email)
+        existing.program    = zoho_data.get("Program__c", existing.program)
+        db.commit()
+        db.refresh(existing)
+        return existing
     else:
-        db_student = Student(zoho_id=zoho_id, **moodle_data,
-                              sync_status="pending_moodle")
-        db.add(db_student)
-    db.commit()
-    db.refresh(db_student)
-
-    # Step 6: Call Moodle to sync the user
-    if db_student.moodle_userid:
-        result = call_moodle_ws(
-            "local_zoho_sync_update_user",
-            {"userid": db_student.moodle_userid, **moodle_data}
+        # ✅ New student — create a brand new record
+        new_student = Student(
+            zoho_id    = zoho_id,
+            first_name = zoho_data.get("First_Name"),
+            last_name  = zoho_data.get("Last_Name"),
+            email      = zoho_data.get("Email"),
+            program    = zoho_data.get("Program__c"),
         )
-        if result.get("success"):
-            db_student.sync_status = "synced"
-            db.commit()
+        db.add(new_student)
+        db.commit()
+        db.refresh(new_student)
+        return new_student</code></pre>
+    <p>This same upsert logic exists in <code>enrollment_service.py</code>, <code>grade_service.py</code>, and <code>payment_service.py</code>. It is what makes it safe to run the same sync multiple times without creating duplicate records.</p>
+    <p class="ar">نفس منطق الـ upsert موجود في <code>enrollment_service.py</code> و<code>grade_service.py</code> و<code>payment_service.py</code>. هو ما يجعل تشغيل المزامنة أكثر من مرة آمناً تماماً دون إنشاء سجلات مكررة.</p>
+  </div>
 
-    return {"status": "ok", "zoho_id": zoho_id}</code></pre>
-        </div>
-      </div>
+  <div class="card">
+    <h2>9. How to Browse the Database</h2>
+    <h2 class="ar">٩. كيف تتصفح قاعدة البيانات</h2>
+    <h3>Option A: Admin Panel Data Browser (Easiest)</h3>
+    <p class="ar">الأسهل: لوحة تحكم المشروع</p>
+    <p>Open <a href="http://localhost:8001/admin/data" target="_blank">http://localhost:8001/admin/data</a> while the server is running. You will see paginated tables of students, enrollments, grades, and payments with search.</p>
+    <p class="ar">افتح <a href="http://localhost:8001/admin/data" target="_blank">http://localhost:8001/admin/data</a> أثناء تشغيل السيرفر. ستجد جداول مُرقَّمة للطلاب والتسجيلات والدرجات والمدفوعات مع إمكانية البحث.</p>
 
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 03 Quiz</div>
-        <div class="section-divider"></div>
+    <h3>Option B: Python built-in sqlite3 module</h3>
+    <pre><code class="language-python">import sqlite3
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">Why do we call <code>fetch_zoho_full_record()</code> <em>after</em> receiving the webhook, instead of just using the webhook payload directly?</div>
-          <div class="quiz-question-ar">لماذا نستدعي <code>fetch_zoho_full_record()</code> <em>بعد</em> استقبال الـ webhook بدلاً من استخدام البيانات الواردة مباشرة؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Webhooks don't include field data, only the record ID</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Webhook payloads often only contain <em>changed</em> fields, not the full record</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> The Zoho API is faster than the webhook delivery</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To validate that the record hasn't been deleted</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Zoho webhook triggers (especially Workflow Rules) often only send the fields that triggered the rule, not all record fields. Fetching the full record with the REST API ensures we have complete data before transforming and syncing.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+conn = sqlite3.connect("backend/moodle_zoho_local.db")
+cursor = conn.cursor()
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">What HTTP header does the Zoho API require for authentication on every API call?</div>
-          <div class="quiz-question-ar">ما ترويسة HTTP التي يتطلبها Zoho API للمصادقة في كل استدعاء؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> <code>Bearer &lt;access_token&gt;</code></li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> <code>Zoho-oauthtoken &lt;access_token&gt;</code></li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> <code>Token &lt;access_token&gt;</code></li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> <code>X-Zoho-Auth: &lt;access_token&gt;</code></li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Zoho uses a custom scheme: <code>Authorization: Zoho-oauthtoken &lt;token&gt;</code>. This is different from the standard Bearer scheme used by most OAuth2 APIs. Forgetting this results in a 401 Unauthorized error.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+# List all tables
+tables = cursor.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+print("Tables:", [t[0] for t in tables])
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">Our <code>ZohoAuthClient</code> uses a <code>SAFETY_MARGIN</code> of 300 seconds. What is this for?</div>
-          <div class="quiz-question-ar">يستخدم <code>ZohoAuthClient</code> هامش أمان 300 ثانية — ما الغرض منه؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To add a delay between API calls to avoid rate limiting</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To retry failed requests 5 minutes later</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> To refresh the token 5 minutes <em>before</em> it expires, avoiding mid-request failures</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To cache the token for exactly 5 minutes before making a new request</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! If we wait until the token actually expires, any in-flight API call at expiry time will fail. By refreshing 5 minutes early, we ensure the token is always fresh for real requests.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+# Count students
+count = cursor.execute("SELECT COUNT(*) FROM students").fetchone()[0]
+print(f"Students in DB: {count}")
 
-      </div>
-    </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
+# See first 3 students
+rows = cursor.execute("SELECT id, first_name, email, program FROM students LIMIT 3").fetchall()
+for row in rows:
+    print(row)
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+conn.close()</code></pre>
+
+    <h3>Option C: DB Browser for SQLite (Free visual GUI)</h3>
+    <p>Download from <a href="https://sqlitebrowser.org/" target="_blank">https://sqlitebrowser.org</a> (free, Windows/Mac/Linux). Open it, select "Open Database", and choose <code>backend/moodle_zoho_local.db</code>. You can visually browse tables, run queries, and even edit data.</p>
+    <p class="ar">حمّله من <a href="https://sqlitebrowser.org/" target="_blank">https://sqlitebrowser.org</a> (مجاني). افتحه، اختر "Open Database"، ثم اختر ملف <code>backend/moodle_zoho_local.db</code>. يمكنك تصفح الجداول بشكل مرئي، تشغيل استعلامات SQL، وتعديل البيانات مباشرة. مناسب جداً للمبتدئين.</p>
+  </div>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;">
+    <a href="lesson-02.html" class="btn-secondary">&#8592; Lesson 02: FastAPI &amp; Admin</a>
+    <a href="lesson-04.html" class="btn-primary">Lesson 04: Zoho CRM &#8594;</a>
+  </div>
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 — Developer Course</p></footer>
 <script src="course.js"></script>
-<script>initLesson(3);</script>
 </body>
 </html>

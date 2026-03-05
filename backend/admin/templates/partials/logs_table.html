@@ -1,60 +1,115 @@
-<!-- HTMX partial: Logs table -->
+<!-- HTMX partial: HTTP Access Logs table -->
 
+{# ── Helpers ───────────────────────────────────────────────────────────────── #}
+{% macro method_badge(m) %}
+  {% if m == 'GET' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-sky-100 text-sky-700">GET</span>
+  {% elif m == 'POST' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-700">POST</span>
+  {% elif m in ['PUT','PATCH'] %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-700">{{ m }}</span>
+  {% elif m == 'DELETE' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-red-100 text-red-700">DEL</span>
+  {% else %}
+    <span class="badge-gray">{{ m }}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro status_badge(code) %}
+  {% if code < 300 %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-700">{{ code }}</span>
+  {% elif code < 400 %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-sky-100 text-sky-700">{{ code }}</span>
+  {% elif code < 500 %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-700">{{ code }}</span>
+  {% elif code >= 500 %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-red-100 text-red-700">{{ code }}</span>
+  {% else %}
+    <span class="badge-gray">{{ code }}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro cat_badge(cat) %}
+  {% if cat == 'admin' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-violet-100 text-violet-700">admin</span>
+  {% elif cat == 'webhook' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-700">webhook</span>
+  {% elif cat == 'sync' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-teal-100 text-teal-700">sync</span>
+  {% elif cat == 'api' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">api</span>
+  {% elif cat == 'health' %}
+    <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">health</span>
+  {% else %}
+    <span class="badge-gray">{{ cat }}</span>
+  {% endif %}
+{% endmacro %}
+
+{# ── Card ──────────────────────────────────────────────────────────────────── #}
 <div class="card p-0 overflow-hidden">
+
   <!-- Stats bar -->
-  <div class="px-4 py-3 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center">
-    <p class="text-sm text-gray-600"><span class="font-semibold text-gray-800">{{ total }}</span> events total</p>
-    <p class="text-xs text-gray-400">Page {{ page }} of {{ total_pages }}</p>
+  <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center">
+    <p class="text-sm text-gray-600">
+      <span class="font-semibold text-gray-800">{{ total }}</span> requests
+    </p>
+    {% if total_pages > 1 %}
+    <p class="text-xs text-gray-400">Page {{ page }} / {{ total_pages }}</p>
+    {% endif %}
   </div>
 
   {% if logs %}
   <div class="overflow-x-auto">
-    <table class="w-full">
+    <table class="w-full text-sm">
       <thead>
-        <tr>
-          <th class="table-th">Source</th>
-          <th class="table-th">Module</th>
-          <th class="table-th">Event Type</th>
-          <th class="table-th">Record ID</th>
-          <th class="table-th">Status</th>
-          <th class="table-th">Time</th>
-          <th class="table-th">Error</th>
+        <tr class="bg-gray-50 border-b border-gray-100">
+          <th class="table-th w-36">Time</th>
+          <th class="table-th w-16">Method</th>
+          <th class="table-th">Path</th>
+          <th class="table-th w-16">Status</th>
+          <th class="table-th w-20">Duration</th>
+          <th class="table-th w-28">IP</th>
+          <th class="table-th w-24">Category</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-gray-50">
         {% for log in logs %}
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="table-td">
-            {% if log.source == 'zoho' %}
-              <span class="badge-info">Zoho</span>
-            {% elif log.source == 'moodle' %}
-              <span class="badge-gray">Moodle</span>
-            {% else %}
-              <span class="badge-gray">{{ log.source }}</span>
-            {% endif %}
+        {# Row background: red tint for 5xx, amber tint for 4xx #}
+        <tr class="{% if log.status_code >= 500 %}bg-red-50 hover:bg-red-100{% elif log.status_code >= 400 %}bg-amber-50 hover:bg-amber-100{% else %}hover:bg-gray-50{% endif %} transition-colors">
+
+          <!-- Time -->
+          <td class="table-td font-mono text-xs text-gray-500 whitespace-nowrap">
+            {{ log.timestamp.strftime('%H:%M:%S') }}
+            <span class="block text-gray-400 text-[10px]">{{ log.timestamp.strftime('%Y-%m-%d') }}</span>
           </td>
-          <td class="table-td font-mono text-xs">{{ log.module }}</td>
-          <td class="table-td text-xs">{{ log.event_type }}</td>
-          <td class="table-td font-mono text-xs max-w-xs truncate" title="{{ log.record_id }}">{{ log.record_id }}</td>
-          <td class="table-td">
-            {% if log.status == 'completed' %}
-              <span class="badge-success">✓ done</span>
-            {% elif log.status == 'failed' %}
-              <span class="badge-error">✗ failed</span>
-            {% elif log.status in ['pending', 'processing'] %}
-              <span class="badge-warn animate-pulse">⟳ {{ log.status }}</span>
-            {% elif log.status == 'duplicate' %}
-              <span class="badge-gray">dup</span>
-            {% else %}
-              <span class="badge-gray">{{ log.status }}</span>
-            {% endif %}
+
+          <!-- Method -->
+          <td class="table-td">{{ method_badge(log.method) }}</td>
+
+          <!-- Path -->
+          <td class="table-td font-mono text-xs max-w-xs">
+            <span class="truncate block max-w-sm" title="{{ log.path }}{% if log.query %}?{{ log.query }}{% endif %}">
+              {{ log.path }}{% if log.query %}<span class="text-gray-400">?{{ log.query[:60] }}{% if log.query|length > 60 %}…{% endif %}</span>{% endif %}
+            </span>
           </td>
-          <td class="table-td text-xs text-gray-400 whitespace-nowrap">{{ ts(log.created_at) }}</td>
-          <td class="table-td text-xs text-red-600 max-w-xs">
-            {% if log.error_message %}
-            <span class="truncate block max-w-xs" title="{{ log.error_message }}">{{ log.error_message[:100] }}{% if log.error_message|length > 100 %}…{% endif %}</span>
-            {% else %}—{% endif %}
+
+          <!-- Status code -->
+          <td class="table-td">{{ status_badge(log.status_code) }}</td>
+
+          <!-- Duration -->
+          <td class="table-td text-xs whitespace-nowrap
+            {% if log.duration_ms > 1000 %}text-red-600 font-semibold
+            {% elif log.duration_ms > 300 %}text-amber-600
+            {% else %}text-gray-500{% endif %}">
+            {{ "%.0f"|format(log.duration_ms) }} ms
           </td>
+
+          <!-- IP -->
+          <td class="table-td font-mono text-xs text-gray-500">{{ log.client_ip }}</td>
+
+          <!-- Category -->
+          <td class="table-td">{{ cat_badge(log.category) }}</td>
+
         </tr>
         {% endfor %}
       </tbody>
@@ -64,14 +119,16 @@
   <!-- Pagination -->
   {% if total_pages > 1 %}
   <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-    <p class="text-xs text-gray-500">Showing {{ (page-1)*50 + 1 }}–{{ [page*50, total]|min }} of {{ total }}</p>
+    <p class="text-xs text-gray-500">
+      Showing {{ (page-1)*100 + 1 }}–{{ [page*100, total]|min }} of {{ total }}
+    </p>
     <div class="flex gap-2">
       {% if page > 1 %}
-      <a href="/admin/logs?source={{ source }}&status={{ status }}&search={{ search }}&page={{ page-1 }}"
+      <a href="/admin/logs?method={{ method }}&category={{ category }}&status={{ status }}&search={{ search }}&page={{ page-1 }}"
          class="btn-secondary text-xs py-1 px-3">← Prev</a>
       {% endif %}
       {% if page < total_pages %}
-      <a href="/admin/logs?source={{ source }}&status={{ status }}&search={{ search }}&page={{ page+1 }}"
+      <a href="/admin/logs?method={{ method }}&category={{ category }}&status={{ status }}&search={{ search }}&page={{ page+1 }}"
          class="btn-secondary text-xs py-1 px-3">Next →</a>
       {% endif %}
     </div>
@@ -80,10 +137,18 @@
 
   {% else %}
   <div class="text-center py-16 text-gray-400">
-    <svg class="w-10 h-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125
+           0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0
+           12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621
+           0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125
+           1.125 1.125h12.75c.621 0 1.125-.504
+           1.125-1.125V11.25a9 9 0 00-9-9z"/>
     </svg>
-    <p class="text-sm">No logs found.</p>
+    <p class="text-sm font-medium">No requests yet.</p>
+    <p class="text-xs mt-1">Logs appear as soon as anyone makes a request to the server.</p>
   </div>
   {% endif %}
+
 </div>

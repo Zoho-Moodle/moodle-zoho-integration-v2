@@ -1,431 +1,282 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 06 — Testing & Debugging | Zoho+Moodle Course</title>
+  <title>Lesson 06 — Data Synchronisation Services | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a><a href="lesson-05.html">L5</a>
+      <a href="lesson-06.html" class="active">L6</a><a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
+<main class="lesson-container">
+  <div class="lesson-header">
+    <span class="lesson-tag">Lesson 06</span>
+    <h1>Data Synchronisation Services</h1>
+    <h2 class="ar">خدمات مزامنة البيانات</h2>
+    <p>This lesson explains the concept of synchronisation, the two data directions in this project, how each sync service works step by step, and how scheduled (automatic) sync is managed using APScheduler.</p>
+    <p class="ar">يشرح هذا الدرس مفهوم المزامنة، اتجاهَي تدفق البيانات في المشروع، كيف تعمل كل خدمة مزامنة خطوةً بخطوة، وكيف يُدار الجدول الزمني التلقائي للمزامنة باستخدام APScheduler.</p>
+  </div>
 
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 06</div>
-      <div class="lesson-number">Lesson 06</div>
-      <div class="lesson-title-en">Testing & Debugging</div>
-      <div class="lesson-title-ar">الاختبار والتحقيق في الأخطاء</div>
-      <div class="lesson-meta">
-        <span>🕐 ~40 minutes</span>
-        <span>🎯 Intermediate</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
+  <div class="card">
+    <h2>1. What Does "Sync" Mean?</h2>
+    <h2 class="ar">١. ماذا يعني "المزامنة"؟</h2>
+    <p>Synchronisation (sync) means making two separate systems have the same data. Imagine you have a student record in Zoho CRM and a user account in Moodle — they are in two completely separate databases on different servers. Sync bridges them: when data changes in one system, the sync service detects the change and updates the other system to match.</p>
+    <p class="ar">المزامنة تعني جعل نظامين منفصلين يحتويان نفس البيانات. تخيّل: سجل طالب في Zoho CRM وحساب مستخدم في Moodle — كلاهما في قواعد بيانات منفصلة على سيرفرات مختلفة. المزامنة تجسر بينهما: عند تغيير البيانات في نظام واحد، تكتشف خدمة المزامنة التغيير وتُحدّث النظام الآخر ليتطابق.</p>
+    <div class="diagram-box"><pre>
+Direction 1: Zoho → Local DB → Moodle
+  Zoho has new/updated student
+    → Fetch from Zoho API
+    → Upsert into local SQLite (students table)
+    → Create/update user in Moodle via Moodle API
+    → Enrol student in correct Moodle courses
 
-    <div class="lesson-body">
+Direction 2: Moodle → Local DB → Zoho
+  Student gets a grade in Moodle
+    → Moodle plugin fires webhook
+    → Backend stores grade in grades table
+    → Grade sync service pushes grade to Zoho Contact
+    </pre></div>
+  </div>
 
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Write unit and integration tests for webhook endpoints with <code>pytest</code></li>
-          <li>Use FastAPI's <code>TestClient</code> to simulate HTTP requests</li>
-          <li>Simulate incoming Zoho webhooks manually using <code>curl</code> or REST Client</li>
-          <li>Use the built-in debug endpoints to inspect the system state</li>
-          <li>Diagnose and fix the 10 most common integration errors</li>
-        </ul>
-      </div>
+  <div class="card">
+    <h2>2. The Mapper Pattern — Translating Between Systems</h2>
+    <h2 class="ar">٢. نمط المحوّل — الترجمة بين النظامين</h2>
+    <p>Each system uses different field names for the same concept. Zoho calls the first name "First_Name"; Moodle's API uses "firstname" (lowercase). The mapper pattern is a simple function that translates one format into the other, keeping the rest of the code clean.</p>
+    <p class="ar">كل نظام يستخدم أسماء حقول مختلفة لنفس المفهوم. Zoho يسمّي الاسم الأول "First_Name"؛ Moodle يستخدم "firstname" (بأحرف صغيرة). نمط المحوّل هو دالة بسيطة تُترجم صيغة إلى أخرى، مما يُبقي بقية الكود نظيفاً.</p>
+    <pre><code class="language-python"># backend/app/integrations/zoho/mapper.py
 
-      <!-- PYTEST SETUP -->
-      <div class="section">
-        <div class="section-title">1. Setting Up pytest</div>
-        <div class="section-title-ar">إعداد pytest</div>
-        <div class="section-divider"></div>
+def zoho_contact_to_student(zoho_record: dict) -> dict:
+    """
+    Map a Zoho Contact record to our internal Student schema.
+    Input (from Zoho): {"id":"xxx","First_Name":"Ahmad","Last_Name":"Ali",...}
+    Output (for DB):   {"zoho_id":"xxx","first_name":"Ahmad","last_name":"Ali",...}
+    """
+    return {
+        "zoho_id":    zoho_record.get("id"),
+        "first_name": zoho_record.get("First_Name", ""),
+        "last_name":  zoho_record.get("Last_Name", ""),
+        "email":      zoho_record.get("Email", "").lower().strip(),
+        "student_id": zoho_record.get("Student_ID__c"),
+        "program":    zoho_record.get("Program__c"),
+    }
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Install test dependencies</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash">pip install pytest pytest-asyncio httpx
+def student_to_moodle_user(student) -> dict:
+    """
+    Map our internal Student (SQLAlchemy model) to Moodle's create_user format.
+    """
+    return {
+        "firstname": student.first_name,
+        "lastname":  student.last_name,
+        "email":     student.email,
+        "username":  student.email.split("@")[0].lower(),  # e.g. "ahmad.ali"
+    }</code></pre>
+    <p>The mapper is pure Python — no database calls, no API calls. Easy to test in isolation and easy to update when field names change.</p>
+    <p class="ar">المحوّل كود Python نظيف — بدون استدعاءات قاعدة بيانات أو API. سهل الاختبار بشكل منفصل، وسهل التحديث عند تغيير أسماء الحقول.</p>
+  </div>
 
-# Run all tests
-pytest backend/tests/ -v
+  <div class="card">
+    <h2>3. Full Student Sync Flow — Step by Step</h2>
+    <h2 class="ar">٣. تدفق مزامنة الطلاب الكاملة — خطوة بخطوة</h2>
+    <pre><code class="language-python"># backend/app/services/sync/student_sync.py (simplified)
 
-# Run with coverage report
-pip install pytest-cov
-pytest backend/tests/ -v --cov=backend/app --cov-report=term-missing</code></pre>
-        </div>
+from app.integrations.zoho.client import zoho_client
+from app.integrations.zoho.mapper import zoho_contact_to_student
+from app.integrations.moodle.client import moodle_client
+from app.infra.db.models.student import Student
+from app.services.event_log import log_event
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/tests/conftest.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">"""
-Shared pytest fixtures.
-الـ fixtures المشتركة بين الاختبارات.
-"""
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+def sync_all_students(db):
+    """
+    Pull ALL records from BTEC_Students module in Zoho, sync each one to local DB and Moodle.
+    """
+    log_event(db, "sync_students", "started")
 
-from app.main import app
-from app.infra.db.base import Base
-from app.infra.db.session import get_db
+    # STEP 1: Fetch all BTEC_Students records from Zoho (with pagination)
+    zoho_students = zoho_client.fetch_all("BTEC_Students")
+    print(f"Step 1: Got {len(zoho_students)} records from BTEC_Students")
 
+    created_count = 0
+    updated_count = 0
+    error_count   = 0
 
-# ── Use a temporary in-memory SQLite DB for tests ────────────────────────────
-# نستخدم قاعدة بيانات SQLite مؤقتة في الذاكرة للاختبارات
-TEST_DATABASE_URL = "sqlite:///./test_temp.db"
+    for contact in zoho_students:
+        try:
+            # STEP 2: Translate Zoho fields to our internal format
+            student_data = zoho_contact_to_student(contact)
 
-test_engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False}
+            # STEP 3: Upsert into local SQLite database
+            student = upsert_student(db, student_data)
+
+            if student.moodle_id is None:
+                # STEP 4a: Student not yet in Moodle → create them
+                result = moodle_client.create_user(
+                    first_name = student.first_name,
+                    last_name  = student.last_name,
+                    email      = student.email,
+                    username   = student.email.split("@")[0].lower(),
+                )
+                moodle_id = result[0]["id"]
+                # Save the Moodle ID back to our DB so we know next time
+                student.moodle_id = moodle_id
+                db.commit()
+                created_count += 1
+                print(f"  Created Moodle user for {student.email}: ID={moodle_id}")
+            else:
+                # STEP 4b: Student already in Moodle → just update fields if needed
+                updated_count += 1
+
+        except Exception as e:
+            error_count += 1
+            log_event(db, "sync_students", "error",
+                      entity_id=contact.get("id"), error=str(e))
+            print(f"  Error processing {contact.get('Email','?')}: {e}")
+            continue  # skip this student, continue with the rest
+
+    summary = f"Sync complete: {created_count} created, {updated_count} updated, {error_count} errors"
+    log_event(db, "sync_students", "success", details=summary)
+    print(summary)
+    return {"created": created_count, "updated": updated_count, "errors": error_count}</code></pre>
+    <p class="ar">الخطوات بالترتيب: (1) جلب كل جهات الاتصال من Zoho مع التقسيم الصفحي. (2) ترجمة كل سجل. (3) حفظ/تحديث في قاعدة البيانات المحلية. (4) إنشاء مستخدم في Moodle أو تحديثه. كل خطأ يُسجَّل لكن لا يوقف المزامنة الكاملة.</p>
+  </div>
+
+  <div class="card">
+    <h2>4. Enrollment Sync — Linking Students to Courses</h2>
+    <h2 class="ar">٤. مزامنة التسجيلات — ربط الطلاب بالكورسات</h2>
+    <p>After students exist in both Moodle and the local DB, the enrollment sync reads registration records from Zoho and enrols each student in their correct Moodle course(s).</p>
+    <p class="ar">بعد وجود الطلاب في كلا النظامين، تقرأ مزامنة التسجيلات سجلات التسجيل من Zoho وتُسجِّل كل طالب في كورساته الصحيحة في Moodle.</p>
+    <pre><code class="language-python">def sync_enrollments(db):
+    """
+    For each registration in Zoho, ensure the student is enrolled
+    in the corresponding Moodle course.
+    """
+    registrations = zoho_client.fetch_all_registrations()
+
+    for reg in registrations:
+        zoho_student_id = reg.get("Contact.id")
+        moodle_course_id = get_moodle_course_id_for_program(reg.get("Program__c"))
+
+        # Find the student in our local DB using their zoho_id
+        student = db.query(Student).filter(
+            Student.zoho_id == zoho_student_id
+        ).first()
+
+        if not student or not student.moodle_id or not moodle_course_id:
+            continue  # skip if we cannot resolve IDs
+
+        # Check if already enrolled to avoid duplicate enrollments
+        existing = db.query(Enrollment).filter(
+            Enrollment.student_id == student.id,
+            Enrollment.moodle_course_id == moodle_course_id
+        ).first()
+
+        if not existing:
+            # Not enrolled yet → enrol them in Moodle
+            moodle_client.enrol_student(student.moodle_id, moodle_course_id)
+            # Record the enrollment in our local DB
+            db.add(Enrollment(
+                student_id=student.id,
+                moodle_course_id=moodle_course_id,
+                status="active"
+            ))
+            db.commit()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>5. Grade Sync — Pushing Grades from Moodle to Zoho</h2>
+    <h2 class="ar">٥. مزامنة الدرجات — دفع الدرجات من Moodle إلى Zoho</h2>
+    <p>The grade sync service reads grades from Moodle's API, stores them in the local <code>grades</code> table, and then pushes unsynced grades to the matching Zoho Contact field.</p>
+    <p class="ar">خدمة مزامنة الدرجات تقرأ الدرجات من Moodle API، تخزّنها في جدول <code>grades</code> المحلي، ثم تدفع الدرجات غير المُزامَنة إلى حقل جهة الاتصال المناسبة في Zoho.</p>
+    <pre><code class="language-python">def sync_grades(db):
+    """Pull all grades from Moodle, push un-synced ones to Zoho."""
+    students = db.query(Student).filter(Student.moodle_id.isnot(None)).all()
+
+    for student in students:
+        # Fetch course completion + grade from Moodle for this user
+        moodle_grades = moodle_client.call(
+            "core_grades_get_grades",
+            {"userid": student.moodle_id}
+        )
+        for course_grade in moodle_grades.get("items", []):
+            grade_value  = float(course_grade.get("graderaw") or 0)
+            course_id    = course_grade["courseid"]
+            passed       = grade_value >= 40.0  # configurable pass mark
+
+            # Upsert grade record locally
+            grade = upsert_grade(db, student.id, course_id, grade_value, passed)
+
+            # Push to Zoho if not already done
+            if not grade.synced_to_zoho and student.zoho_id:
+                zoho_client.post(f"BTEC_Grades/{student.zoho_id}", {
+                    "Grade__c":       "Pass" if passed else "Fail",
+                    "Grade_Value__c": grade_value,
+                })
+                grade.synced_to_zoho = True
+                db.commit()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>6. Scheduled Sync with APScheduler</h2>
+    <h2 class="ar">٦. المزامنة المجدوَلة باستخدام APScheduler</h2>
+    <p>Running sync manually every time would be impractical. APScheduler is a Python library that runs functions automatically on a schedule (like a cron job). It is configured in <code>backend/app/core/scheduler.py</code>.</p>
+    <p class="ar">تشغيل المزامنة يدوياً في كل مرة غير عملي. APScheduler مكتبة Python تُشغّل الدوال تلقائياً وفق جدول زمني (مثل cron job). يُضبط في <code>backend/app/core/scheduler.py</code>.</p>
+    <pre><code class="language-python">from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+scheduler = AsyncIOScheduler()
+
+# Sync students every day at 02:00 AM
+scheduler.add_job(
+    run_student_sync,
+    trigger=CronTrigger(hour=2, minute=0),
+    id="student_sync",
+    replace_existing=True,
 )
-TestSessionLocal = sessionmaker(bind=test_engine, autocommit=False, autoflush=False)
 
+# Sync grades every 6 hours
+scheduler.add_job(
+    run_grade_sync,
+    trigger=CronTrigger(hour="*/6"),
+    id="grade_sync",
+    replace_existing=True,
+)
 
-@pytest.fixture(scope="session", autouse=True)
-def create_test_tables():
-    """Create all tables before tests run, drop after."""
-    # Import all models so Base.metadata knows about them
-    import app.infra.db.models  # noqa
-    Base.metadata.create_all(bind=test_engine)
+# In main.py lifespan:
+@asynccontextmanager
+async def lifespan(app):
+    Base.metadata.create_all(bind=engine)
+    scheduler.start()     # <-- scheduler starts with the server
     yield
-    Base.metadata.drop_all(bind=test_engine)
-
-
-@pytest.fixture
-def db_session():
-    """Provide a clean DB session per test, rolled back after each test."""
-    connection = test_engine.connect()
-    transaction = connection.begin()
-    session = TestSessionLocal(bind=connection)
-
-    yield session
-
-    # Roll back everything done in this test to keep tests isolated
-    # إلغاء كل ما تم في هذا الاختبار للحفاظ على عزل الاختبارات
-    session.close()
-    transaction.rollback()
-    connection.close()
-
-
-@pytest.fixture
-def client(db_session):
-    """FastAPI TestClient with the test DB injected."""
-    def override_get_db():
-        yield db_session
-
-    # Override the real DB dependency with our test DB
-    app.dependency_overrides[get_db] = override_get_db
-
-    with TestClient(app) as c:
-        yield c
-
-    app.dependency_overrides.clear()</code></pre>
-        </div>
-      </div>
-
-      <!-- WEBHOOK TESTS -->
-      <div class="section">
-        <div class="section-title">2. Testing Webhook Endpoints</div>
-        <div class="section-title-ar">اختبار نقاط نهاية الـ Webhooks</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/tests/test_webhooks_students.py</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">import pytest
-from unittest.mock import patch
-
-
-# ── Sample Zoho webhook payloads for testing ─────────────────────────────────
-FLAT_PAYLOAD = {
-    "id": "zoho-student-001",
-    "Name": "Ahmed Ali",
-    "Email": "ahmed@school.com",
-    "Mobile": "0599123456",
-    "Student_Status": "Active",
-}
-
-WRAPPED_PAYLOAD = {
-    "BTEC_Students": [{
-        "id": "zoho-student-002",
-        "Name": "Sara Hassan",
-        "Email": "sara@school.com",
-        "Mobile": "0598765432",
-        "Student_Status": "Active",
-    }]
-}
-
-
-class TestStudentWebhook:
-
-    def test_flat_payload_creates_student(self, client, db_session):
-        """
-        Verify that a flat-format Zoho payload creates a Student record.
-        التحقق من أن payload المسطّح ينشئ سجل طالب.
-        """
-        # Mock the Zoho and Moodle API calls so no real HTTP happens
-        # محاكاة استدعاءات Zoho و Moodle حتى لا تحدث طلبات HTTP حقيقية
-        with patch("app.api.v1.endpoints.webhooks_students.fetch_zoho_full_record",
-                   return_value=FLAT_PAYLOAD), \
-             patch("app.api.v1.endpoints.webhooks_students.call_moodle_ws",
-                   return_value={"success": True}):
-
-            response = client.post(
-                "/api/v1/webhooks/students",
-                json=FLAT_PAYLOAD
-            )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "ok"
-        assert data["zoho_id"] == "zoho-student-001"
-
-        # Verify DB record was created
-        from app.infra.db.models.student import Student
-        student = db_session.query(Student)\
-                             .filter(Student.zoho_id == "zoho-student-001")\
-                             .first()
-        assert student is not None
-        assert student.display_name == "Ahmed Ali"
-        assert student.academic_email == "ahmed@school.com"
-
-    def test_wrapped_payload_creates_student(self, client, db_session):
-        """Test wrapped Zoho format is also handled correctly."""
-        with patch("app.api.v1.endpoints.webhooks_students.fetch_zoho_full_record",
-                   return_value=WRAPPED_PAYLOAD["BTEC_Students"][0]), \
-             patch("app.api.v1.endpoints.webhooks_students.call_moodle_ws",
-                   return_value={"success": True}):
-
-            response = client.post(
-                "/api/v1/webhooks/students",
-                json=WRAPPED_PAYLOAD
-            )
-
-        assert response.status_code == 200
-
-    def test_empty_payload_returns_400(self, client):
-        """Empty payload should return HTTP 400."""
-        response = client.post("/api/v1/webhooks/students", json={})
-        assert response.status_code in (400, 422)
-
-    def test_duplicate_webhook_is_idempotent(self, client, db_session):
-        """Sending the same webhook twice should not create duplicate records."""
-        with patch("app.api.v1.endpoints.webhooks_students.fetch_zoho_full_record",
-                   return_value=FLAT_PAYLOAD), \
-             patch("app.api.v1.endpoints.webhooks_students.call_moodle_ws",
-                   return_value={"success": True}):
-
-            client.post("/api/v1/webhooks/students", json=FLAT_PAYLOAD)
-            client.post("/api/v1/webhooks/students", json=FLAT_PAYLOAD)  # duplicate
-
-        from app.infra.db.models.student import Student
-        count = db_session.query(Student)\
-                          .filter(Student.zoho_id == "zoho-student-001")\
-                          .count()
-        assert count == 1, "Duplicate webhook should not create 2 records"</code></pre>
-        </div>
-      </div>
-
-      <!-- MANUAL TESTING WITH CURL -->
-      <div class="section">
-        <div class="section-title">3. Manual Webhook Testing with curl</div>
-        <div class="section-title-ar">اختبار الـ Webhook يدوياً باستخدام curl</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <span class="code-filename">Simulate a Zoho student webhook (flat format)</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-bash"># Send a fake student webhook to your local server
-# إرسال webhook اختباري لخادمك المحلي
-curl -X POST http://localhost:8001/api/v1/webhooks/students \
-  -H "Content-Type: application/json" \
-  -d '{
-    "id": "TEST-001",
-    "Name": "Test Student",
-    "Email": "test@example.com",
-    "Mobile": "0501234567",
-    "Student_Status": "Active"
-  }'
-
-# Expected response:
-# {"status": "ok", "zoho_id": "TEST-001"}
-
-# Test the registration webhook (wrapped format)
-curl -X POST http://localhost:8001/api/v1/webhooks/registrations \
-  -H "Content-Type: application/json" \
-  -d '{
-    "BTEC_Registrations": [{
-      "id": "REG-001",
-      "Enrollment_Status": "Active",
-      "Student_Name": {"id": "TEST-001", "name": "Test Student"},
-      "Program_Name": {"id": "PROG-001", "name": "BTEC Level 3"}
-    }]
-  }'
-
-# Check the DB via the debug endpoint
-curl http://localhost:8001/api/v1/debug/students | python -m json.tool</code></pre>
-        </div>
-      </div>
-
-      <!-- COMMON ERRORS -->
-      <div class="section">
-        <div class="section-title">4. The 10 Most Common Errors & Fixes</div>
-        <div class="section-title-ar">أكثر 10 أخطاء شيوعاً وكيفية إصلاحها</div>
-        <div class="section-divider"></div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Error</th>
-                <th>Cause</th>
-                <th>Fix</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td><code>ModuleNotFoundError: app</code></td>
-                <td>Running without <code>PYTHONPATH</code></td>
-                <td>Run from <code>backend/</code> folder or set <code>PYTHONPATH=backend</code></td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td><code>KeyError: 'access_token'</code></td>
-                <td>Wrong Zoho credentials in <code>.env</code></td>
-                <td>Verify <code>ZOHO_CLIENT_ID</code>, <code>ZOHO_REFRESH_TOKEN</code> in <code>.env</code></td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Moodle returns <code>{"exception": "webservice_access_exception"}</code></td>
-                <td>Token not enabled for the WS, or service not enabled</td>
-                <td>Enable service in Moodle → Site Admin → Plugins → Web Services</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td><code>sqlite3.OperationalError: no such table</code></td>
-                <td>Model not imported before <code>create_all()</code></td>
-                <td>Import model in <code>models/__init__.py</code></td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>DB <code>UNIQUE constraint failed</code></td>
-                <td>Inserting instead of upserting duplicate</td>
-                <td>Use <code>db.merge()</code> or check existence before <code>db.add()</code></td>
-              </tr>
-              <tr>
-                <td>6</td>
-                <td>Webhook receives data but Moodle user doesn't update</td>
-                <td><code>moodle_userid</code> is NULL in DB</td>
-                <td>Ensure the Moodle user ID sync step ran before other syncs</td>
-              </tr>
-              <tr>
-                <td>7</td>
-                <td><code>422 Unprocessable Entity</code> on webhook</td>
-                <td>Zoho payload keys don't match expected format</td>
-                <td>Check <code>resolve_zoho_payload()</code> logic; log raw body to inspect</td>
-              </tr>
-              <tr>
-                <td>8</td>
-                <td>Token expires mid-sync</td>
-                <td><code>SAFETY_MARGIN</code> not set or too small</td>
-                <td>Set <code>SAFETY_MARGIN = 300</code> in <code>ZohoAuthClient</code></td>
-              </tr>
-              <tr>
-                <td>9</td>
-                <td>Sync runs but data_hash unchanged → no updates</td>
-                <td>Hash check too aggressive</td>
-                <td>Pass <code>force=True</code> param or clear <code>data_hash</code> in DB</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>FastAPI won't start: <code>Address already in use</code></td>
-                <td>Another process on port 8001</td>
-                <td>Run <code>lsof -i :8001</code> (Linux/Mac) or <code>netstat -ano | findstr 8001</code> (Windows) to find and kill the process</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 06 Quiz</div>
-        <div class="section-divider"></div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">In the test fixtures, why do we use <code>transaction.rollback()</code> after each test?</div>
-          <div class="quiz-question-ar">في الـ fixtures، لماذا نستخدم <code>transaction.rollback()</code> بعد كل اختبار؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To check that the database was actually written to</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> To undo all DB changes so each test starts with a clean database state</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> To test error handling in the application</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Because SQLite doesn't support DELETE</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Rolling back after each test ensures test isolation — each test starts with a clean DB state and doesn't depend on data created by a previous test. This prevents flaky tests.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">Why do we use <code>unittest.mock.patch</code> on <code>fetch_zoho_full_record</code> and <code>call_moodle_ws</code> in the webhook tests?</div>
-          <div class="quiz-question-ar">لماذا نستخدم <code>patch</code> على دالتي Zoho و Moodle في اختبارات الـ webhook؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To make the tests run faster</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> To prevent real HTTP calls to external APIs during tests, keeping tests fast, free, and offline</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Because the test DB doesn't support external connections</li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> To simulate error responses from Zoho</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Mocking external API calls in unit tests prevents slow network requests, costly API usage, and test failures due to network issues. We control exactly what the mock returns so we can test our logic independently.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">Moodle returns <code>{"exception": "webservice_access_exception"}</code>. What is the most likely cause?</div>
-          <div class="quiz-question-ar">Moodle يُعيد <code>{"exception": "webservice_access_exception"}</code>. ما السبب الأرجح؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> The database is down</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> The PHP function has a syntax error</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> The token is not enabled for the web service, or the service is disabled in Moodle admin</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> Wrong Python version</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! <code>webservice_access_exception</code> almost always means the token doesn't have permission to call that function. Fix it in Moodle: Site Admin → Plugins → Web Services → Manage Tokens and ensure the token is linked to the correct service.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
-
-      </div>
+    scheduler.shutdown()  # <-- scheduler stops when server stops</code></pre>
+    <p>You can also trigger sync manually from the Admin Panel at <a href="http://localhost:8001/admin/sync" target="_blank">http://localhost:8001/admin/sync</a> using the "Sync Now" buttons — useful for testing or urgent updates.</p>
+    <p class="ar">يمكنك أيضاً تشغيل المزامنة يدوياً من لوحة التحكم على <a href="http://localhost:8001/admin/sync" target="_blank">http://localhost:8001/admin/sync</a> عبر زر "Sync Now" — مناسب للاختبار أو التحديثات العاجلة.</p>
+    <div class="tip-box">
+      APScheduler jobs run inside the same Python process as the FastAPI server. No separate process, no cron tab needed. If the server restarts, the scheduler restarts automatically with it because it is started in the <code>lifespan</code> context manager.<br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif">وظائف APScheduler تعمل داخل نفس عملية Python مع سيرفر FastAPI. لا عملية منفصلة، لا cron tab. إذا أعدت تشغيل السيرفر، يُعاد تشغيل الجدولة تلقائياً.</span>
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;">
+    <a href="lesson-05.html" class="btn-secondary">&#8592; Lesson 05: Moodle Plugin</a>
+    <a href="lesson-07.html" class="btn-primary">Lesson 07: Webhooks &#8594;</a>
+  </div>
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 — Developer Course</p></footer>
 <script src="course.js"></script>
-<script>initLesson(6);</script>
 </body>
 </html>

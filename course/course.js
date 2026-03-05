@@ -118,3 +118,73 @@ function initQuizzes() {
 }
 
 document.addEventListener('DOMContentLoaded', initQuizzes);
+
+// ── COURSE APP (used by lesson-00 through lesson-09 new templates) ──────────
+const CourseApp = {
+  /**
+   * Call when DocumentLoaded — sets up click handlers on .quiz-options li
+   * based on data-choice attributes and data-answer on .quiz-question.
+   */
+  initProgress() {
+    document.querySelectorAll('.quiz-options li[data-choice]').forEach(li => {
+      li.addEventListener('click', () => {
+        const question = li.closest('.quiz-question');
+        if (!question || question.dataset.answered) return;
+        question.querySelectorAll('.quiz-options li').forEach(opt => opt.classList.remove('selected'));
+        li.classList.add('selected');
+      });
+    });
+  },
+
+  /**
+   * Evaluate all quiz questions within the nearest .quiz-section ancestor
+   * of the submit button and show feedback.
+   * @param {HTMLElement} btn - the submit button element
+   */
+  submitQuiz(btn) {
+    const section = btn.closest('.quiz-section') || document.getElementById('quiz');
+    if (!section) return;
+
+    let total = 0, correct = 0;
+
+    section.querySelectorAll('.quiz-question').forEach(question => {
+      if (question.dataset.answered) return;
+      const answer   = question.dataset.answer;
+      const selected = question.querySelector('.quiz-options li.selected');
+      const feedback = question.querySelector('.quiz-feedback');
+      total++;
+
+      question.querySelectorAll('.quiz-options li').forEach(li => {
+        if (li.dataset.choice === answer) li.classList.add('correct');
+      });
+
+      if (selected) {
+        if (selected.dataset.choice === answer) {
+          selected.classList.add('correct');
+          correct++;
+          if (feedback) { feedback.textContent = '✓ Correct!'; feedback.style.cssText = 'display:block;padding:0.4rem 0.8rem;margin-top:0.4rem;border-radius:6px;background:#d1fae5;color:#065f46;font-weight:600;'; }
+        } else {
+          selected.classList.add('wrong');
+          if (feedback) { feedback.textContent = '✗ Incorrect — see highlighted correct answer.'; feedback.style.cssText = 'display:block;padding:0.4rem 0.8rem;margin-top:0.4rem;border-radius:6px;background:#fee2e2;color:#991b1b;font-weight:600;'; }
+        }
+      } else {
+        if (feedback) { feedback.textContent = '⚠ No answer selected.'; feedback.style.cssText = 'display:block;padding:0.4rem 0.8rem;margin-top:0.4rem;border-radius:6px;background:#fef3c7;color:#92400e;font-weight:600;'; }
+      }
+
+      question.dataset.answered = '1';
+      question.querySelectorAll('.quiz-options li').forEach(li => { li.style.pointerEvents = 'none'; li.style.cursor = 'default'; });
+    });
+
+    btn.disabled = true;
+    btn.textContent = `Score: ${correct}/${total}`;
+    btn.style.background = correct === total ? '#10b981' : '#f59e0b';
+  },
+
+  markComplete(lessonId) {
+    const progress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+    progress[lessonId] = 'done';
+    localStorage.setItem('courseProgress', JSON.stringify(progress));
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => CourseApp.initProgress());

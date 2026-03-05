@@ -3,354 +3,645 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lesson 05 — Data Flow & Field Mapping | Zoho+Moodle Course</title>
+  <title>Lesson 05 — Moodle Plugin &amp; Web Services | Moodle-Zoho v3</title>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <style>
+    p.ar,li.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;background:#fefce8;border-right:4px solid #f59e0b;padding:.6rem 1rem;margin:.5rem 0 1rem;border-radius:0 6px 6px 0;color:#1c1917;font-size:.97rem;line-height:1.8}
+    h2.ar,h3.ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;color:#92400e;font-size:1rem;font-weight:600;margin:-.4rem 0 .75rem}
+    .step-box{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #6366f1;border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:.75rem 0}
+    .step-box .step-num{font-size:.72rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+    .step-box p{margin:.3rem 0;font-size:.88rem}
+    .step-box p.ar{font-size:.87rem}
+    .ui-test-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem 1.25rem;margin:.75rem 0}
+    .ui-test-box .ui-test-label{font-size:.72rem;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+    .ui-test-box ol{margin:.3rem 0 0;padding-left:1.4rem;font-size:.87rem;color:#1e3a2f}
+    .ui-test-box ol li{margin:.3rem 0;line-height:1.5}
+    .page-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:1.1rem 1.3rem;margin:.75rem 0}
+    .page-card .page-tag{font-size:.72rem;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem}
+    .page-card h4{font-size:.95rem;font-weight:700;margin:0 0 .25rem;color:#0f172a}
+    .page-card .page-ar{direction:rtl;text-align:right;font-family:"Tajawal",sans-serif;font-size:.88rem;color:#92400e;margin:.2rem 0 .5rem;line-height:1.7}
+    .page-card p{font-size:.85rem;color:#475569;margin:.25rem 0;line-height:1.5}
+    .page-card p.ar{font-size:.85rem}
+    .page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin:1rem 0}
+  </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo"><span>Z+M</span> Integration Course</div>
-      <div class="sidebar-subtitle">دورة تكامل Zoho + Moodle</div>
+<header>
+  <nav class="nav-bar">
+    <a href="index.html" class="nav-brand">Moodle-Zoho v3</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="lesson-00.html">L0</a><a href="lesson-01.html">L1</a>
+      <a href="lesson-02.html">L2</a><a href="lesson-03.html">L3</a>
+      <a href="lesson-04.html">L4</a><a href="lesson-05.html" class="active">L5</a>
+      <a href="lesson-06.html">L6</a><a href="lesson-07.html">L7</a>
+      <a href="lesson-08.html">L8</a><a href="lesson-09.html">L9</a>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav"></nav>
-  </aside>
+  </nav>
+</header>
+<main class="lesson-container">
+  <div class="lesson-header">
+    <span class="lesson-tag">Lesson 05 &mdash; Week 6</span>
+    <h1>Moodle Plugin &amp; Web Services</h1>
+    <h2 class="ar">إضافة Moodle وخدمات الويب</h2>
+    <p>This lesson covers the complete Moodle side of the integration: the plugin files, how to install it, how to create an API token, how the backend calls Moodle, all 12 admin UI pages, all 7 student dashboard pages, and how to test everything from the browser without writing a single line of code.</p>
+    <p class="ar">هذا الدرس يغطي كل جانب Moodle في التكامل: ملفات الإضافة، كيفية تثبيتها، كيفية إنشاء رمز API، كيف يستدعي الباك-إند Moodle، شرح تفصيلي لكل الـ 12 صفحة إدارية والـ 7 صفحات في لوحة الطالب، وأخيراً كيف تختبر كل شيء من المتصفح دون كتابة سطر كود واحد.</p>
+  </div>
 
-  <main class="main-content">
-    <header class="lesson-header">
-      <div class="lesson-breadcrumb">Course Home → Lesson 05</div>
-      <div class="lesson-number">Lesson 05</div>
-      <div class="lesson-title-en">Data Flow & Field Mapping</div>
-      <div class="lesson-title-ar">تدفق البيانات وتعيين الحقول</div>
-      <div class="lesson-meta">
-        <span>🕐 ~45 minutes</span>
-        <span>🎯 Intermediate</span>
-        <span>🧩 3 Quiz Questions</span>
-      </div>
-    </header>
+  <!-- SECTION 1 -->
+  <div class="card">
+    <h2>1. What is Moodle?</h2>
+    <h2 class="ar">١. ما هو Moodle؟</h2>
+    <p>Moodle is an open-source Learning Management System (LMS) built with PHP. Colleges use it to deliver online courses: students enroll, watch materials, submit assignments, and receive grades — all inside one platform. Our integration keeps <strong>student account data in Moodle always in sync with Zoho CRM</strong>.</p>
+    <p class="ar">Moodle هو نظام إدارة التعلم (LMS) مفتوح المصدر مبني بالـ PHP. يستخدمه المعهد لتقديم الكورسات الإلكترونية: يسجّل الطلاب في الكورسات، يشاهدون المحتوى، يسلّمون الواجبات، ويستلمون الدرجات — كلها داخل منصة واحدة. تكاملنا يجعل <strong>بيانات حسابات الطلاب في Moodle دائماً متزامنة مع Zoho CRM</strong>. حين يُضاف طالب جديد في Zoho يُنشأ حسابه تلقائياً في Moodle، وحين تتغير درجاته في Moodle تُحدَّث في Zoho.</p>
+    <div class="diagram-box"><pre>
+Moodle at college.domain.com
 
-    <div class="lesson-body">
+Student view:
+  +----------------------------------------+
+  |  My Courses                            |
+  |  +-- BTEC L3 IT — Unit 01              |
+  |  +-- BTEC L3 IT — Unit 02              |
+  |  My Grades  |  Profile  |  Calendar    |
+  +----------------------------------------+
 
-      <div class="objectives">
-        <div class="objectives-title">🎯 Learning Objectives — أهداف الدرس</div>
-        <ul>
-          <li>Understand the complete data pipeline from Zoho → DB → Moodle</li>
-          <li>Read and modify the <code>FIELD_MAPPINGS</code> dictionary</li>
-          <li>Understand how <code>transform_zoho_to_moodle()</code> works</li>
-          <li>Implement idempotency with data hashing</li>
-          <li>Trace a real webhook event through the entire system</li>
-        </ul>
-      </div>
+Admin view:
+  Site Admin → Users / Courses / Grades / Reports
+  Site Admin → Local plugins → Moodle-Zoho Integration  ← our plugin
+    </pre></div>
+    <p class="ar">من منظور الطالب: يرى كورساته ودرجاته وملفه الشخصي. من منظور المدير: يرى إدارة المستخدمين، الكورسات، التقارير، وإضافاتنا الخاصة في قائمة Local plugins.</p>
+  </div>
 
-      <!-- COMPLETE PIPELINE -->
-      <div class="section">
-        <div class="section-title">1. The Complete Integration Pipeline</div>
-        <div class="section-title-ar">خط الأنابيب الكامل للتكامل</div>
-        <div class="section-divider"></div>
+  <!-- SECTION 2 -->
+  <div class="card">
+    <h2>2. What Does Our Plugin Do?</h2>
+    <h2 class="ar">٢. ماذا تفعل إضافتنا؟</h2>
+    <p>The plugin (<code>local_moodle_zoho_sync</code>) has <strong>three jobs</strong>:</p>
+    <ol>
+      <li><strong>Event listener</strong>: Catches Moodle events (enrollment, grade update, user creation) and sends a webhook POST to the FastAPI backend so Zoho stays in sync.</li>
+      <li><strong>Custom Web Service functions</strong>: API endpoints the backend calls to create Moodle users, enroll them, and fetch grades.</li>
+      <li><strong>Student Dashboard UI</strong>: A 4-tab page embedded in Moodle showing each student their programme, classes, grades, and student ID card — sourced from local SQLite.</li>
+    </ol>
+    <p class="ar">الإضافة (<code>local_moodle_zoho_sync</code>) لها <strong>ثلاث مهام رئيسية</strong>: (١) <strong>مستمع الأحداث</strong>: تلتقط أحداث Moodle (تسجيل، تحديث درجة، إنشاء مستخدم) وترسل webhook إلى الباك-إند FastAPI. (٢) <strong>دوال Web Service مخصصة</strong>: يستخدمها الباك-إند لإنشاء مستخدمي Moodle وتسجيلهم وجلب درجاتهم. (٣) <strong>واجهة لوحة الطالب</strong>: صفحة بـ 4 تبويبات مدمجة في Moodle تعرض لكل طالب برنامجه وفصوله ودرجاته وبطاقته الجامعية — مصدرها SQLite المحلية لضمان السرعة.</p>
+    <div class="diagram-box"><pre>
+Plugin folder: moodle_plugin/
+  version.php          ← plugin identity (component = local_moodle_zoho_sync)
+  lib.php              ← hook registration
+  settings.php         ← admin settings (webhook URL + secret)
+  manual_retry.php     ← retry failed event deliveries
+  db/
+  |  events.php        ← declares which Moodle events to listen for
+  |  access.php        ← capability definitions
+  classes/
+  |  config_manager.php                ← reads plugin settings
+  |  admin_setting_encrypted_token.php ← encrypted token storage
+  lang/en/
+  |  local_moodle_zoho_sync.php        ← all UI text strings
+  ui/
+  |  admin/   (12 pages)               ← admin monitoring pages
+  |  student/ (7 pages)                ← student dashboard tabs
+  |  ajax/    (2 files)                ← get_student_data.php, ack_grade.php
+    </pre></div>
+    <p class="ar">بنية المجلد: <code>version.php</code> يحدد الهوية، <code>db/events.php</code> يخبر Moodle بالأحداث التي يجب الاستماع إليها، و<code>ui/</code> يحتوي على 19 صفحة PHP موزعة بين واجهة المدير وواجهة الطالب.</p>
+  </div>
 
-        <div class="arch-diagram">
-          <div class="arch-title">End-to-End Data Flow</div>
-          <div class="arch-item level-0">① Zoho CRM — Record changes (Student, Registration, Grade, ...)</div>
-          <div class="arch-item level-1">↓ HTTP POST webhook to our FastAPI server</div>
-          <div class="arch-item level-1">② FastAPI — <code>POST /api/v1/webhooks/students</code></div>
-          <div class="arch-item level-2">→ <code>read_zoho_body(request)</code> — parse raw body</div>
-          <div class="arch-item level-2">→ <code>resolve_zoho_payload(raw, module)</code> — normalize format</div>
-          <div class="arch-item level-2">→ <code>fetch_zoho_full_record(module, zoho_id)</code> — get complete record</div>
-          <div class="arch-item level-2">→ <code>transform_zoho_to_moodle(record, mappings)</code> — map fields</div>
-          <div class="arch-item level-1">③ SQLite / PostgreSQL — <code>db.merge()</code> upsert</div>
-          <div class="arch-item level-1">↓ sync_status = "pending_moodle"</div>
-          <div class="arch-item level-1">④ <code>call_moodle_ws("local_zoho_sync_update_user", ...)</code></div>
-          <div class="arch-item level-1">⑤ Moodle PHP — <code>update_user::execute()</code></div>
-          <div class="arch-item level-2">→ <code>user_update_user($update)</code> in Moodle DB</div>
-          <div class="arch-item level-1">↓ HTTP 200 JSON response back to FastAPI</div>
-          <div class="arch-item level-1">⑥ FastAPI — <code>sync_status = "synced"</code>, commit DB</div>
-        </div>
-      </div>
+  <!-- SECTION 3 -->
+  <div class="card">
+    <h2>3. File-by-File Walkthrough</h2>
+    <h2 class="ar">٣. شرح كل ملف</h2>
 
-      <!-- FIELD MAPPINGS -->
-      <div class="section">
-        <div class="section-title">2. The FIELD_MAPPINGS Dictionary</div>
-        <div class="section-title-ar">قاموس <code class="inline">FIELD_MAPPINGS</code></div>
-        <div class="section-divider"></div>
+    <h3>version.php — Plugin Identity</h3>
+    <p>The first file Moodle reads. Declares the component name (must match folder name exactly), version number, and minimum Moodle version required.</p>
+    <p class="ar">أول ملف يقرأه Moodle عند فحص الإضافات. يُعرِّف اسم المكوّن — يجب أن يطابق اسم المجلد تماماً وإلا يرفض Moodle الإضافة. رقم الإصدار بصيغة YYYYMMDDNN.</p>
+    <pre><code class="language-php">&lt;?php
+defined('MOODLE_INTERNAL') || die();
+$plugin->component = 'local_moodle_zoho_sync';  // MUST match folder name
+$plugin->version   = 2024010100;  // YYYYMMDDNN
+$plugin->requires  = 2022112800;  // Moodle 4.1 minimum
+$plugin->maturity  = MATURITY_STABLE;</code></pre>
 
-        <div class="bilingual">
-          <div class="lang-en">
-            <span class="lang-badge en">English</span>
-            <p>The <code>FIELD_MAPPINGS</code> dictionary tells the system how to rename Zoho field names to our database column names. Keys are Zoho API field names. Values are our database/Moodle column names.</p>
-          </div>
-          <div class="lang-ar">
-            <span class="lang-badge ar">عربي</span>
-            <p>قاموس <code>FIELD_MAPPINGS</code> يُخبر النظام كيفية تسمية الحقول من Zoho إلى أسماء الأعمدة في قاعدة بياناتنا. المفاتيح = أسماء حقول Zoho. القيم = أسماء أعمدتنا.</p>
-          </div>
-        </div>
+    <h3>db/events.php — Declare Events to Observe</h3>
+    <p>Tells Moodle which events to listen for and which class method to call when each fires. Without this file, no events are captured.</p>
+    <p class="ar">يخبر Moodle بالأحداث التي يجب الاستماع إليها وأي دالة تُستدعى عند كل حدث. بدونه لن يلتقط النظام أي حدث إطلاقاً. الاسم الكامل للحدث مع نطاق PHP ضروري (مثلاً <code>\core\event\user_enrolment_created</code>).</p>
+    <pre><code class="language-php">&lt;?php
+defined('MOODLE_INTERNAL') || die();
+$observers = [
+    [
+        'eventname'  => '\core\event\user_enrolment_created',
+        'callback'   => 'local_moodle_zoho_sync\observer::enrolment_created',
+    ],
+    [
+        'eventname'  => '\core\event\user_graded',
+        'callback'   => 'local_moodle_zoho_sync\observer::user_graded',
+    ],
+    [
+        'eventname'  => '\core\event\user_created',
+        'callback'   => 'local_moodle_zoho_sync\observer::user_created',
+    ],
+    [
+        'eventname'  => '\core\event\user_updated',
+        'callback'   => 'local_moodle_zoho_sync\observer::user_updated',
+    ],
+    [
+        'eventname'  => '\core\event\user_enrolment_deleted',
+        'callback'   => 'local_moodle_zoho_sync\observer::enrolment_deleted',
+    ],
+];</code></pre>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_shared.py — FIELD_MAPPINGS</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python"># ── FIELD_MAPPINGS: Zoho field name → Our DB column name ──────────────────────
-# Structure:
-#   FIELD_MAPPINGS[entity][zoho_api_field_name] = our_db_column_name
-#
-# هيكل القاموس:
-#   الكيان → {اسم حقل Zoho → اسم عمود قاعدة بياناتنا}
-
-FIELD_MAPPINGS = {
-
-    "students": {
-        # Zoho field name       : Our DB column name
-        "id"                    : "zoho_id",
-        "Name"                  : "display_name",
-        "Email"                 : "academic_email",
-        "Mobile"                : "phone",
-        "Date_of_Birth"         : "birth_date",
-        "Mailing_City"          : "city",
-        "Mailing_Country"       : "country",
-        "Record_Image"          : "record_image",
-        "Student_Status"        : "status",
-        "Moodle_User_ID"        : "moodle_user_id",
-    },
-
-    "registrations": {
-        "id"                    : "zoho_id",
-        "Name"                  : "registration_name",
-        "Student_Name"          : "student_zoho_id",    # Lookup → ID
-        "Program_Name"          : "program_zoho_id",    # Lookup → ID
-        "Enrollment_Status"     : "enrollment_status",
-        "Registration_Date"     : "registration_date",
-        "Completion_Date"       : "completion_date",
-        "Total_Fees"            : "total_fees",
-    },
-
-    "grades": {
-        "id"                    : "zoho_id",
-        "Student_Name"          : "student_zoho_id",
-        "Unit_Name"             : "unit_zoho_id",
-        "Grade"                 : "grade_value",
-        "Grade_Date"            : "grade_date",
-        "Pass_Fail"             : "pass_fail",
-        "Attempt_Number"        : "attempt_number",
-    },
-
-    "payments": {
-        "id"                    : "zoho_id",
-        "Student_Name"          : "student_zoho_id",
-        "Registration_Name"     : "registration_zoho_id",
-        "Payment_Amount"        : "amount",
-        "Payment_Date"          : "payment_date",
-        "Payment_Status"        : "payment_status",
-        "Payment_Method"        : "payment_method",
-    },
-
-    # ... enrollments, classes, programs, units
+    <h3>classes/observer.php — The Event Handler</h3>
+    <p>Each method runs when its event fires. Builds a JSON payload and sends it as an HMAC-signed POST to the FastAPI backend. The signature verifies the request really came from Moodle.</p>
+    <p class="ar">كل دالة تُشغَّل حين يحدث حدثها المسجَّل. تبني حمولة JSON وترسلها كطلب HTTP POST موقَّع بـ HMAC إلى الباك-إند. التوقيع يضمن أن الباك-إند يقبل فقط الطلبات القادمة من Moodle الفعلي — أي طلب بتوقيع خاطئ يُرفض تلقائياً.</p>
+    <pre><code class="language-php">&lt;?php
+namespace local_moodle_zoho_sync;
+class observer {
+    public static function enrolment_created(\core\event\user_enrolment_created $event) {
+        $data    = $event->get_data();
+        $payload = json_encode([
+            'event'     => 'enrollment_created',
+            'user_id'   => $data['relateduserid'],
+            'course_id' => $data['courseid'],
+            'time'      => $data['timecreated'],
+        ]);
+        $webhook_url = get_config('local_moodle_zoho_sync', 'webhook_url');
+        $secret      = get_config('local_moodle_zoho_sync', 'webhook_secret');
+        $signature   = hash_hmac('sha256', $payload, $secret);
+        $curl = new \curl();
+        $curl->setHeader(['Content-Type: application/json',
+                          'X-Moodle-Signature: ' . $signature]);
+        $curl->post($webhook_url . '/api/v1/moodle/events', $payload);
+    }
 }</code></pre>
-        </div>
 
-        <div class="callout info">
-          <div class="callout-icon">💡</div>
-          <div class="callout-content">
-            <div class="callout-title">Finding Zoho Field API Names</div>
-            <p>In Zoho CRM → Settings → Modules → [Module] → Fields, each field shows its "API Name". This is what the webhook and REST API use. It's different from the display label. For example, a field labeled "Student Name" might have the API name <code>Student_Name</code> or <code>Name</code>.</p>
-            <div class="callout-ar">في Zoho CRM → الإعدادات → الوحدات → الحقول، كل حقل يُظهر "API Name". هذا هو ما تستخدمه الـ webhook وAPI. يختلف عن الاسم المعروض.</div>
-          </div>
-        </div>
+    <h3>settings.php — Admin Config Page</h3>
+    <p>Adds a settings page under Site Admin → Plugins → Local plugins → Moodle-Zoho Integration where you enter the backend URL and webhook secret.</p>
+    <p class="ar">يُضيف صفحة إعدادات تحت Site Admin → Plugins → Local plugins. هذه الصفحة تلصق فيها رابط الباك-إند وكلمة سر الـ webhook المشتركة. يجب أن تتطابق مع قيمة <code>WEBHOOK_SECRET</code> في <code>backend/.env</code> تماماً وإلا سيرفض الباك-إند كل الطلبات.</p>
+    <pre><code class="language-php">&lt;?php
+defined('MOODLE_INTERNAL') || die();
+if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_configtext(
+        'local_moodle_zoho_sync/webhook_url',
+        'Backend Webhook URL',
+        'Full URL of your FastAPI backend',
+        'http://localhost:8001', PARAM_URL
+    ));
+    $settings->add(new admin_setting_configtext(
+        'local_moodle_zoho_sync/webhook_secret',
+        'Webhook Secret',
+        'Must match WEBHOOK_SECRET in backend .env exactly',
+        '', PARAM_TEXT
+    ));
+}</code></pre>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="card">
+    <h2>4. Installing the Plugin — Step by Step</h2>
+    <h2 class="ar">٤. تثبيت الإضافة خطوة بخطوة</h2>
+
+    <div class="step-box">
+      <div class="step-num">Step 1 — Copy the plugin folder</div>
+      <p>Copy <code>moodle_plugin/</code> to <code>/var/www/moodle/local/moodle_zoho_sync/</code> on the Moodle server. The folder name <strong>must</strong> be exactly <code>moodle_zoho_sync</code>.</p>
+      <p class="ar">انسخ مجلد <code>moodle_plugin/</code> من المشروع إلى <code>/var/www/moodle/local/moodle_zoho_sync/</code> على سيرفر Moodle. اسم المجلد <strong>يجب أن يكون</strong> <code>moodle_zoho_sync</code> تماماً — يجب أن يطابق <code>$plugin->component</code> في version.php أو سيرفض Moodle الإضافة ولن تظهر في القائمة.</p>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">Step 2 — Run the Moodle upgrade</div>
+      <p>Log in as Moodle admin → <strong>Site Administration → Notifications</strong>. Moodle scans for new plugins automatically. Click <strong>Upgrade Moodle database now</strong>.</p>
+      <p class="ar">سجّل دخولك كمدير → <strong>Site Administration → Notifications</strong>. يفحص Moodle الإضافات الجديدة تلقائياً ويعرض شاشة ترقية. اضغط <strong>Upgrade Moodle database now</strong>. إذا ظهر مربع لقبول الشروط، وافق عليه وأكمل العملية.</p>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">Step 3 — Configure plugin settings</div>
+      <p><strong>Site Admin → Plugins → Local plugins → Moodle-Zoho Integration</strong>. Enter the Backend Webhook URL (<code>http://localhost:8001</code> for local dev) and Webhook Secret (must match <code>WEBHOOK_SECRET</code> in <code>backend/.env</code>).</p>
+      <p class="ar">اذهب إلى <strong>Site Admin → Plugins → Local plugins → Moodle-Zoho Integration</strong>. أدخل رابط الباك-إند وكلمة سر الـ webhook. يجب أن تطابق <code>WEBHOOK_SECRET</code> في <code>backend/.env</code> تماماً. إذا اختلفا سيرفض الباك-إند كل الطلبات الواردة من Moodle بخطأ 401 Unauthorized.</p>
+    </div>
+
+    <div class="tip-box">
+      <strong>Local dev note:</strong> If Moodle is on a different machine it cannot reach localhost:8001. Use <a href="https://ngrok.com" target="_blank">ngrok</a>: run <code>ngrok http 8001</code>, copy the https URL and use it as the Backend URL.
+      <br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif;line-height:1.8"><strong>ملاحظة التطوير المحلي:</strong> إذا كان Moodle على جهاز مختلف لن يستطيع الوصول إلى localhost:8001. استخدم ngrok: شغّل <code>ngrok http 8001</code>، انسخ الرابط https الذي يعطيك، والصقه كـ Backend URL.</span>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="card">
+    <h2>5. Moodle Web Services API Token Setup</h2>
+    <h2 class="ar">٥. إعداد رمز API لخدمات الويب في Moodle</h2>
+    <p>Moodle exposes a REST API for external systems to call. Steps: enable web services, enable REST protocol, create External Service, add functions, generate a token.</p>
+    <p class="ar">Moodle يكشف REST API للأنظمة الخارجية. للاستخدام يجب: تفعيل خدمات الويب، تفعيل بروتوكول REST، إنشاء External Service، إضافة دوال إليه، ثم توليد token لمستخدم مدير. كل خطوة ضرورية — تخطّي أي منها يمنع الاتصال تماماً.</p>
+
+    <div class="step-box">
+      <div class="step-num">Step 1 — Enable Web Services</div>
+      <p>Site Administration → <strong>Advanced features</strong> → tick <strong>Enable web services</strong> → Save changes</p>
+      <p class="ar">Site Administration → <strong>Advanced features</strong> → فعّل <strong>Enable web services</strong> → Save changes. هذا المفتاح الرئيسي — بدونه لن يعمل أي token.</p>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">Step 2 — Enable REST Protocol</div>
+      <p>Site Admin → Plugins → Web services → <strong>Manage protocols</strong> → Enable <strong>REST</strong></p>
+      <p class="ar">Site Admin → Plugins → Web services → <strong>Manage protocols</strong> → فعّل بروتوكول <strong>REST</strong>. يجب تفعيله صراحةً حتى يُقبَل <code>moodlewsrestformat=json</code> في الطلبات.</p>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">Step 3 — Create External Service</div>
+      <p>Site Admin → Web services → <strong>External services</strong> → Add → name it "Zoho Sync Backend", tick <strong>Enabled</strong> and <strong>Authorised users only</strong> → Save</p>
+      <p class="ar">Site Admin → Web services → <strong>External services</strong> → Add → سمّيه "Zoho Sync Backend"، فعّل <strong>Enabled</strong> و<strong>Authorised users only</strong> → Save. خيار Authorised users only يعني يعمل الرمز فقط مع المستخدمين المرتبطين صراحةً بالخدمة.</p>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">Step 4 — Add Functions to the Service</div>
+      <p>Click <strong>Add functions</strong> and add: <code>core_user_create_users</code>, <code>core_user_get_users</code>, <code>core_user_update_users</code>, <code>enrol_manual_enrol_users</code>, <code>enrol_manual_unenrol_users</code>, <code>core_grades_get_grades</code>, <code>gradereport_user_get_grade_items</code></p>
+      <p class="ar">اضغط <strong>Add functions</strong> وأضف هذه الدوال. كل دالة تمثّل عملية: إنشاء مستخدم، جلب مستخدم، تحديث مستخدم، تسجيل طالب، إلغاء تسجيل، جلب الدرجات. بدون إضافة الدالة هنا سيرفض Moodle استدعاءها حتى لو كان الـ token صحيحاً.</p>
+    </div>
+
+    <div class="step-box">
+      <div class="step-num">Step 5 — Generate API Token</div>
+      <p>Site Admin → Web services → <strong>Manage tokens</strong> → Add → select a Moodle admin user → select "Zoho Sync Backend" → Save. Copy the token and paste it as <code>MOODLE_TOKEN</code> in <code>backend/.env</code>.</p>
+      <p class="ar">Site Admin → Web services → <strong>Manage tokens</strong> → Add → اختر مستخدم مدير → اختر "Zoho Sync Backend" → Save. انسخ الـ token والصقه كـ <code>MOODLE_TOKEN</code> في <code>backend/.env</code>. هذا الرمز هو ما يستخدمه باك-إندنا للتحقق من هويته في كل طلب API إلى Moodle.</p>
+    </div>
+
+    <div class="ui-test-box">
+      <div class="ui-test-label">🖥 UI Test: Verify Token Works</div>
+      <ol>
+        <li>Open <code>http://localhost:8001/docs</code></li>
+        <li>Find endpoint <code>GET /api/v1/moodle/test-connection</code></li>
+        <li>Click <strong>Try it out</strong> → <strong>Execute</strong></li>
+        <li>Expected: <code>{"status": "ok", "moodle_version": "..."}</code></li>
+        <li>If error: check <code>MOODLE_BASE_URL</code> and <code>MOODLE_TOKEN</code> in <code>.env</code></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="card">
+    <h2>6. How the Backend Calls the Moodle API</h2>
+    <h2 class="ar">٦. كيف يستدعي الباك-إند Moodle API</h2>
+    <p>All Moodle REST calls follow one pattern: POST to <code>/webservice/rest/server.php</code> with <code>wstoken</code>, <code>wsfunction</code>, and function parameters as form fields. Response is always JSON.</p>
+    <p class="ar">جميع استدعاءات Moodle REST تتبع نمطاً واحداً: POST إلى <code>/webservice/rest/server.php</code> مع الـ token واسم الدالة وبارامتراتها كحقول form. الاستجابة دائماً JSON. أهم تحذير: Moodle يعطي HTTP 200 حتى عند الخطأ — الأخطاء تأتي كحقل <code>exception</code> في JSON بدلاً من HTTP 400 أو 500.</p>
+    <pre><code class="language-python">import httpx
+from app.core.config import settings
+
+class MoodleClient:
+    def __init__(self):
+        self.base  = f"{settings.MOODLE_BASE_URL}/webservice/rest/server.php"
+        self.token = settings.MOODLE_TOKEN
+
+    def call(self, function: str, params: dict = {}) -> dict:
+        payload = {"wstoken": self.token,
+                   "wsfunction": function,
+                   "moodlewsrestformat": "json",
+                   **params}
+        resp = httpx.post(self.base, data=payload)
+        resp.raise_for_status()
+        result = resp.json()
+        # CRITICAL: Moodle returns HTTP 200 even on failure!
+        if isinstance(result, dict) and "exception" in result:
+            raise Exception(f"Moodle error: {result.get('message', result)}")
+        return result
+
+    def create_user(self, first_name, last_name, email, username):
+        return self.call("core_user_create_users", {
+            "users[0][firstname]": first_name,
+            "users[0][lastname]":  last_name,
+            "users[0][email]":     email,
+            "users[0][username]":  username,
+            "users[0][password]":  "TempPass1!",
+            "users[0][auth]":      "manual",
+        })
+
+    def enrol_student(self, user_id: int, course_id: int):
+        return self.call("enrol_manual_enrol_users", {
+            "enrolments[0][roleid]":   5,
+            "enrolments[0][userid]":   user_id,
+            "enrolments[0][courseid]": course_id,
+        })
+
+moodle_client = MoodleClient()</code></pre>
+    <div class="warning-box">
+      <strong>Critical:</strong> Moodle always returns HTTP 200 even on errors. Always check for the <code>"exception"</code> key. The <code>call()</code> method above handles this automatically.
+      <br/><br/>
+      <span style="direction:rtl;display:block;font-family:'Tajawal',sans-serif;line-height:1.8"><strong>تحذير حرج:</strong> Moodle يعطي HTTP 200 دائماً حتى عند الخطأ. يجب دائماً فحص حقل <code>"exception"</code> في كل استجابة. دالة <code>call()</code> تفعل هذا تلقائياً — لكن إن أرسلت طلباً خاماً يجب إضافة هذا الفحص يدوياً.</span>
+    </div>
+  </div>
+
+  <!-- SECTION 7: ADMIN PAGES -->
+  <div class="card">
+    <h2>7. Admin UI Pages — Complete Guide (12 Pages)</h2>
+    <h2 class="ar">٧. صفحات لوحة تحكم المدير — دليل كامل (١٢ صفحة)</h2>
+    <p>After installation: <strong>Site Administration → Local plugins → Moodle-Zoho Integration</strong>. All 12 pages are in <code>moodle_plugin/ui/admin/</code>.</p>
+    <p class="ar">بعد التثبيت اذهب إلى <strong>Site Administration → Local plugins → Moodle-Zoho Integration</strong>. ستجد قائمة فرعية بهذه الـ ١٢ صفحة. هي واجهة المدير الرئيسية لمعرفة حالة النظام بالكامل — حفظ مسار كل صفحة مهم للتصحيح السريع.</p>
+
+    <div class="page-grid">
+      <div class="page-card">
+        <div class="page-tag">Admin Page 1</div>
+        <h4>dashboard.php — Overview Dashboard</h4>
+        <div class="page-ar">لوحة المتابعة العامة</div>
+        <p>KPIs at a glance: total events today, success/failure/pending counts, overall success rate percentage, and a quick-action bar for manual syncs.</p>
+        <p class="ar">تعرض مؤشرات الأداء: إجمالي الأحداث اليوم، عدد الناجحة والفاشلة والمعلّقة، معدل النجاح كنسبة مئوية، وشريط إجراءات سريعة لتشغيل مزامنة يدوية. أهم صفحة للمدير — إذا انخفض معدل النجاح اذهب إلى event_logs فوراً.</p>
       </div>
 
-      <!-- TRANSFORM FUNCTION -->
-      <div class="section">
-        <div class="section-title">3. The transform_zoho_to_moodle() Function</div>
-        <div class="section-title-ar">دالة <code class="inline">transform_zoho_to_moodle()</code></div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">backend/app/api/v1/endpoints/webhooks_shared.py — transform function</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">def transform_zoho_to_moodle(zoho_record: dict, mappings: dict) -> dict:
-    """
-    Apply field name mappings to convert a Zoho record dict
-    into a dict of our DB column names.
-
-    تطبيق تعيينات الحقول لتحويل سجل Zoho إلى أسماء أعمدتنا.
-
-    Args:
-        zoho_record: Raw dict from Zoho API e.g. {"Name": "Ahmed", "Email": "a@x.com"}
-        mappings:    FIELD_MAPPINGS[entity] e.g. {"Name": "display_name", "Email": "academic_email"}
-
-    Returns:
-        Mapped dict e.g. {"display_name": "Ahmed", "academic_email": "a@x.com"}
-
-    Example:
-        zoho = {"Name": "Ahmed Ali", "Email": "ahmed@school.com", "Mobile": "0599123456"}
-        maps = {"Name": "display_name", "Email": "academic_email", "Mobile": "phone"}
-        result = transform_zoho_to_moodle(zoho, maps)
-        # → {"display_name": "Ahmed Ali", "academic_email": "ahmed@school.com", "phone": "0599123456"}
-    """
-    result = {}
-    for zoho_field, db_column in mappings.items():
-        value = zoho_record.get(zoho_field)
-
-        # Handle Zoho "lookup" fields — they return a dict with id + name
-        # مثال: {"Student_Name": {"id": "123", "name": "Ahmed"}}
-        # نحتاج فقط الـ id للربط
-        if isinstance(value, dict) and "id" in value:
-            value = value["id"]   # Store the foreign key ID, not the display name
-
-        # Skip None values to avoid overwriting existing data with nulls
-        # تجاهل القيم الفارغة لتجنب الكتابة فوق البيانات بـ null
-        if value is not None:
-            result[db_column] = value
-
-    return result</code></pre>
-        </div>
-
-        <div class="callout success">
-          <div class="callout-icon">✨</div>
-          <div class="callout-content">
-            <div class="callout-title">Handling Zoho Lookup Fields</div>
-            <p>When a Zoho field references another module (like "Student Name" on a Registration record referencing a Student), the webhook sends it as a dict: <code>{"id": "student-zoho-id-123", "name": "Ahmed Ali"}</code>. We extract just the <code>"id"</code> because we use it as a foreign key in our DB.</p>
-            <div class="callout-ar">عندما يُشير حقل Zoho إلى وحدة أخرى (كاسم الطالب على سجل تسجيل)، يُرسله الـ webhook كـ dict. نستخرج فقط الـ <code>"id"</code> لاستخدامه كمفتاح خارجي.</div>
-          </div>
-        </div>
+      <div class="page-card">
+        <div class="page-tag">Admin Page 2</div>
+        <h4>event_logs.php — Event Log Table</h4>
+        <div class="page-ar">جدول سجل الأحداث</div>
+        <p>Sortable, filterable table of all integration events. Filter by status (SENT, FAILED, PENDING, SKIPPED), event type, and date. Each row: event type, user ID, timestamp, HTTP code, response excerpt.</p>
+        <p class="ar">جدول قابل للترتيب والتصفية يعرض كل أحداث التكامل. فلاتر: SENT/FAILED/PENDING/SKIPPED ونوع الحدث ونطاق التاريخ. كل صف: نوع الحدث، ID المستخدم، الوقت، كود HTTP، مقطع الاستجابة. عند أي خطأ غامض هذه أول مكان تنظر فيه — اضغط على صف FAILED لرؤية كل التفاصيل.</p>
       </div>
 
-      <!-- IDEMPOTENCY -->
-      <div class="section">
-        <div class="section-title">4. Idempotency — Avoiding Duplicate Work</div>
-        <div class="section-title-ar">الأمان من التكرار — تجنب العمل المكرر</div>
-        <div class="section-divider"></div>
-
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">python</span>
-            <span class="code-filename">Idempotency with data hashing</span>
-            <button class="copy-btn">Copy</button>
-          </div>
-          <pre><code class="language-python">import hashlib
-import json
-
-
-def compute_data_hash(data: dict) -> str:
-    """
-    Compute a stable MD5 hash of a dict for idempotency checks.
-    Used to skip re-syncing data that hasn't actually changed.
-
-    حساب hash مستقر لقاموس للتحقق من إمكانية تجاهل إعادة المزامنة.
-    """
-    # Sort keys to ensure same dict always produces same hash
-    serialised = json.dumps(data, sort_keys=True, ensure_ascii=False)
-    return hashlib.md5(serialised.encode()).hexdigest()
-
-
-def should_sync(existing_record, new_data: dict) -> bool:
-    """
-    Return True if the record needs to be synced (data has changed).
-    Return False if the incoming data is identical to what we already have.
-
-    يُعيد True إذا كانت البيانات قد تغيّرت ويجب مزامنتها.
-    يُعيد False إذا كانت البيانات مطابقة لما لدينا بالفعل.
-    """
-    if existing_record is None:
-        return True   # New record, always sync
-
-    new_hash = compute_data_hash(new_data)
-
-    if existing_record.data_hash == new_hash:
-        return False  # Data hasn't changed, skip sync
-        # البيانات لم تتغير، لا داعي للمزامنة
-
-    return True
-
-
-# ── Usage in webhook handler ──────────────────────────────────────────────────
-# الاستخدام في معالج الـ webhook
-
-def process_student_webhook(db, zoho_id: str, mapped_data: dict):
-    existing = db.query(Student).filter(Student.zoho_id == zoho_id).first()
-
-    if not should_sync(existing, mapped_data):
-        # Identical data — no update needed. This is common when Zoho
-        # re-sends webhooks on any field change, even unrelated ones.
-        # بيانات مطابقة — ألغِ العملية. شائع عندما يُعيد Zoho إرسال
-        # الـ webhook عند تغيير أي حقل، حتى الحقول غير المعنية.
-        return {"status": "skipped", "reason": "no_change"}
-
-    new_hash = compute_data_hash(mapped_data)
-    mapped_data["data_hash"] = new_hash
-
-    if existing:
-        for k, v in mapped_data.items():
-            setattr(existing, k, v)
-    else:
-        student = Student(zoho_id=zoho_id, **mapped_data)
-        db.add(student)
-
-    db.commit()
-    return {"status": "updated"}</code></pre>
-        </div>
+      <div class="page-card">
+        <div class="page-tag">Admin Page 3</div>
+        <h4>event_logs_enhanced.php — Advanced Logs</h4>
+        <div class="page-ar">عارض السجلات المتقدم</div>
+        <p>Like event_logs.php but with date-range filtering, multi-select event types, full payload and response viewer, and CSV export.</p>
+        <p class="ar">مثل event_logs.php لكن مع تصفية بنطاق التاريخ، اختيار متعدد لأنواع الأحداث، عارض كامل للـ payload والاستجابة، وتصدير CSV. مناسبة للتحقيقات الشاملة أو توليد التقارير الدورية للإدارة.</p>
       </div>
 
-      <!-- QUIZ -->
-      <div class="section">
-        <div class="section-title">🧪 Lesson 05 Quiz</div>
-        <div class="section-divider"></div>
+      <div class="page-card">
+        <div class="page-tag">Admin Page 4</div>
+        <h4>event_detail.php — Single Event Inspector</h4>
+        <div class="page-ar">فاحص الحدث الفردي</div>
+        <p>Click any event row in event_logs to open this. Shows: full JSON payload sent, full JSON response received, exact HTTP code, headers, retry count, and error message if failed.</p>
+        <p class="ar">اضغط على أي صف في event_logs لفتحها. تعرض كامل JSON المُرسَلة، كامل الاستجابة المستلمة، كود HTTP الدقيق، الـ headers، عدد محاولات إعادة الإرسال، ورسالة الخطأ. هي أقوى أداة تصحيح في المنظومة بأكملها.</p>
+      </div>
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 1</div>
-          <div class="quiz-question">In <code>FIELD_MAPPINGS</code>, what is the key and what is the value?</div>
-          <div class="quiz-question-ar">في <code>FIELD_MAPPINGS</code>، ما هو المفتاح وما هي القيمة؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Key = our DB column name, Value = Zoho API field name</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="true"> Key = Zoho API field name, Value = our DB column name</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Key = Moodle WS parameter name, Value = Zoho API field name</li>
-            <li class="quiz-option"><input type="radio" name="q1" data-correct="false"> Key = display label, Value = API name</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! The mapping goes from Zoho → our DB. Key = Zoho's API field name (what arrives in the webhook). Value = our database column name (where we store it).</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+      <div class="page-card">
+        <div class="page-tag">Admin Page 5</div>
+        <h4>student_search.php — Student Lookup</h4>
+        <div class="page-ar">البحث عن الطلاب</div>
+        <p>Search by student name, email, Moodle user ID, or Zoho ID. Results show sync status, last sync time, and link to their event history.</p>
+        <p class="ar">بحث بالاسم، الإيميل، Moodle user ID، أو Zoho ID. النتائج: حالة المزامنة، وقت آخر مزامنة، رابط لسجل الأحداث. مفيدة حين يتصل طالب بمشكلة — تبحث عنه هنا وتتحقق فوراً دون فتح قاعدة البيانات.</p>
+      </div>
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 2</div>
-          <div class="quiz-question">When <code>transform_zoho_to_moodle()</code> encounters a value like <code>{"id": "abc123", "name": "Ahmed"}</code>, what does it store?</div>
-          <div class="quiz-question-ar">عندما تُصادف <code>transform_zoho_to_moodle()</code> قيمة مثل <code>{"id": "abc123", "name": "Ahmed"}</code>، ماذا تُخزّن؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> The entire dict: <code>{"id": "abc123", "name": "Ahmed"}</code></li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> The "name" string: <code>"Ahmed"</code></li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="true"> The "id" string: <code>"abc123"</code></li>
-            <li class="quiz-option"><input type="radio" name="q2" data-correct="false"> Nothing — lookup fields are ignored</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! Zoho sends lookup fields as dicts with both "id" and "name". We only store the "id" because that's the foreign key we use in our DB to link records.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+      <div class="page-card">
+        <div class="page-tag">Admin Page 6</div>
+        <h4>student_dashboard_management.php</h4>
+        <div class="page-ar">إدارة لوحة الطالب</div>
+        <p>Toggle which tabs are visible in the student dashboard. Also configure which profile fields students can edit via change requests.</p>
+        <p class="ar">تحكّم بأي تبويبات تظهر في لوحة الطالب. أيضاً تحدد أي حقول يُسمح بتعديلها عبر طلبات التغيير. مفيدة لإخفاء تبويب مؤقتاً إذا كانت بياناته غير جاهزة، أو لتقييد تعديلات الطلاب.</p>
+      </div>
 
-        <div class="quiz-card">
-          <div class="quiz-title">❓ Question 3</div>
-          <div class="quiz-question">What is the purpose of <code>data_hash</code> stored on each DB record?</div>
-          <div class="quiz-question-ar">ما الغرض من <code>data_hash</code> المخزّن على كل سجل في قاعدة البيانات؟</div>
-          <ul class="quiz-options">
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To encrypt sensitive data before storing it</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To verify the webhook signature is from Zoho</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="true"> To detect if incoming data is identical to what's already stored and skip redundant syncs</li>
-            <li class="quiz-option"><input type="radio" name="q3" data-correct="false"> To generate a unique ID for each record</li>
-          </ul>
-          <div class="quiz-feedback">✅ Correct! The hash is an MD5 fingerprint of the mapped data. If the incoming webhook produces the same hash as what's already stored, we skip the DB update and Moodle call entirely — no unnecessary work.</div>
-          <button class="quiz-submit">Submit Answer</button>
-        </div>
+      <div class="page-card">
+        <div class="page-tag">Admin Page 7</div>
+        <h4>sync_management.php — Manual Sync Trigger</h4>
+        <div class="page-ar">تشغيل المزامنة اليدوي</div>
+        <p>Buttons to trigger each sync type (students, enrollments, grades) without opening Swagger. Shows live progress and result inline.</p>
+        <p class="ar">أزرار لتشغيل كل نوع مزامنة دون فتح Swagger. يعرض التقدم والنتيجة مباشرةً في الصفحة. مثالية لإجبار مزامنة عاجلة — مثلاً إذا أُضيف دفعة طلاب جدد في Zoho ويحتاجون حسابات Moodle فوراً.</p>
+      </div>
 
+      <div class="page-card">
+        <div class="page-tag">Admin Page 8</div>
+        <h4>statistics.php — Analytics</h4>
+        <div class="page-ar">الإحصائيات والتحليلات</div>
+        <p>Charts: events per day (last 30 days), breakdown by event type, top error messages, and sync performance trends over time.</p>
+        <p class="ar">رسوم بيانية: الأحداث يومياً خلال آخر 30 يوماً، التوزيع حسب نوع الحدث، أكثر رسائل الخطأ تكراراً، واتجاهات أداء المزامنة. مفيدة لاكتشاف أنماط — مثلاً إذا كانت الأخطاء تتركّز في وقت معيّن.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Admin Page 9</div>
+        <h4>health_check.php — Connectivity Test</h4>
+        <div class="page-ar">فحص الاتصال السريع</div>
+        <p>Live test call to the backend: is it reachable? Is the token valid? Response time? Shows GREEN / YELLOW / RED. Run this first when troubleshooting.</p>
+        <p class="ar">يُجري اختباراً حياً للاتصال بالباك-إند ويعرض: هل هو ميسور؟ هل الـ token صالح؟ وقت الاستجابة؟ مؤشرات اخضر/أصفر/أحمر. هذه أول صفحة تفتحها عند أي مشكلة اتصال.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Admin Page 10</div>
+        <h4>health_monitor_detailed.php</h4>
+        <div class="page-ar">مراقبة الصحة التفصيلية</div>
+        <p>Tests each backend endpoint individually, shows average response times, checks database connectivity, shows scheduler job status (last run, next run).</p>
+        <p class="ar">نسخة موسّعة من فحص الصحة: كل endpoint بشكل منفرد، أوقات الاستجابة المتوسطة، الاتصال بقاعدة البيانات، وحالة مهام المجدول. مثالية للتشخيص العميق حين health_check.php يعطي أصفر أو أحمر.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Admin Page 11</div>
+        <h4>btec_templates.php — BTEC Mapping</h4>
+        <div class="page-ar">قوالب كورسات BTEC</div>
+        <p>Manage the mapping between BTEC programme/unit codes (from Zoho) and Moodle course IDs. The sync uses these templates to know which Moodle course maps to each BTEC unit.</p>
+        <p class="ar">إدارة الربط بين رموز البرامج/الوحدات BTEC (من Zoho) ومعرّفات الكورسات في Moodle. عند إنشاء تسجيل جديد يُراجع النظام هذه القوالب. إذا لم يجد تطابقاً لا يُسجَّل الطالب في أي كورس — لذا يجب الحرص على اكتمالها.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Admin Page 12</div>
+        <h4>grade_queue_monitor.php — Grade Queue</h4>
+        <div class="page-ar">مراقبة طابور الدرجات</div>
+        <p>Shows the grade sync queue. Each entry: student, course, grade value, queued time, status, attempts count. Has a "Retry All Failed" button.</p>
+        <p class="ar">يعرض طابور عمليات مزامنة الدرجات المنتظرة. كل سجل: الطالب، الكورس، قيمة الدرجة، وقت الإضافة، الحالة، عدد المحاولات. يحتوي زر "Retry All Failed" لإعادة تشغيل كل الفاشلة دفعةً واحدة.</p>
       </div>
     </div>
-    <nav class="lesson-nav" id="lesson-nav"></nav>
-  </main>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+    <div class="ui-test-box">
+      <div class="ui-test-label">🖥 UI Testing Checklist — Admin Pages</div>
+      <ol>
+        <li>Log in as Moodle admin → Site Admin → Local plugins → Moodle-Zoho Integration → <strong>Dashboard</strong>. Confirm KPI numbers appear.</li>
+        <li><strong>Sync Management</strong> → click "Sync Students Now" → wait for result message.</li>
+        <li><strong>Event Logs</strong> → filter status = SENT → confirm new rows with today's timestamp.</li>
+        <li>Click any event row → confirm full JSON payload and response are visible.</li>
+        <li><strong>Health Check</strong> → confirm backend status is GREEN.</li>
+        <li><strong>Student Search</strong> → search a student email → confirm sync status shows correctly.</li>
+        <li><strong>BTEC Templates</strong> → verify at least one mapping exists (programme code → Moodle course ID).</li>
+        <li><strong>Statistics</strong> → confirm charts render with data.</li>
+        <li><strong>Grade Queue Monitor</strong> → if FAILED entries exist click "Retry All Failed".</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SECTION 8: STUDENT PAGES -->
+  <div class="card">
+    <h2>8. Student Dashboard UI Pages — Complete Guide (7 Pages)</h2>
+    <h2 class="ar">٨. صفحات لوحة الطالب — دليل كامل (٧ صفحات)</h2>
+    <p>When a logged-in student opens their Moodle profile, the plugin injects a 4-tab dashboard below the standard profile info. Data is served from local SQLite (not live Zoho calls) — fast and always available. All files in <code>moodle_plugin/ui/student/</code>.</p>
+    <p class="ar">عندما يفتح الطالب ملفه الشخصي في Moodle، تحقن إضافتنا لوحة بـ 4 تبويبات أسفل معلومات Moodle القياسية. البيانات من SQLite المحلية وليس من Zoho مباشرةً — مما يجعل اللوحة سريعة ومتاحة حتى لو كانت Zoho بطيئة. جميع الصفحات في <code>moodle_plugin/ui/student/</code>.</p>
+
+    <div class="page-grid">
+      <div class="page-card">
+        <div class="page-tag">Student Tab 1</div>
+        <h4>profile.php — My Profile</h4>
+        <div class="page-ar">ملفي الشخصي</div>
+        <p>Displays student's current data: name, email, student ID, department, branch, and profile photo. Edit button opens a form to submit a <strong>change request</strong> to <code>BTEC_Student_Requests</code> — must be admin-approved before applied.</p>
+        <p class="ar">يعرض بيانات الطالب: الاسم، الإيميل، رقم الطالب، القسم، الفرع، والصورة. زر تعديل يفتح نموذج <strong>طلب تغيير</strong> يُرسَل إلى <code>BTEC_Student_Requests</code> في Zoho ويحتاج موافقة المدير. يضمن ألا يغيّر طالب بياناته الرسمية دون مراجعة.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Student Tab 2</div>
+        <h4>programs.php — My Programmes</h4>
+        <div class="page-ar">برامجي الأكاديمية</div>
+        <p>Programme registration details from <code>BTEC_Registrations</code>: programme name, level, start date, expected end date, registration status (Active / Completed / Suspended), and payment status.</p>
+        <p class="ar">تفاصيل تسجيل الطالب من <code>BTEC_Registrations</code>: اسم البرنامج، المستوى، تاريخ البدء، تاريخ الانتهاء المتوقع، حالة التسجيل (نشط/مكتمل/معلّق)، وحالة الدفع. يُمكّن الطالب من رؤية وضعه الأكاديمي دون التواصل مع الإدارة.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Student Tab 3</div>
+        <h4>classes.php — My Classes</h4>
+        <div class="page-ar">فصولي الدراسية</div>
+        <p>Class schedule from <code>BTEC_Classes</code> and <code>BTEC_Enrollments</code>: class name, dates, instructor, room/online link, enrollment status. Links to the corresponding Moodle course.</p>
+        <p class="ar">جدول الفصول من <code>BTEC_Classes</code> و<code>BTEC_Enrollments</code>: اسم الفصل، التواريخ، المحاضر، القاعة/الرابط الإلكتروني، وحالة التسجيل. روابط مباشرة للكورس المقابل في Moodle. كل ما هو مسجَّل فيه في مكان واحد.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Student Tab 4</div>
+        <h4>student_card.php — My Student Card</h4>
+        <div class="page-ar">بطاقتي الجامعية</div>
+        <p>Digital student ID card: profile photo (via serve_photo.php), full name, student ID, programme, department, academic year, and auto-generated QR code. Print button opens card_print.php.</p>
+        <p class="ar">بطاقة هوية رقمية: الصورة (عبر serve_photo.php)، الاسم الكامل، رقم الطالب، البرنامج، القسم، السنة الأكاديمية، ورمز QR يُولَّد تلقائياً. زر طباعة يفتح card_print.php. يستطيع الطالب طباعتها كبطاقة مؤقتة.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Student Page 5</div>
+        <h4>requests.php — My Change Requests</h4>
+        <div class="page-ar">طلبات التغيير</div>
+        <p>History of all change requests submitted via profile.php: what was requested, status (Pending / Approved / Rejected), date submitted, admin notes if rejected. Students can cancel pending requests.</p>
+        <p class="ar">سجل كل طلبات التغيير: ما طُلب تغييره، الحالة (قيد الانتظار / مقبول / مرفوض)، تاريخ الإرسال، وملاحظات المدير عند الرفض. يستطيع الطالب إلغاء الطلبات المعلّقة إذا غيّر رأيه.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Helper</div>
+        <h4>serve_photo.php — Photo Server</h4>
+        <div class="page-ar">خادم الصور</div>
+        <p>Secure endpoint serving the student's profile photo. Students can only see their own photo; admins see all. Called internally by profile.php and student_card.php via <code>&lt;img&gt;</code> tag.</p>
+        <p class="ar">نقطة نهاية آمنة تُقدّم صورة الطالب. الطالب يرى صورته الخاصة فقط؛ المدير يرى الكل. يُستدعى داخلياً من profile.php و student_card.php. لا تفتحه مباشرةً إلا لأغراض التصحيح.</p>
+      </div>
+
+      <div class="page-card">
+        <div class="page-tag">Helper</div>
+        <h4>card_print.php — Print Card</h4>
+        <div class="page-ar">طباعة البطاقة</div>
+        <p>Print-optimised version of student_card.php: no Moodle header/footer, white background, A4 sizing. Opened automatically when the student clicks Print.</p>
+        <p class="ar">نسخة محسَّنة للطباعة: بلا header/footer لـ Moodle، خلفية بيضاء، مقاسات A4 صحيحة. تُفتح تلقائياً عند الضغط على زر الطباعة في student_card.php.</p>
+      </div>
+    </div>
+
+    <div class="ui-test-box">
+      <div class="ui-test-label">🖥 UI Testing Checklist — Student Dashboard</div>
+      <ol>
+        <li>Log in as a test student (one that exists in local SQLite after a sync).</li>
+        <li>Go to <strong>My Profile</strong> (avatar top-right → Profile). Confirm the 4 Moodle-Zoho tabs appear below the standard profile.</li>
+        <li><strong>Tab 1 (Profile)</strong>: Confirm name, student ID, and photo display. Click Edit → change one field → Submit Request. Confirm success message.</li>
+        <li>As admin → <strong>Event Logs</strong> → confirm a new <code>BTEC_Student_Requests</code> event appeared.</li>
+        <li>Back as student: <strong>Tab 2 (Programmes)</strong> → confirm programme name and start date show.</li>
+        <li><strong>Tab 3 (Classes)</strong> → confirm at least one class row with dates and instructor.</li>
+        <li><strong>Tab 4 (Student Card)</strong> → confirm card renders with photo and QR → click Print → confirm print dialog opens.</li>
+        <li><strong>My Change Requests</strong> → confirm the request from step 3 shows status "Pending".</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SECTION 9: BACKEND ADMIN PANEL -->
+  <div class="card">
+    <h2>9. Backend Admin Panel — Jinja2 Templates (12 Pages)</h2>
+    <h2 class="ar">٩. لوحة تحكم الباك-إند — قوالب Jinja2 (١٢ صفحة)</h2>
+    <p>The FastAPI backend has its own admin panel at <code>localhost:8001/admin</code> built with Jinja2 templates. Separate from Moodle admin pages — this manages <strong>backend data and sync operations</strong> directly.</p>
+    <p class="ar">الباك-إند FastAPI له لوحة تحكم خاصة على <code>localhost:8001/admin</code>. منفصلة تماماً عن صفحات Moodle — تُدير <strong>بيانات الباك-إند وعمليات المزامنة مباشرةً</strong>. الفرق: لوحة Moodle تعرض ما حدث من ناحية PHP. لوحة الباك-إند تعرض البيانات والعمليات من ناحية Python/FastAPI. كلتيهما تكمّل الأخرى في التشخيص.</p>
+
+    <table class="info-table">
+      <thead>
+        <tr><th>URL</th><th>Template</th><th>Purpose</th><th>الهدف</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/admin</code></td><td>dashboard.html</td><td>KPI summary: total students, last sync time, pending queue count</td><td>ملخص: إجمالي الطلاب، آخر مزامنة، الطلبات المعلّقة</td></tr>
+        <tr><td><code>/admin/login</code></td><td>login.html</td><td>Login page. Credentials from ADMIN_USERNAME / ADMIN_PASSWORD in .env</td><td>تسجيل الدخول. البيانات من .env</td></tr>
+        <tr><td><code>/admin/data</code></td><td>data_browser.html</td><td>Browse all SQLite tables with pagination (students, enrollments, grades, payments, classes)</td><td>تصفّح كل جداول SQLite مع pagination</td></tr>
+        <tr><td><code>/admin/logs</code></td><td>logs.html</td><td>Event log: all sync and webhook operations with status and record counts</td><td>سجل الأحداث: كل عمليات المزامنة والـ webhooks</td></tr>
+        <tr><td><code>/admin/sync/history</code></td><td>sync_history.html</td><td>Timeline of all past sync runs with duration and record counts</td><td>جدول زمني لعمليات المزامنة السابقة مع المدة وعدد السجلات</td></tr>
+        <tr><td><code>/admin/sync</code></td><td>sync_control.html</td><td>Trigger manual syncs by entity type; view scheduler status</td><td>تشغيل مزامنة يدوية؛ حالة المجدول</td></tr>
+        <tr><td><code>/admin/settings</code></td><td>settings.html</td><td>View current .env config (read-only) — verify all keys are loaded</td><td>عرض إعدادات .env الحالية للقراءة فقط</td></tr>
+        <tr><td><code>/admin/services</code></td><td>services.html</td><td>Live status of ZohoClient, MoodleClient, and scheduler</td><td>حالة ZohoClient و MoodleClient والمجدول</td></tr>
+        <tr><td><code>/admin/mappings</code></td><td>mappings.html</td><td>View/edit field mappings (Zoho field name ↔ local DB column)</td><td>عرض/تعديل ربط الحقول (Zoho ↔ قاعدة البيانات)</td></tr>
+        <tr><td><code>/admin/users</code></td><td>users.html</td><td>Manage backend admin user accounts</td><td>إدارة حسابات لوحة التحكم</td></tr>
+        <tr><td><code>/admin/setup</code></td><td>setup.html</td><td>Initial setup wizard: test Zoho/Moodle connections, create DB tables</td><td>معالج الإعداد الأولي: اختبار الاتصالات وإنشاء الجداول</td></tr>
+      </tbody>
+    </table>
+
+    <div class="ui-test-box">
+      <div class="ui-test-label">🖥 UI Testing Checklist — Backend Admin Panel</div>
+      <ol>
+        <li>Open <code>http://localhost:8001/admin</code> → login with ADMIN_USERNAME / ADMIN_PASSWORD from .env.</li>
+        <li><strong>Dashboard</strong>: Confirm student count and last sync time appear.</li>
+        <li><strong>Data Browser</strong> (<code>/admin/data</code>) → Students table → confirm rows with zoho_id, name, email filled.</li>
+        <li><strong>Sync Control</strong> (<code>/admin/sync</code>) → "Sync Students Now" → confirm result → back to Data Browser, confirm rows updated.</li>
+        <li><strong>Logs</strong> (<code>/admin/logs</code>): Confirm the sync you triggered shows status COMPLETED with a record count.</li>
+        <li><strong>Services</strong> (<code>/admin/services</code>): Confirm ZohoClient and MoodleClient both show GREEN.</li>
+        <li><strong>Settings</strong> (<code>/admin/settings</code>): Confirm MOODLE_BASE_URL and ZOHO_REGION appear (not None / empty).</li>
+        <li><strong>Mappings</strong> (<code>/admin/mappings</code>): Confirm at least one row exists (e.g., BTEC_Students.Student_ID_Number ↔ students.student_id_number).</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SECTION 10: FULL UI TESTING GUIDE -->
+  <div class="card">
+    <h2>10. Complete UI Testing Guide — No Code Required</h2>
+    <h2 class="ar">١٠. دليل الاختبار الشامل عبر واجهة المستخدم — لا حاجة لكتابة كود</h2>
+    <p>A complete browser-based test procedure covering all integration scenarios. Run these tests after every major change. No code required — everything through the graphical interface.</p>
+    <p class="ar">إجراء اختبار شامل عبر المتصفح يغطي كل سيناريوهات التكامل. نفّذ هذه الاختبارات بعد كل تغيير رئيسي. لا يُستلزم كتابة أي كود — كل شيء عبر الواجهة الرسومية. كل مجموعة تغطي جانباً مختلفاً من النظام.</p>
+
+    <h3>Group A — Backend Health</h3>
+    <h3 class="ar">المجموعة A — صحة الباك-إند</h3>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Action</th><th>Expected</th><th>ما يُتوقَّع</th></tr></thead>
+      <tbody>
+        <tr><td>A1</td><td>Open <code>localhost:8001/docs</code></td><td>Swagger UI loads with all endpoints listed</td><td>Swagger تُحمَّل بكل الـ endpoints</td></tr>
+        <tr><td>A2</td><td>Open <code>localhost:8001/admin</code> and login</td><td>Admin dashboard shows KPI numbers</td><td>لوحة التحكم تعرض المؤشرات</td></tr>
+        <tr><td>A3</td><td>Open <code>localhost:8001/admin/services</code></td><td>ZohoClient and MoodleClient both GREEN</td><td>كلاهما أخضر</td></tr>
+        <tr><td>A4</td><td>Moodle: health_check.php</td><td>GREEN status for backend connection</td><td>حالة خضراء لاتصال الباك-إند</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Group B — Student Sync via Swagger</h3>
+    <h3 class="ar">المجموعة B — مزامنة الطلاب عبر Swagger</h3>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Action</th><th>Expected</th><th>ما يُتوقَّع</th></tr></thead>
+      <tbody>
+        <tr><td>B1</td><td>Swagger: POST <code>/api/v1/sync/students</code> → Execute</td><td>200 response with <code>synced_count</code> &gt; 0</td><td>استجابة 200 بعدد طلاب مزامَنين</td></tr>
+        <tr><td>B2</td><td>Backend Admin Data Browser → Students table</td><td>Rows with name, email, zoho_id visible</td><td>صفوف مرئية مع بيانات مكتملة</td></tr>
+        <tr><td>B3</td><td>Moodle: Site Admin → Users → Browse list</td><td>Student accounts created in Moodle</td><td>حسابات الطلاب في Moodle</td></tr>
+        <tr><td>B4</td><td>Backend Admin Logs: filter type = sync_students</td><td>Log entry with status COMPLETED</td><td>سجل بالحالة COMPLETED</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Group C — Webhook Round-Trip</h3>
+    <h3 class="ar">المجموعة C — اختبار دورة الـ Webhook</h3>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Action</th><th>Expected</th><th>ما يُتوقَّع</th></tr></thead>
+      <tbody>
+        <tr><td>C1</td><td>Moodle: manually enroll a student (Site Admin → Courses → Participants → Enrol)</td><td>Moodle Admin Event Logs: new SENT event</td><td>حدث جديد بالحالة SENT</td></tr>
+        <tr><td>C2</td><td>Backend Admin Data Browser → Enrollments table</td><td>New enrollment row for that student+course</td><td>صف تسجيل جديد يظهر</td></tr>
+        <tr><td>C3</td><td>Moodle: update a grade for a student</td><td>Event Logs: user_graded event SENT</td><td>حدث user_graded بالحالة SENT</td></tr>
+        <tr><td>C4</td><td>Backend Admin Data Browser → Grades table</td><td>Updated grade value visible</td><td>قيمة الدرجة المحدَّثة مرئية</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Group D — Student Dashboard</h3>
+    <h3 class="ar">المجموعة D — لوحة الطالب</h3>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Action</th><th>Expected</th><th>ما يُتوقَّع</th></tr></thead>
+      <tbody>
+        <tr><td>D1</td><td>Log in as student → Profile → Tab 1</td><td>Name, student ID, photo visible; Edit button works</td><td>البيانات مرئية وزر التعديل يعمل</td></tr>
+        <tr><td>D2</td><td>Submit a profile change request (edit phone)</td><td>Success message; new row in requests.php</td><td>رسالة نجاح وصف جديد في الطلبات</td></tr>
+        <tr><td>D3</td><td>Check Tab 2 (Programmes)</td><td>Programme details from BTEC_Registrations shown</td><td>بيانات البرنامج مرئية</td></tr>
+        <tr><td>D4</td><td>Check Tab 3 (Classes)</td><td>Class schedule rows visible</td><td>صفوف الجدول الدراسي مرئية</td></tr>
+        <tr><td>D5</td><td>Check Tab 4 (Student Card)</td><td>Card with photo and QR renders; Print opens dialog</td><td>البطاقة تظهر مع الصورة وQR</td></tr>
+        <tr><td>D6</td><td>Navigate to My Change Requests</td><td>Request from D2 shows status "Pending"</td><td>الطلب يظهر بالحالة Pending</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Group E — Error Recovery</h3>
+    <h3 class="ar">المجموعة E — اختبار التعافي من الأخطاء</h3>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Action</th><th>Expected</th><th>ما يُتوقَّع</th></tr></thead>
+      <tbody>
+        <tr><td>E1</td><td>Moodle Event Logs: filter status = FAILED</td><td>Any failed events visible with error detail</td><td>الأحداث الفاشلة مرئية مع تفاصيل الخطأ</td></tr>
+        <tr><td>E2</td><td>Click a FAILED event → click "Retry"</td><td>Event retried; status changes to SENT</td><td>الحدث يُعاد إرساله والحالة تتغير</td></tr>
+        <tr><td>E3</td><td>Grade Queue Monitor → "Retry All Failed"</td><td>Queue empties; logs show COMPLETED entries</td><td>الطابور يفرغ والسجلات تظهر COMPLETED</td></tr>
+        <tr><td>E4</td><td>Moodle: manual_retry.php</td><td>Failed events from last 24h retried in bulk</td><td>أحداث الفشل تُعاد معالجتها جماعياً</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;">
+    <a href="lesson-04.html" class="btn-secondary">&#8592; Lesson 04: Zoho CRM</a>
+    <a href="lesson-06.html" class="btn-primary">Lesson 06: Data Sync &#8594;</a>
+  </div>
+</main>
+<footer class="site-footer"><p>Moodle-Zoho Integration v3 &mdash; Developer Course</p></footer>
 <script src="course.js"></script>
-<script>initLesson(5);</script>
 </body>
 </html>
