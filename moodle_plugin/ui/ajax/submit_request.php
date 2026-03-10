@@ -67,10 +67,10 @@ if (!$student) {
 }
 
 // ── Check request window (config-based: 4 annual windows per type) ───────
+$now            = time();
 $windowed_types = ['Enroll Next Semester', 'Class Drop'];
 if (in_array($request_type, $windowed_types)) {
     $slug = preg_replace('/[^a-z0-9]/', '_', strtolower($request_type));
-    $now  = time();
     $open = false;
     for ($n = 1; $n <= 4; $n++) {
         $date  = get_config('local_moodle_zoho_sync', "rw_{$slug}_{$n}_date")  ?: '';

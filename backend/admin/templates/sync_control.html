@@ -13,17 +13,18 @@
 
     <!-- Full Sync -->
     <div class="card">
-      <h2 class="text-sm font-semibold text-gray-800 mb-1">Full Sync (7 Steps)</h2>
+      <h2 class="text-sm font-semibold text-gray-800 mb-1">Full Sync (8 Steps)</h2>
       <p class="text-xs text-gray-400 mb-4">Syncs all data from Zoho → Moodle in dependency order.</p>
 
       <div class="mb-4 space-y-1 text-xs text-gray-500">
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 1: Students</p>
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 2: Classes</p>
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 3: Registrations</p>
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 4: Enrollments</p>
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 5: Payments</p>
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 6: Grades</p>
-        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 7: Requests</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 1: Teachers</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 2: Students</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 3: Classes</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 4: Registrations</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 5: Enrollments</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 6: Payments</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 7: Grades</p>
+        <p class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>Step 8: Requests</p>
       </div>
 
       <form hx-post="/admin/sync/start"
@@ -68,14 +69,14 @@
         <h2 class="text-sm font-semibold text-gray-800">Live Sync Status</h2>
         <div id="poll-indicator" class="flex items-center gap-1.5 text-xs text-gray-400">
           <span class="h-2 w-2 rounded-full bg-gray-300 animate-pulse" id="poll-dot"></span>
-          <span id="poll-label">Polling every 3s</span>
+          <span id="poll-label">Polling every 5s</span>
         </div>
       </div>
 
       <!-- This div is replaced by HTMX polling -->
       <div id="sync-status-panel"
            hx-get="/admin/sync/status-partial"
-           hx-trigger="every 3s"
+           hx-trigger="every 2s"
            hx-swap="innerHTML">
         {% include "partials/sync_status.html" %}
       </div>
@@ -88,20 +89,45 @@
 
 {% block extra_scripts %}
 <script>
-  // Update poll dot color based on sync status
+  // Adaptive polling: 1s while running/pending, 5s when idle
+  function _updatePollSpeed(panel) {
+    const statusEl = panel.querySelector('[data-sync-status]');
+    const s = statusEl ? statusEl.dataset.syncStatus : 'no_job';
+    const isActive = s === 'running' || s === 'pending';
+    const interval = isActive ? '1s' : '5s';
+
+    // Update HTMX trigger on the panel itself
+    panel.setAttribute('hx-trigger', 'every ' + interval);
+    htmx.process(panel);
+
+    // Update indicator dot
+    const dot = document.getElementById('poll-dot');
+    const label = document.getElementById('poll-label');
+    if (dot) {
+      dot.className = 'h-2 w-2 rounded-full ' + (
+        s === 'running'   ? 'bg-blue-400 animate-pulse' :
+        s === 'pending'   ? 'bg-yellow-400 animate-pulse' :
+        s === 'completed' ? 'bg-green-400' :
+        s === 'failed'    ? 'bg-red-400' :
+                            'bg-gray-300'
+      );
+    }
+    if (label) {
+      label.textContent = isActive ? 'Polling every 1s' : 'Polling every 5s';
+    }
+  }
+
+  // Apply on every HTMX swap into the panel
   document.body.addEventListener('htmx:afterSwap', function(e) {
     if (e.target.id === 'sync-status-panel') {
-      const dot = document.getElementById('poll-dot');
-      const status = document.querySelector('[data-sync-status]');
-      if (status) {
-        const s = status.dataset.syncStatus;
-        dot.className = 'h-2 w-2 rounded-full ' + (
-          s === 'running'   ? 'bg-blue-400 animate-pulse' :
-          s === 'completed' ? 'bg-green-400' :
-          s === 'failed'    ? 'bg-red-400' : 'bg-gray-300 animate-pulse'
-        );
-      }
+      _updatePollSpeed(e.target);
     }
+  });
+
+  // Apply immediately on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('sync-status-panel');
+    if (panel) _updatePollSpeed(panel);
   });
 </script>
 {% endblock %}

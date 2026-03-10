@@ -248,9 +248,16 @@ async def sync_control(request: Request):
         return _redirect_login("/admin/sync")
 
     sync = await _get_sync_status()
+    elapsed = 0
+    started_at = sync.get("started_at")
+    if started_at and sync.get("status") == "running":
+        try:
+            elapsed = int((datetime.utcnow() - datetime.fromisoformat(started_at)).total_seconds())
+        except Exception:
+            elapsed = 0
     return templates.TemplateResponse(
         "sync_control.html",
-        {"request": request, "user": user, "sync": sync, "ts": _ts_to_str},
+        {"request": request, "user": user, "sync": sync, "elapsed": elapsed, "ts": _ts_to_str},
     )
 
 
@@ -264,7 +271,7 @@ async def sync_start(request: Request):
     sync = await _get_sync_status()
     return templates.TemplateResponse(
         "partials/sync_status.html",
-        {"request": request, "sync": sync, "started": True, "ts": _ts_to_str},
+        {"request": request, "sync": sync, "started": True, "elapsed": 0, "ts": _ts_to_str},
     )
 
 
@@ -276,9 +283,17 @@ async def sync_status_partial(request: Request):
         return HTMLResponse("", status_code=401)
 
     sync = await _get_sync_status()
+    # Calculate elapsed seconds for running jobs (started_at is stored as naive UTC)
+    elapsed = 0
+    started_at = sync.get("started_at")
+    if started_at and sync.get("status") == "running":
+        try:
+            elapsed = int((datetime.utcnow() - datetime.fromisoformat(started_at)).total_seconds())
+        except Exception:
+            elapsed = 0
     return templates.TemplateResponse(
         "partials/sync_status.html",
-        {"request": request, "sync": sync, "started": False, "ts": _ts_to_str},
+        {"request": request, "sync": sync, "started": False, "elapsed": elapsed, "ts": _ts_to_str},
     )
 
 

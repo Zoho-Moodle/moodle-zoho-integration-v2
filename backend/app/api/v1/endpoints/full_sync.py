@@ -104,7 +104,9 @@ def _is_parent_not_found(e: Exception, parent: str) -> bool:
 
 
 async def sync_generic(entity_type: str, ws_function: str, ws_param_key: str,
-                       required_field: Optional[str]) -> StepResult:
+                       required_field: Optional[str],
+                       live_job: Optional[dict] = None,
+                       live_key: Optional[str] = None) -> StepResult:
     module = ZOHO_MODULE_MAP[entity_type]
     try:
         records = await fetch_all_zoho_records(module)
@@ -112,11 +114,19 @@ async def sync_generic(entity_type: str, ws_function: str, ws_param_key: str,
         return StepResult(module=module, total=0, synced=0, skipped=0, errors=1,
                           error_details=[f"Zoho fetch failed: {e}"])
 
+    # Pre-populate live job results so UI shows total immediately
+    if live_job is not None and live_key:
+        live_job["results"][live_key] = {
+            "module": module, "total": len(records),
+            "synced": 0, "skipped": 0, "errors": 0,
+            "error_details": [], "processed": 0,
+        }
+
     # For payments: cache of registration IDs already attempted to avoid N calls
     _auto_synced_regs: Set[str] = set()
 
     r = StepResult(module=module, total=len(records), synced=0, skipped=0, errors=0)
-    for rec in records:
+    for i, rec in enumerate(records):
         zoho_id = rec.get("id", "?")
         try:
             t = transform_zoho_to_moodle(rec, entity_type)
@@ -168,10 +178,19 @@ async def sync_generic(entity_type: str, ws_function: str, ws_param_key: str,
             r.errors += 1
             r.error_details.append(f"{module}/{zoho_id}: {e}")
             logger.error(f"ERR {module}/{zoho_id}: {e}")
+        # Live update every 5 records so UI shows real-time progress
+        if live_job is not None and live_key and (i + 1) % 5 == 0:
+            live_job["results"][live_key] = {
+                **r.model_dump(), "total": len(records), "processed": i + 1,
+            }
+    # Final live update with exact totals
+    if live_job is not None and live_key:
+        live_job["results"][live_key] = {**r.model_dump(), "processed": len(records)}
     return r
 
 
-async def sync_teachers() -> StepResult:
+async def sync_teachers(live_job: Optional[dict] = None,
+                        live_key: Optional[str] = None) -> StepResult:
     """
     Sync BTEC_Teachers to Moodle.
     For each teacher, the Moodle plugin (local_mzi_sync_teacher) will:
@@ -188,7 +207,13 @@ async def sync_teachers() -> StepResult:
                           error_details=[f"Zoho fetch failed: {e}"])
 
     r = StepResult(module=module, total=len(records), synced=0, skipped=0, errors=0)
-    for rec in records:
+    if live_job is not None and live_key:
+        live_job["results"][live_key] = {
+            "module": module, "total": len(records),
+            "synced": 0, "skipped": 0, "errors": 0,
+            "error_details": [], "processed": 0,
+        }
+    for i, rec in enumerate(records):
         zoho_id = rec.get("id", "?")
         try:
             t = transform_zoho_to_moodle(rec, "teachers")
@@ -207,6 +232,12 @@ async def sync_teachers() -> StepResult:
         except Exception as e:
             r.errors += 1
             r.error_details.append(f"{module}/{zoho_id}: {e}")
+        if live_job is not None and live_key and (i + 1) % 5 == 0:
+            live_job["results"][live_key] = {
+                **r.model_dump(), "total": len(records), "processed": i + 1,
+            }
+    if live_job is not None and live_key:
+        live_job["results"][live_key] = {**r.model_dump(), "processed": len(records)}
     return r
 
 
@@ -244,7 +275,8 @@ async def _get_program_category(prog_zoho_id: str,
     return cat
 
 
-async def sync_classes() -> StepResult:
+async def sync_classes(live_job: Optional[dict] = None,
+                       live_key: Optional[str] = None) -> StepResult:
     module = ZOHO_MODULE_MAP["classes"]
     try:
         records = await fetch_all_zoho_records(module)
@@ -253,10 +285,16 @@ async def sync_classes() -> StepResult:
                           error_details=[f"Zoho fetch failed: {e}"])
 
     r = StepResult(module=module, total=len(records), synced=0, skipped=0, errors=0)
+    if live_job is not None and live_key:
+        live_job["results"][live_key] = {
+            "module": module, "total": len(records),
+            "synced": 0, "skipped": 0, "errors": 0,
+            "error_details": [], "processed": 0,
+        }
     default_cat = getattr(settings, "MOODLE_DEFAULT_CATEGORY_ID", 1)
     _prog_cat_cache: Dict[str, int] = {}  # program_zoho_id → moodle_category_id
 
-    for rec in records:
+    for i, rec in enumerate(records):
         zoho_id = rec.get("id", "?")
         try:
             t = transform_zoho_to_moodle(rec, "classes")
@@ -304,6 +342,12 @@ async def sync_classes() -> StepResult:
             r.errors += 1
             r.error_details.append(f"{module}/{zoho_id}: {e}")
             logger.error(f"ERR {module}/{zoho_id}: {e}")
+        if live_job is not None and live_key and (i + 1) % 5 == 0:
+            live_job["results"][live_key] = {
+                **r.model_dump(), "total": len(records), "processed": i + 1,
+            }
+    if live_job is not None and live_key:
+        live_job["results"][live_key] = {**r.model_dump(), "processed": len(records)}
     return r
 
 
@@ -327,21 +371,22 @@ async def _run_full_sync(job_id: str) -> None:
     ]
 
     coro_map = {
-        "teachers":      lambda: sync_teachers(),
-        "students":      lambda: sync_generic("students",      "local_mzi_update_student",       "studentdata",      "zoho_student_id"),
-        "classes":       lambda: sync_classes(),
-        "registrations": lambda: sync_generic("registrations", "local_mzi_create_registration",  "registrationdata", "zoho_registration_id"),
-        "enrollments":   lambda: sync_generic("enrollments",   "local_mzi_update_enrollment",    "enrollmentdata",   "zoho_enrollment_id"),
-        "payments":      lambda: sync_generic("payments",      "local_mzi_record_payment",       "paymentdata",      "zoho_payment_id"),
-        "grades":        lambda: sync_generic("grades",        "local_mzi_submit_grade",         "gradedata",        "zoho_grade_id"),
-        "requests":      lambda: sync_generic("requests",      "local_mzi_update_request_status","requestdata",      "zoho_request_id"),
+        "teachers":      lambda j, k: sync_teachers(live_job=j, live_key=k),
+        "students":      lambda j, k: sync_generic("students",      "local_mzi_update_student",        "studentdata",      "zoho_student_id",      live_job=j, live_key=k),
+        "classes":       lambda j, k: sync_classes(live_job=j, live_key=k),
+        "registrations": lambda j, k: sync_generic("registrations", "local_mzi_create_registration",   "registrationdata", "zoho_registration_id", live_job=j, live_key=k),
+        "enrollments":   lambda j, k: sync_generic("enrollments",   "local_mzi_update_enrollment",     "enrollmentdata",   "zoho_enrollment_id",   live_job=j, live_key=k),
+        "payments":      lambda j, k: sync_generic("payments",      "local_mzi_record_payment",        "paymentdata",      "zoho_payment_id",      live_job=j, live_key=k),
+        "grades":        lambda j, k: sync_generic("grades",        "local_mzi_submit_grade",          "gradedata",        "zoho_grade_id",        live_job=j, live_key=k),
+        "requests":      lambda j, k: sync_generic("requests",      "local_mzi_update_request_status", "requestdata",      "zoho_request_id",      live_job=j, live_key=k),
     }
 
-    for label, key in steps:
+    for idx, (label, key) in enumerate(steps):
         job["current_step"] = label
+        job["step_index"] = idx
         logger.info(f"[{job_id[:8]}] {label}")
         try:
-            r = await coro_map[key]()
+            r = await coro_map[key](job, key)
         except Exception as exc:
             logger.error(f"[{job_id[:8]}] {label} crashed: {exc}", exc_info=True)
             r = StepResult(module=label, total=0, synced=0, skipped=0, errors=1,
@@ -353,8 +398,9 @@ async def _run_full_sync(job_id: str) -> None:
         job["total_errors"] = total_errors
         logger.info(f"[{job_id[:8]}] {label}: {r.synced} synced, {r.errors} errors")
 
-    job["status"] = "complete"
+    job["status"] = "completed"
     job["current_step"] = None
+    job["step_index"] = 8
     job["finished_at"] = datetime.utcnow().isoformat()
     LATEST_JOB_ID = job_id
     logger.info(f"[{job_id[:8]}] Full sync DONE: {total_synced} synced, {total_errors} errors")
@@ -372,6 +418,8 @@ async def start_full_sync():
         "job_id": job_id,
         "status": "pending",
         "current_step": None,
+        "step_index": 0,
+        "step_total": 8,
         "total_synced": 0,
         "total_errors": 0,
         "results": {},
